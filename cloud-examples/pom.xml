@@ -3,10 +3,24 @@
   <artifactId>cloud-examples</artifactId>
   <modelVersion>4.0.0</modelVersion>
   <name>cloud-examples</name>
+
   <packaging>jar</packaging>
   <version>1.0</version>
+
+<!--
+
+  <repositories>
+    <repository>
+      <id>Spark Staging Repo</id>
+      <url>https://repository.apache.org/content/repositories/orgapachespark-1075/</url>
+    </repository>
+  </repositories>
+-->
+
   <properties>
+    <!-- These examples use the version of Hadoop which Spark was built with-->
     <spark.version>2.1.0-SNAPSHOT</spark.version>
+    <scala.binary.version>2.11</scala.binary.version>
     <maven.properties.version>1.0-alpha-2</maven.properties.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -24,46 +38,54 @@
     <!--net.alchim31.maven -->
     <alchim.scala-maven-plugin.version>3.2.2</alchim.scala-maven-plugin.version>
     <scalatest-maven-plugin.version>1.0</scalatest-maven-plugin.version>
+    <!-- override point: Hadoop XML file containing (directly or via XInclude references)
+    the credentials needed to test against target cloud infrastructures. -->
+    <cloud.test.configuration.file>(unset)</cloud.test.configuration.file>
   </properties>
-
-<!--
-
-  <repositories>
-    <repository>
-      <id>Spark Staging Repo</id>
-      <url>https://repository.apache.org/content/repositories/orgapachespark-1075/</url>
-    </repository>
-  </repositories>
--->
 
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_2.11</artifactId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
+
+    <!--Used for test classes -->
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_2.11</artifactId>
+      <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_2.11</artifactId>
-      <version>${spark.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-cloud_2.11</artifactId>
-      <version>${spark.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-cloud_2.11</artifactId>
       <type>test-jar</type>
-      <version>${spark.version}</version>
       <scope>test</scope>
     </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-cloud_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
@@ -239,12 +261,16 @@
           <environmentVariables>
           </environmentVariables>
           <systemProperties>
+            <log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>
             <java.awt.headless>true</java.awt.headless>
             <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
             <spark.testing>1</spark.testing>
             <spark.ui.enabled>false</spark.ui.enabled>
             <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
             <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
+            <!-- optionally set for cloud infrastructure tests -->
+            <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
+
           </systemProperties>
 
         </configuration>
