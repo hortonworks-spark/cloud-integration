@@ -183,7 +183,7 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
     try {
       cleanFilesystem()
     } catch {
-      case e: Exception =>
+      case e: Throwable =>
         logInfo(s"During cleanup of filesystem: $e")
         logDebug(s"During cleanup of filesystem", e)
     }

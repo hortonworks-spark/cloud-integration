@@ -20,6 +20,7 @@ package com.hortonworks.spark.cloud.s3
 import com.amazonaws.services.s3.S3ClientOptions
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3native.NativeS3FileSystem
+import org.apache.http.message.TokenParser
 import org.jets3t.service.S3ServiceException
 import org.joda.time.LocalTime
 
@@ -51,4 +52,9 @@ private[cloud] class S3DependencyCheckSuite extends SparkFunSuite {
   test("Create Joda Time class") {
     new LocalTime()
   }
+
+  test("http core") {
+    new TokenParser()
+  }
+
 }
