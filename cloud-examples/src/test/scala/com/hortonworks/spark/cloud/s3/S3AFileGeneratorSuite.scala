@@ -44,7 +44,7 @@ private[cloud] class S3AFileGeneratorSuite extends FileGeneratorTests with S3ATe
     "Execute the S3FileGenerator example with a bad argument; expect a failure") {
     val conf = newSparkConf()
     conf.setAppName("FileGenerator")
-    assert(-2 === S3FileGenerator.action(conf, Seq()))
+    assert(-2 === S3AFileGenerator.action(conf, Seq()))
   }
 
   override def generate(
@@ -53,7 +53,7 @@ private[cloud] class S3AFileGeneratorSuite extends FileGeneratorTests with S3ATe
       monthCount: Int,
       fileCount: Int,
       rowCount: Int): Int = {
-    val result = S3FileGenerator.action(conf, Seq(destDir,
+    val result = S3AFileGenerator.action(conf, Seq(destDir,
       monthCount,
       fileCount,
       rowCount))

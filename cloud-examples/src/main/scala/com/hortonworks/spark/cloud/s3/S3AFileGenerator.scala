@@ -17,31 +17,11 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudStreaming
-
-import org.apache.spark.SparkConf
-import org.apache.spark.streaming._
+import com.hortonworks.spark.cloud.CloudFileGenerator
 
 /**
- * An example/test for streaming with a source of S3.
+ * Generate a file containing some numbers in the remote repository.
  */
-object S3Streaming extends CloudStreaming with S3ExampleSetup {
+object S3AFileGenerator extends CloudFileGenerator with S3AExampleSetup {
 
-  /**
-   * This is never executed; it's just here as the source of the example in the
-   * documentation.
-   */
-  def streamingExample(): Unit = {
-    val sparkConf = new SparkConf()
-    val ssc = new StreamingContext(sparkConf, Milliseconds(1000))
-    try {
-      val lines = ssc.textFileStream("s3a://testbucket/incoming")
-      val matches = lines.filter(_.endsWith("3"))
-      matches.print()
-      ssc.start()
-      ssc.awaitTermination()
-    } finally {
-      ssc.stop(true)
-    }
-  }
 }

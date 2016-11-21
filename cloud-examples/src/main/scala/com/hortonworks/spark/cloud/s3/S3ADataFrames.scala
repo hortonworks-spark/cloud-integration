@@ -17,11 +17,14 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudFileGenerator
+import com.hortonworks.spark.cloud.CloudDataFrames
 
 /**
- * Generate a file containing some numbers in the remote repository.
+ * Test dataframe operations using S3 as the destination and source of operations.
+ * This validates the various conversion jobs all work against the object store.
+ *
+ * It doesn't verify timings, though some information is printed.
  */
-object S3FileGenerator extends CloudFileGenerator with S3ExampleSetup {
+object S3ADataFrames extends CloudDataFrames with S3AExampleSetup {
 
 }

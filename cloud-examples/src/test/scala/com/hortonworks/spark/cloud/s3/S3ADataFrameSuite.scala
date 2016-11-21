@@ -34,7 +34,7 @@ private[cloud] class S3ADataFrameSuite extends DataFrameTests with S3ATestSetup 
     }
   }
 
-  override protected val instance: CloudDataFrames = S3DataFrames
+  override protected val instance: CloudDataFrames = S3ADataFrames
 
   /**
    * Switch to random IO if the s3a implementation supports it.

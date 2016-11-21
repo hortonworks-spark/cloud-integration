@@ -25,7 +25,7 @@ import org.apache.spark.SparkConf
 /**
  * Base Class for examples working with S3.
  */
-private[cloud] trait S3ExampleSetup extends ObjectStoreExample {
+private[cloud] trait S3AExampleSetup extends ObjectStoreExample {
 
   /**
    * Set the standard S3A Hadoop options to be used in test/examples.

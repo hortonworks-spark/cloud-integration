@@ -18,37 +18,15 @@
 package com.hortonworks.spark.cloud.examples
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
-import com.hortonworks.spark.cloud.s3.S3ExampleSetup
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 
 /**
- * Pull in Landsat CSV and convert to Parquet input; do a couple of operations
- * on that to round things out.
- *
- * See <a href="http://landsat.usgs.gov/tools_faq.php">Landsat Web Site</a>
- * for details about terminology and raw data.
- *
- * header:
- * {{{
- *   entityId: string : LC80101172015002LGN00
- *   acquisitionDate: timestamp: 2015-01-02 15:49:05.571384
- *   cloudCover: double: 80.81
- *   processingLevel: string: L1GT
- *   path: integer: 10
- *   row: integer 117
- *   min_lat: double: -79.09923
- *   min_lon: double: -139.6608
- *   max_lat: double: -77.7544
- *   max_lon: double: -125.09297
- *   download_url: string
- *     https://s3-us-west-2.amazonaws.com/landsat-pds/L8/010/117/LC80101172015002LGN00/index.html
- *
- * }}}
+ * Simple example of streaming on Azure.
  */
-private[cloud] class AzureStreamingExample extends ObjectStoreExample with S3ExampleSetup {
+private[cloud] class AzureStreamingExample extends ObjectStoreExample {
 
   /**
    * List of the command args for the current example.

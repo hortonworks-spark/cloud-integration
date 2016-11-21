@@ -49,7 +49,7 @@ private[cloud] class S3ALineCountWritebackSuite extends CloudSuite with S3ATestS
     val sparkConf = newSparkConf()
     sparkConf.setAppName("S3LineCount")
     val destDir = testPath(filesystem, "s3alinecount")
-    assert(0 === S3LineCount.action(sparkConf,
+    assert(0 === S3ALineCount.action(sparkConf,
       Array(sourceFile.toString, destDir.toString)))
     val status = filesystem.getFileStatus(destDir)
     assert(status.isDirectory, s"Not a directory: $status")

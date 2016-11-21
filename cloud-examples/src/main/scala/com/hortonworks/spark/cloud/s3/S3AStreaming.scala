@@ -17,14 +17,31 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudDataFrames
+import com.hortonworks.spark.cloud.CloudStreaming
+
+import org.apache.spark.SparkConf
+import org.apache.spark.streaming._
 
 /**
- * Test dataframe operations using S3 as the destination and source of operations.
- * This validates the various conversion jobs all work against the object store.
- *
- * It doesn't verify timings, though some information is printed.
+ * An example/test for streaming with a source of S3.
  */
-object S3DataFrames extends CloudDataFrames with S3ExampleSetup {
+object S3AStreaming extends CloudStreaming with S3AExampleSetup {
 
+  /**
+   * This is never executed; it's just here as the source of the example in the
+   * documentation.
+   */
+  def streamingExample(): Unit = {
+    val sparkConf = new SparkConf()
+    val ssc = new StreamingContext(sparkConf, Milliseconds(1000))
+    try {
+      val lines = ssc.textFileStream("s3a://testbucket/incoming")
+      val matches = lines.filter(_.endsWith("3"))
+      matches.print()
+      ssc.start()
+      ssc.awaitTermination()
+    } finally {
+      ssc.stop(true)
+    }
+  }
 }

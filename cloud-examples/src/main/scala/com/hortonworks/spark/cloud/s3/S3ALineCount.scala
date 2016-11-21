@@ -29,7 +29,7 @@ import org.apache.spark.{SparkConf, SparkContext}
  * A line count example which has a default reference of a public Amazon S3
  * CSV .gz file in the absence of anything on the command line.
  */
-object S3LineCount extends S3ExampleSetup {
+object S3ALineCount extends S3AExampleSetup {
 
   /**
    * List of the command args for the current example.

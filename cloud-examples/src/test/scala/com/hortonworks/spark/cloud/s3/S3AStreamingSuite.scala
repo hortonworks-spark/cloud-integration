@@ -34,5 +34,5 @@ private[cloud] class S3AStreamingSuite extends StreamingTests with S3ATestSetup 
     }
   }
 
-  override protected val instance: CloudStreaming = S3Streaming
+  override protected val instance: CloudStreaming = S3AStreaming
 }
