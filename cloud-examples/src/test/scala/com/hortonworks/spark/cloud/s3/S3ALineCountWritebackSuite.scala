@@ -17,8 +17,11 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import scala.concurrent.duration._
+import scala.language.postfixOps
+
 import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 
 /**
  * Test the `S3LineCount` entry point.
@@ -36,6 +39,8 @@ private[cloud] class S3ALineCountWritebackSuite extends CloudSuite with S3ATestS
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
+  cleanFSInTeardownEnabled = false
+
   after {
     cleanFilesystemInTeardown()
   }
@@ -51,18 +56,42 @@ private[cloud] class S3ALineCountWritebackSuite extends CloudSuite with S3ATestS
     val destDir = testPath(filesystem, "s3alinecount")
     assert(0 === S3ALineCount.action(sparkConf,
       Array(sourceFile.toString, destDir.toString)))
+
+
     val status = filesystem.getFileStatus(destDir)
     assert(status.isDirectory, s"Not a directory: $status")
-    val files = filesystem.listStatus(destDir,
-      pathFilter(p => p.getName != "_SUCCESS"))
+
+    // only a small fraction of the source data is needed
+    val expectedLen = sourceInfo.getLen / 1024
+
+    def validateChildSize(qualifier: String, files: Seq[FileStatus]) = {
+      val (filenames, size) = enumFileSize(destDir, files)
+      logInfo(s"total size of $qualifier = $size bytes from ${files.length} files: $filenames")
+      assert(size >= expectedLen, s"$qualifier size $size in files $filenames" +
+          s" smaller than exoected length $expectedLen")
+    }
+
+    val stdInterval = interval(100 milliseconds)
+    val appId = eventually(timeout(20 seconds), stdInterval) {
+      validateChildSize("descendants",
+        listFiles(filesystem, destDir, true)
+            .filter(f => f.getPath.getName != "_SUCCESS"))
+
+      validateChildSize("children",
+        filesystem.listStatus(destDir,
+          pathFilter(p => p.getName != "_SUCCESS")).toSeq)
+    }
+  }
+
+  private def enumFileSize(destDir: Path, files: Seq[FileStatus]): (String, Long)  = {
+    assert(files.nonEmpty, s"No files in destination directory $destDir")
     var size = 0L
-    var filenames = ""
+    val filenames = new StringBuffer()
     files.foreach { f =>
       size += f.getLen
-      filenames = filenames + " " + f.getPath.getName
+      filenames.append(" ").append(f.getPath)
     }
-    logInfo(s"total size = $size bytes from ${files.length} files: $filenames")
-    assert(size >= sourceInfo.getLen, s"output data $size smaller than source $sourceFile")
+    (filenames.toString, size)
   }
 
 }

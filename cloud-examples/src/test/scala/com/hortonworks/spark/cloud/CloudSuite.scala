@@ -24,6 +24,7 @@ import scala.collection.JavaConverters._
 
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileStatus, FileSystem, LocalFileSystem, Path}
+import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
 import org.apache.spark.{LocalSparkContext, SparkConf}
@@ -36,7 +37,7 @@ import org.apache.spark.{LocalSparkContext, SparkConf}
  */
 private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
     with LocalSparkContext with BeforeAndAfter with Matchers with TimeOperations
-    with ObjectStoreOperations {
+    with ObjectStoreOperations with Eventually {
 
   import CloudSuite._
 
@@ -82,6 +83,8 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
    * @return the filesystem URI
    */
   protected def filesystemURI: URI = filesystem.getUri
+
+  protected var cleanFSInTeardownEnabled = true
 
   /**
    * Determine the scale factor for larger tests.
@@ -181,7 +184,9 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
    */
   protected def cleanFilesystemInTeardown(): Unit = {
     try {
-      cleanFilesystem()
+      if (cleanFSInTeardownEnabled) {
+        cleanFilesystem()
+      }
     } catch {
       case e: Throwable =>
         logInfo(s"During cleanup of filesystem: $e")

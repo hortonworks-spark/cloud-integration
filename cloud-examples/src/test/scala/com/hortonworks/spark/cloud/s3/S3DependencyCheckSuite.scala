@@ -17,12 +17,12 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.amazonaws.services.s3.S3ClientOptions
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3native.NativeS3FileSystem
 import org.apache.http.message.TokenParser
 import org.jets3t.service.S3ServiceException
 import org.joda.time.LocalTime
+import org.scalatest.Matchers
 
 import org.apache.spark.SparkFunSuite
 
@@ -31,7 +31,7 @@ import org.apache.spark.SparkFunSuite
  * Dependency problems should be picked up at compile time; runtime may
  * identify problems with any other transitive library
  */
-private[cloud] class S3DependencyCheckSuite extends SparkFunSuite {
+private[cloud] class S3DependencyCheckSuite extends SparkFunSuite with Matchers {
 
   test("Create S3A FS Instance") {
     new S3AFileSystem()
@@ -46,7 +46,7 @@ private[cloud] class S3DependencyCheckSuite extends SparkFunSuite {
   }
 
   test("Create class in Amazon com.amazonaws.services.s3 JAR") {
-    new S3ClientOptions()
+    instantiate("com.amazonaws.services.s3.S3ClientOptions")
   }
 
   test("Create Joda Time class") {
@@ -55,6 +55,26 @@ private[cloud] class S3DependencyCheckSuite extends SparkFunSuite {
 
   test("http core") {
     new TokenParser()
+  }
+
+  test("hive") {
+    instantiate("org.apache.hadoop.hive.conf.HiveConf")
+  }
+
+  /**
+   * Instantiate the class.
+   * This is wrapped because scalatest gets confused about instantiation Errors raised
+   * in a test method.
+   * @param classname class to instantiate.
+   */
+  def instantiate(classname: String) {
+    try {
+      val clazz = this.getClass.getClassLoader.loadClass(classname)
+      clazz.newInstance()
+    } catch {
+      case e: Exception => throw e
+      case e: Throwable => throw new Exception(s"Could not instantiate $classname", e)
+    }
   }
 
 }

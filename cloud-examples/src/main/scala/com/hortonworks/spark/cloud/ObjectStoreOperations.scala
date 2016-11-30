@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud
 
 import scala.reflect.ClassTag
 
+import com.hortonworks.spark.cloud.s3.S3AConstants._
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
@@ -32,6 +33,11 @@ import org.apache.spark.sql._
  */
 private[cloud] trait ObjectStoreOperations extends CloudLogging {
 
+
+  def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
+    rdd.saveAsTextFile(path.toString)
+  }
+
   /**
    * Save this RDD as a text file, using string representations of elements.
    *
@@ -39,6 +45,8 @@ private[cloud] trait ObjectStoreOperations extends CloudLogging {
    * rather than the default one in the configuration ... this is addressed by creating a
    * new configuration. Spark makes a bit too much of the RDD private, so the key
    * and value of the RDD needs to be restated
+   *
+   * *Important*: this doesn't work.
    * @param rdd RDD to save
    * @param keyClass key of RDD
    * @param valueClass value of RDD
@@ -65,7 +73,8 @@ private[cloud] trait ObjectStoreOperations extends CloudLogging {
     confWithTargetFS.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
       pathFS.getUri.toString)
     val pairOps = RDD.rddToPairRDDFunctions(r)(nullWritableClassTag, textClassTag, null)
-    pairOps.saveAsNewAPIHadoopFile(path.toUri.toString,
+    pairOps.saveAsNewAPIHadoopFile(
+      path.toUri.toString,
       keyClass, valueClass,
       classOf[org.apache.hadoop.mapreduce.lib.output.TextOutputFormat[NullWritable, Text]],
       confWithTargetFS)
@@ -150,6 +159,30 @@ private[cloud] trait ObjectStoreOperations extends CloudLogging {
   def applyOrcSpeedupOptions(spark: SparkSession): Unit = {
     spark.read.option("mergeSchema", "false")
   }
+
+  /**
+   * Does this configuration use the S3A committer? Note that this doesn't verify that
+   * the version of Hadoop being tested supports committer factories, only that the test
+   * configuration has configured the committer
+   * @param conf configuration to test
+   * @return true if the S3A committer is chosen
+   */
+  def isS3CommitterEnabled(conf: Configuration): Boolean = {
+    S3A_COMMITTER_FACTORY == committerFactoryClassname(conf)
+  }
+
+  /**
+   * Return the committer for the File output format.
+   * Note that this doesn't verify that
+   * the version of Hadoop being tested supports committer factories, only that the test
+   * configuration has configured the committer
+   *
+   * @param conf configuration to test
+   * @return classname of the committer
+   */
+  def committerFactoryClassname(conf: Configuration): String = {
+    conf.get(MR_COMMITTER_FACTORY, FILE_COMMITTER_FACTORY)
+  }
 }
 
 /**
@@ -162,3 +195,4 @@ class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Ite
 
   def next: T = source.next()
 }
+

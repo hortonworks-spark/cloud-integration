@@ -21,7 +21,7 @@ import java.io.FileNotFoundException
 
 import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic
-import org.apache.hadoop.io.LongWritable
+import org.apache.hadoop.io.{IntWritable, LongWritable}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.deploy.SparkHadoopUtil
@@ -87,7 +87,8 @@ private[cloud] abstract class BasicIOTests extends CloudSuite {
     sc = new SparkContext("local", "test", newSparkConf())
     val numbers = sc.parallelize(1 to testEntryCount)
     val destFile = testPath(filesystem, "example1")
-    saveAsTextFile(numbers, destFile, sc.hadoopConfiguration, classOf[LongWritable], classOf[Int])
+    saveAsTextFile(numbers, destFile, sc.hadoopConfiguration, classOf[LongWritable],
+      classOf[IntWritable])
     val basePathStatus = filesystem.getFileStatus(destFile)
     val hadoopUtils = new SparkHadoopUtil
     val leafDirStatus = duration("listLeafDir") {

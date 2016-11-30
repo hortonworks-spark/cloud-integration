@@ -215,8 +215,9 @@ private[cloud] trait ObjectStoreExample extends TimeOperations with ObjectStoreO
 
   private val MAPREDUCE_OPTIONS = Map(
     "spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version" -> "2",
-    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",
     "spark.hadoop.mapreduce.fileoutputcommitter.cleanup-failures.ignored" -> "true" )
+
+  // //    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",
 
   /**
    * Set the base spark/Hadoop/ORC/parquet options to be used in examples.

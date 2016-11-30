@@ -21,7 +21,6 @@ import java.net.URI
 
 import com.hortonworks.spark.cloud.s3.S3AConstants._
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.io.{LongWritable, Text}
 
 import org.apache.spark.{SparkConf, SparkContext}
 
@@ -69,10 +68,13 @@ object S3ALineCount extends S3AExampleSetup {
     if (dest.isEmpty) {
       hconf(sparkConf, AWS_CREDENTIALS_PROVIDER, ANONYMOUS_CREDENTIALS)
     }
-
+    var sourceFs: FileSystem = null
+    var srcFsInfo: Option[String] = None
+    var destFsInfo: Option[String] = None
     val sc = new SparkContext(sparkConf)
     try {
-      val sourceFs = FileSystem.newInstance(srcURI, sc.hadoopConfiguration)
+      val conf = sc.hadoopConfiguration
+      sourceFs = FileSystem.newInstance(srcURI, conf)
 
       // this will throw an exception if the source file is missing
       val status = sourceFs.getFileStatus(srcPath)
@@ -84,24 +86,37 @@ object S3ALineCount extends S3AExampleSetup {
           input.count()
         }
         logInfo(s"line count = $count")
-        logInfo(s"File System = $sourceFs")
       } else {
         // destination provided
         val destUri = new URI(dest.get)
-        logInfo(s"Destination $destUri")
-        val destFs = FileSystem.get(destUri, sc.hadoopConfiguration)
-        duration("save") {
-          val destPath = new Path(destUri)
+        logInfo(s"Destination $destUri with committer ${committerFactoryClassname(conf)}")
+        val destFs = FileSystem.get(destUri, conf)
+        val destPath = new Path(destUri)
+        duration("setup dest path") {
           destFs.delete(destPath, true)
           destFs.mkdirs(destPath.getParent())
-          saveAsTextFile(input, destPath, sc.hadoopConfiguration,
+        }
+
+        duration("save") {
+          // generate less output than in, so that writes and commits are not as slow as they
+          // would otherwise be, but still have some realistic workload
+          val lineLen = input.map(line => Integer.toHexString(line.length))
+          saveTextFile(lineLen, destPath)
+/*
+          saveAsTextFile(lineLen, destPath, sc.hadoopConfiguration,
             classOf[LongWritable],
             classOf[Text])
+*/
+          destFsInfo = Some(s"\nFile System $destPath=\n$destFs\n")
+
         }
       }
+      srcFsInfo = Some(s"\nSource File System = $sourceFs\n")
     } finally {
       logInfo("Stopping Spark Context")
       sc.stop()
+      srcFsInfo.foreach(logInfo(_))
+      destFsInfo.foreach(logInfo(_))
     }
     0
   }

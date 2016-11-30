@@ -45,7 +45,7 @@ object S3AConstants {
   val KEEPALIVE_TIME = "fs.s3a.threads.keepalivetime"
   val MAX_TOTAL_TASKS = "fs.s3a.max.total.tasks"
   val MULTIPART_SIZE = "fs.s3a.multipart.size"
-  val MIN_PERMITTED_MULTIPART_SIZE = 5 * (1024 * 1024)
+  val MIN_PERMITTED_MULTIPART_SIZE: Int = 5 * (1024 * 1024)
   val MIN_MULTIPART_THRESHOLD = "fs.s3a.multipart.threshold"
   val ENABLE_MULTI_DELETE = "fs.s3a.multiobjectdelete.enable"
   val BUFFER_DIR = "fs.s3a.buffer.dir"
@@ -60,7 +60,7 @@ object S3AConstants {
   val FS_S3A = "s3a"
   val USER_AGENT_PREFIX = "fs.s3a.user.agent.prefix"
   val READAHEAD_RANGE = "fs.s3a.readahead.range"
-  val INPUT_FADVISE = "fs.s3a.experimental.input.fadvise";
+  val INPUT_FADVISE = "fs.s3a.experimental.input.fadvise"
   val SEQUENTIAL_IO = "sequential"
   val NORMAL_IO = "normal"
   val RANDOM_IO = "random"
@@ -69,5 +69,18 @@ object S3AConstants {
    * Default source of a public multi-MB CSV file.
    */
   val S3A_CSV_PATH_DEFAULT = "s3a://landsat-pds/scene_list.gz"
+
+  /**
+   * Key for setting the underlying committer for `FileOutputFormat`.
+   */
+  val MR_COMMITTER_FACTORY = "mapreduce.fileoutputcommitter.factory.class"
+
+  /**
+   * The S3A Committer factory.
+   */
+  val S3A_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.S3AOutputCommitterFactory"
+
+  /** The default committer factory. */
+  val FILE_COMMITTER_FACTORY = "org.apache.hadoop.mapreduce.lib.output.FileOutputCommitterFactory"
 
 }
