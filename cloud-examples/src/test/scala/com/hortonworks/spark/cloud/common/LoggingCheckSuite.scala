@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud.common
 
 import org.scalatest.Matchers
 import org.slf4j.LoggerFactory
+import org.slf4j.impl.StaticLoggerBinder
 
 import org.apache.spark.SparkFunSuite
 
@@ -27,6 +28,7 @@ import org.apache.spark.SparkFunSuite
  */
 private[cloud] class LoggingCheckSuite extends SparkFunSuite with Matchers {
   val LogLevels = "com.hortonworks.spark.test.loglevels"
+  val Log4JBinding = ""
 
   test("log4j location") {
     val log4j = this.getClass.getClassLoader.getResource("log4j.properties")
@@ -34,6 +36,10 @@ private[cloud] class LoggingCheckSuite extends SparkFunSuite with Matchers {
     logInfo(s"log4j location = $log4j")
   }
 
+  /**
+   * Every time toString is called on this class, it's counter is incremented.
+   * this makes it possible to determine when loggers evaluate their arguments
+   */
   private class IncrementingToString {
     var c = 0
 
@@ -72,6 +78,12 @@ private[cloud] class LoggingCheckSuite extends SparkFunSuite with Matchers {
     val l = LoggerFactory.getLogger(LogLevels)
     assert(l.isDebugEnabled,
       s"Log level of $LogLevels is not DEBUG $l")
+  }
+
+  test("verify SLF4J bindings Log4j") {
+    val binder = StaticLoggerBinder.getSingleton();
+    logInfo(s"Logger Factory ${binder.getLoggerFactory()}")
+    logInfo(s"Logger Factory class ${binder.getLoggerFactoryClassStr()}")
   }
 
 }

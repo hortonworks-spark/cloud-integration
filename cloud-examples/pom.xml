@@ -41,6 +41,7 @@
     <!-- override point: Hadoop XML file containing (directly or via XInclude references)
     the credentials needed to test against target cloud infrastructures. -->
     <cloud.test.configuration.file>(unset)</cloud.test.configuration.file>
+    <log4j.debug>false</log4j.debug>
   </properties>
 
   <dependencies>
@@ -267,7 +268,8 @@
           <environmentVariables>
           </environmentVariables>
           <systemProperties>
-            <log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>
+            <!--<log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>-->
+            <log4j.debug>${log4j.debug}</log4j.debug>
             <java.awt.headless>true</java.awt.headless>
             <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
             <spark.testing>1</spark.testing>
