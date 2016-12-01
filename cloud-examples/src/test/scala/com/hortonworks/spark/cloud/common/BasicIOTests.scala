@@ -87,8 +87,7 @@ private[cloud] abstract class BasicIOTests extends CloudSuite {
     sc = new SparkContext("local", "test", newSparkConf())
     val numbers = sc.parallelize(1 to testEntryCount)
     val destFile = testPath(filesystem, "example1")
-    saveAsTextFile(numbers, destFile, sc.hadoopConfiguration, classOf[LongWritable],
-      classOf[IntWritable])
+    saveTextFile(numbers, destFile)
     val basePathStatus = filesystem.getFileStatus(destFile)
     val hadoopUtils = new SparkHadoopUtil
     val leafDirStatus = duration("listLeafDir") {

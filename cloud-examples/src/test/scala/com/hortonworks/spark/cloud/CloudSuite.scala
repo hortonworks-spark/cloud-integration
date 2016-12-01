@@ -84,7 +84,7 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
    */
   protected def filesystemURI: URI = filesystem.getUri
 
-  protected var cleanFSInTeardownEnabled = true
+  protected def cleanFSInTeardownEnabled = true
 
   /**
    * Determine the scale factor for larger tests.

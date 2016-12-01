@@ -17,6 +17,8 @@
 
 package com.hortonworks.spark.cloud
 
+import java.net.URL
+
 import scala.reflect.ClassTag
 
 import com.hortonworks.spark.cloud.s3.S3AConstants._
@@ -182,6 +184,24 @@ private[cloud] trait ObjectStoreOperations extends CloudLogging {
    */
   def committerFactoryClassname(conf: Configuration): String = {
     conf.get(MR_COMMITTER_FACTORY, FILE_COMMITTER_FACTORY)
+  }
+
+  /**
+   * Take a dotted classname and return the resource
+   * @param classname classname to look for
+   * @return the resource for the .class
+   */
+  def classnameToResource(classname: String): String = {
+    classname.replace('.','/') + ".class"
+  }
+
+  /**
+   * Get a resource URL or None, if the resource wasn't found
+   * @param resource resource to look for
+   * @return the URL, if any
+   */
+  def resourceURL(resource: String): Option[URL] = {
+    Option(this.getClass.getClassLoader.getResource(resource))
   }
 }
 

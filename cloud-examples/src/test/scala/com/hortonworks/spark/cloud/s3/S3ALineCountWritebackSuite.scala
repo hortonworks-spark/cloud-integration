@@ -39,7 +39,7 @@ private[cloud] class S3ALineCountWritebackSuite extends CloudSuite with S3ATestS
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
-  cleanFSInTeardownEnabled = false
+  override def cleanFSInTeardownEnabled: Boolean = false
 
   after {
     cleanFilesystemInTeardown()

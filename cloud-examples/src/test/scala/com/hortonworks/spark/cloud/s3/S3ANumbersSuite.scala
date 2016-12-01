@@ -15,8 +15,18 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.s3
 
-class CloudGenerateRecords {
+import com.hortonworks.spark.cloud.common.NumbersRddTests
+
+class S3ANumbersSuite extends NumbersRddTests with S3ATestSetup {
+  init()
+
+  def init(): Unit = {
+    // propagate S3 credentials
+    if (enabled) {
+      initFS()
+    }
+  }
 
 }

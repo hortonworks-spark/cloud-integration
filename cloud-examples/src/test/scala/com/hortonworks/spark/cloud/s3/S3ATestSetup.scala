@@ -44,7 +44,7 @@ import com.hortonworks.spark.cloud.s3.S3AConstants._
    * @param config configuration to set up
    */
   def setupFilesystemConfiguration(config: Configuration): Unit = {
-    config.set("fs.s3a.buffer.dir", localTmpDir.getAbsolutePath)
+    config.set(BUFFER_DIR, localTmpDir.getAbsolutePath)
     // a block size of 1MB
     config.set(BLOCK_SIZE, (1024 * 1024).toString)
     // the input policy
@@ -52,6 +52,8 @@ import com.hortonworks.spark.cloud.s3.S3AConstants._
     if (useCSVEndpoint) {
       enableCSVEndpoint(config)
     }
+    // switch to the s3a committer; this is only used if it exists
+    config.set(FILE_COMMITTER_FACTORY, S3A_COMMITTER_FACTORY)
   }
 
   lazy val CSV_TESTFILE: Option[Path] = {

@@ -15,22 +15,19 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.s3
+package com.hortonworks.spark.cloud.azure
 
 import com.hortonworks.spark.cloud.common.BasicIOTests
 
 /**
- * Basic S3A IO Tests.
+ * Azure's basic IO operations.
  */
-private[cloud] class S3AIOSuite extends BasicIOTests with S3ATestSetup {
+private[cloud] class AzureBasicIOSuite extends BasicIOTests with AzureTestSetup {
 
   init()
 
-  override def enabled: Boolean =
-    testConfiguration.exists(_.getBoolean(S3A_TESTS_ENABLED, false))
-
   def init(): Unit = {
-    // propagate S3 credentials
+    // propagate credentials
     if (enabled) {
       initFS()
     }
