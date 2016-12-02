@@ -379,3 +379,17 @@ these files in the relevant id/secret properties of the XML configuration file.
 are not senstitive -for example, they refer to in-house (test) object stores, authentication is
 done via IAM EC2 VM credentials, or the credentials are short-lived AWS STS-issued credentials
 with a lifespan of minutes and access only to transient test buckets.
+
+## Working with Hadoop 3.x
+
+Hive doesn't know how to handle Hadoop version 3; all the dataframe tests will fail against
+Hadoop 3.x binaries.
+
+There's a patch in some of the Hadoop branches to let you build hadoop with a different
+declare version than that in the POM. All the jars will have the POM version, but
+the version returned by calls to `VersionInfo` will return the value set in `declared.hadoop.version`.
+
+
+```bash
+mvn install -DskipTests -Ddeclared.hadoop.version=2.11
+```
