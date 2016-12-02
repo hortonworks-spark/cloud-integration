@@ -41,16 +41,20 @@ private[cloud] abstract class NumbersRddTests extends CloudSuite {
     """Generate an RDD and save it. No attempt is made to validate the output, so that
       | All post-test-setup FS IO which takes place is related to the committer.
     """.stripMargin) {
-    sc = new SparkContext("local", "test", newSparkConf())
-    val conf = sc.hadoopConfiguration
-    assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
-    val entryCount = testEntryCount
-    val numbers = sc.parallelize(1 to entryCount)
-    val dest = testPath(filesystem, "numbers_rdd_tests")
-    filesystem.delete(dest, true)
-    logInfo(s"\nGenerating output under $dest\n")
-    val lineLen = numbers.map(line => Integer.toHexString(line))
-    numbers.saveAsTextFile(dest.toString)
+    val context = new SparkContext("local", "test", newSparkConf())
+    try {
+      val conf = context.hadoopConfiguration
+      assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
+      val entryCount = testEntryCount
+      val numbers = context.parallelize(1 to entryCount)
+      val dest = testPath(filesystem, "numbers_rdd_tests")
+      filesystem.delete(dest, true)
+      logInfo(s"\nGenerating output under $dest\n")
+      val lineLen = numbers.map(line => Integer.toHexString(line))
+      numbers.saveAsTextFile(dest.toString)
+    } finally {
+      context.stop()
+    }
     val fsInfo = filesystem.toString.replace("{", "\n{")
     logInfo(s"Filesystem statistics\n $fsInfo")
   }

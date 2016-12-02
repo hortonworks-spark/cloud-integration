@@ -62,7 +62,6 @@ object S3ALineCount extends S3AExampleSetup {
     val srcPath = new Path(srcURI)
     logInfo(s"Data Source $srcURI")
     applyObjectStoreConfigurationOptions(sparkConf, false)
-    hconf(sparkConf, FAST_UPLOAD, "true")
 
     // If there is no destination, switch to the anonymous provider.
     if (dest.isEmpty) {

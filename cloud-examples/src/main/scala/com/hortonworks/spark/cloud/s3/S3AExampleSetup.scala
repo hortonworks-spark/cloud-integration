@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
 import com.hortonworks.spark.cloud.s3.S3AConstants._
+import com.hortonworks.spark.cloud.s3.S3ALineCount.hconf
 
 import org.apache.spark.SparkConf
 
@@ -44,5 +45,9 @@ private[cloud] trait S3AExampleSetup extends ObjectStoreExample {
     hconf(sparkConf, READAHEAD_RANGE, "128K")
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, INPUT_FADVISE, if (randomIO) RANDOM_IO else NORMAL_IO)
+    hconf(sparkConf, FAST_UPLOAD, "true")
+    if (S3AFeatures.S3A_COMMITTER_EXISTS) {
+      hconf(sparkConf, MR_COMMITTER_CLASS, S3A_OUTPUT_COMMITTER_MRV1)
+    }
   }
 }

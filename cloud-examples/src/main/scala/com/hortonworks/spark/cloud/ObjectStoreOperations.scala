@@ -27,6 +27,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
 import org.apache.hadoop.io.{NullWritable, Text}
 
+import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql._
 
@@ -202,6 +203,53 @@ private[cloud] trait ObjectStoreOperations extends CloudLogging {
    */
   def resourceURL(resource: String): Option[URL] = {
     Option(this.getClass.getClassLoader.getResource(resource))
+  }
+
+  val ORC_OPTIONS = Map(
+    "spark.hadoop.orc.splits.include.file.footer" -> "true",
+    "spark.hadoop.orc.cache.stripe.details.size" -> "1000",
+    "spark.hadoop.orc.filterPushdown" -> "true")
+
+  val PARQUET_OPTIONS = Map(
+    "spark.sql.parquet.mergeSchema" -> "false",
+    "spark.sql.parquet.filterPushdown" -> "true")
+
+  val MAPREDUCE_OPTIONS = Map(
+    "spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version" -> "2",
+    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup-failures.ignored" -> "true")
+
+  // //    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",
+
+  /**
+   * Set a Hadoop option in a spark configuration.
+   *
+   * @param sparkConf configuration to update
+   * @param k key
+   * @param v new value
+   */
+  def hconf(sparkConf: SparkConf, k: String, v: String): Unit = {
+    sparkConf.set(s"spark.hadoop.$k", v)
+  }
+
+  /**
+   * Set a long hadoop option in a spark configuration.
+   *
+   * @param sparkConf configuration to update
+   * @param k key
+   * @param v new value
+   */
+  def hconf(sparkConf: SparkConf, k: String, v: Long): Unit = {
+    sparkConf.set(s"spark.hadoop.$k", v.toString)
+  }
+
+  /**
+   * Set all supplied options to the spark configuration as hadoop options.
+   *
+   * @param sparkConf Spark configuration to update
+   * @param settings map of settings.
+   */
+  def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): Unit = {
+    settings.foreach(e => hconf(sparkConf, e._1, e._2))
   }
 }
 

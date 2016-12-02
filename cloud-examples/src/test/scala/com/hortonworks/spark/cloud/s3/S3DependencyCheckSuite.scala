@@ -17,7 +17,6 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3native.NativeS3FileSystem
 import org.apache.http.message.TokenParser
 import org.jets3t.service.S3ServiceException
@@ -34,7 +33,7 @@ import org.apache.spark.SparkFunSuite
 private[cloud] class S3DependencyCheckSuite extends SparkFunSuite with Matchers {
 
   test("Create S3A FS Instance") {
-    new S3AFileSystem()
+    new org.apache.hadoop.fs.s3a.S3AFileSystem()
   }
 
   test("Create S3N FS Instance") {

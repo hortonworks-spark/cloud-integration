@@ -22,8 +22,10 @@ import java.net.{URI, URL}
 
 import scala.collection.JavaConverters._
 
+import com.hortonworks.spark.cloud.s3.S3AConstants._
+import com.hortonworks.spark.cloud.s3.S3AFeatures
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileStatus, FileSystem, LocalFileSystem, Path}
+import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
 
@@ -93,19 +95,13 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
     SCALE_TEST_SIZE_FACTOR_DEFAULT)
 
   /**
-   * Determine the operation count for scale tests which iterate.
-   */
-  private lazy val scaleOperationCount = conf.getInt(SCALE_TEST_OPERATION_COUNT,
-    SCALE_TEST_OPERATION_COUNT_DEFAULT)
-
-  /**
    * Subclasses may override this for different or configurable test sizes
    * @return the number of entries in parallelized operations.
    */
   protected def testEntryCount: Int = 10 * scaleSizeFactor
 
   /** this system property is always set in a JVM */
-  protected val localTmpDir = new File(System.getProperty("java.io.tmpdir", "/tmp"))
+  protected val localTmpDir: File = new File(System.getProperty("java.io.tmpdir", "/tmp"))
       .getCanonicalFile
 
   /**
@@ -162,11 +158,16 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
    * @param fsURI filesystem URI
    * @return the newly create FS.
    */
-  protected def createFilesystem(fsURI: URI): FileSystem = {
+  protected def createFilesystem(fsURI: URI, registerToURI: Boolean = true): FileSystem = {
     val fs = FileSystem.newInstance(fsURI, conf)
     setFilesystem(fs)
+    if (registerToURI) {
+      FSHelper.addFileSystemForTesting(fsURI, conf, fs)
+    }
     fs
   }
+
+
 
   /**
    * Clean up the filesystem if it is defined.
@@ -221,11 +222,24 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
    * This can be used to alter values for the configuration.
    * It is called before the configuration read in from the command line
    * is applied, so that tests can override the values applied in-code.
-   * @param sc spark configuration to alter
+   *
+   * @param sparkConf spark configuration to alter
    */
-  protected def addSuiteConfigurationOptions(sc: SparkConf): Unit = {
-    // commit with v2 algorithm
-    hconf(sc, "mapreduce.fileoutputcommitter.algorithm.version", "2")
+  protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
+    sparkConf.setAll(MAPREDUCE_OPTIONS)
+    sparkConf.setAll(ORC_OPTIONS)
+    sparkConf.setAll(PARQUET_OPTIONS)
+    hconf(sparkConf, BLOCK_SIZE, 1 * 1024 * 1024)
+    hconf(sparkConf, MULTIPART_SIZE, MIN_PERMITTED_MULTIPART_SIZE)
+    hconf(sparkConf, READAHEAD_RANGE, "128K")
+    hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
+    hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
+    hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, FAST_UPLOAD_BUFFER, FAST_UPLOAD_BUFFER_ARRAY)
+    if (S3AFeatures.S3A_COMMITTER_EXISTS) {
+      hconf(sparkConf, MR_COMMITTER_CLASS, S3A_OUTPUT_COMMITTER_MRV1)
+    }
+
   }
 
   /**
@@ -264,16 +278,6 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
    */
   def newSparkConf(path: Path): SparkConf = {
     newSparkConf(path.getFileSystem(conf).getUri)
-  }
-
-  /**
-   * Set a Hadoop configuration option in a spark configuration.
-   * @param sc spark context
-   * @param k configuration key
-   * @param v configuration value
-   */
-  def hconf(sc: SparkConf, k: String, v: String): Unit = {
-    sc.set("spark.hadoop." + k, v)
   }
 
   /**

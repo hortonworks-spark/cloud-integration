@@ -65,10 +65,18 @@ object S3AConstants {
   val NORMAL_IO = "normal"
   val RANDOM_IO = "random"
 
+  val SPARK_PARQUET_COMMITTER_CLASS = "spark.sql.parquet.output.committer.class"
   /**
    * Default source of a public multi-MB CSV file.
    */
   val S3A_CSV_PATH_DEFAULT = "s3a://landsat-pds/scene_list.gz"
+
+  val MR_COMMITTER_CLASS = "mapred.output.committer.class"
+
+  /**
+   * The S3A Committer factory.
+   */
+  val S3A_COMMITTER_CLASS = "org.apache.hadoop.fs.s3a.commit.S3AOutputCommitter"
 
   /**
    * Key for setting the underlying committer for `FileOutputFormat`.
@@ -78,9 +86,32 @@ object S3AConstants {
   /**
    * The S3A Committer factory.
    */
-  val S3A_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.S3AOutputCommitterFactory"
+  val S3A_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.S3AOutputCommitterFactory"
+  /**
+   * V1 committer.
+   */
+  val S3A_OUTPUT_COMMITTER_MRV1 = "org.apache.hadoop.fs.s3a.commit.S3OutputCommitterMRv1"
 
   /** The default committer factory. */
   val FILE_COMMITTER_FACTORY = "org.apache.hadoop.mapreduce.lib.output.FileOutputCommitterFactory"
 
+  /**
+   * What buffer to use.
+   * Default is `FAST_UPLOAD_BUFFER_DISK`
+   */
+ val FAST_UPLOAD_BUFFER = "fs.s3a.fast.upload.buffer"
+  /**
+   * Buffer blocks to disk.
+   * Capacity is limited to available disk space.
+   */
+ val FAST_UPLOAD_BUFFER_DISK = "disk"
+  /**
+   * Use an in-memory array. Fast but will run of heap rapidly.
+   */
+ val FAST_UPLOAD_BUFFER_ARRAY = "array"
+  /**
+   * Use a byte buffer. May be more memory efficient than the
+   * `FAST_UPLOAD_BUFFER_ARRAY`.
+   */
+ val FAST_UPLOAD_BYTEBUFFER = "bytebuffer"
 }

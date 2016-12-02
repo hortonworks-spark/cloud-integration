@@ -92,34 +92,6 @@ private[cloud] trait ObjectStoreExample extends TimeOperations with ObjectStoreO
     }
   }
 
-  /**
-   * Set a Hadoop option in a spark configuration.
-   * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
-   */
-  def hconf(sparkConf: SparkConf, k: String, v: String): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v)
-  }
-
-  /**
-   * Set a long hadoop option in a spark configuration.
-   * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
-   */
-  def hconf(sparkConf: SparkConf, k: String, v: Long): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v.toString)
-  }
-
-  /**
-   * Set all supplied options to the spark configuration as hadoop options.
-   * @param sparkConf Spark configuration to update
-   * @param settings map of settings.
-   */
-  def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): Unit = {
-    settings.foreach(e => hconf(sparkConf, e._1, e._2))
-  }
 
     /**
    * Exit the system.
@@ -203,21 +175,6 @@ private[cloud] trait ObjectStoreExample extends TimeOperations with ObjectStoreO
   protected def arg(args: Array[String], index: Int): Option[String] = {
     if (args.length > index) Some(args(index)) else None
   }
-
-  private val ORC_OPTIONS = Map(
-    "spark.hadoop.orc.splits.include.file.footer" -> "true",
-    "spark.hadoop.orc.cache.stripe.details.size" -> "1000",
-    "spark.hadoop.orc.filterPushdown" -> "true")
-
-  private val PARQUET_OPTIONS = Map(
-    "spark.sql.parquet.mergeSchema" -> "false",
-    "spark.sql.parquet.filterPushdown" -> "true")
-
-  private val MAPREDUCE_OPTIONS = Map(
-    "spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version" -> "2",
-    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup-failures.ignored" -> "true" )
-
-  // //    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",
 
   /**
    * Set the base spark/Hadoop/ORC/parquet options to be used in examples.

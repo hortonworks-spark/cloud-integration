@@ -17,14 +17,12 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import org.apache.hadoop.util.VersionInfo
+import com.hortonworks.spark.cloud.s3.S3AFeatures._
 
 class S3ACommitterSuite extends S3ATestSetup {
 
   import com.hortonworks.spark.cloud.s3.S3AConstants._
-
-  private val s3aCommitterResource = resourceURL(classnameToResource(S3A_COMMITTER_FACTORY))
-
-  private val s3aCommitterExists = s3aCommitterResource.isDefined
 
   /*
     <property>
@@ -53,9 +51,15 @@ class S3ACommitterSuite extends S3ATestSetup {
   }
 
   ctest("look for FS committer on CP") {
-    s3aCommitterResource match {
+    S3A_COMMITTER_RESOURCE match {
       case Some(url) => logInfo(s"S3A committer is at $url")
       case None => logInfo("No S3A Committer found on classpath")
     }
+  }
+
+  ctest("Log Hadoop version") {
+    logInfo(s" Hadoop version = ${VersionInfo.getVersion()}")
+    logInfo(s" BuildVersion = ${VersionInfo.getBuildVersion()}")
+    logInfo(s" Built on = ${VersionInfo.getDate()}")
   }
 }
