@@ -154,8 +154,12 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
   /**
    * Create a filesystem. This adds it as the `filesystem` field.
    * A new instance is created for every test, so that different configurations
-   * can be used.
+   * can be used. If `registerToURI` is set, the instance is put into the FileSystem
+   * map of (user, URI) to FileSystem instance, after which it will be picked up by
+   * all in-VM code asking for a non-unique FS intance for that URI.
    * @param fsURI filesystem URI
+   * @param registerToURI should the `Filesystem.get` binding for this URI be registered
+   *                      to this instance?
    * @return the newly create FS.
    */
   protected def createFilesystem(fsURI: URI, registerToURI: Boolean = true): FileSystem = {
@@ -166,8 +170,6 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
     }
     fs
   }
-
-
 
   /**
    * Clean up the filesystem if it is defined.

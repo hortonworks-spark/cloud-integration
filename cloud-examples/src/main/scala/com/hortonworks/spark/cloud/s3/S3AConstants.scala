@@ -93,7 +93,7 @@ object S3AConstants {
   val S3A_OUTPUT_COMMITTER_MRV1 = "org.apache.hadoop.fs.s3a.commit.S3OutputCommitterMRv1"
 
   /** The default committer factory. */
-  val FILE_COMMITTER_FACTORY = "org.apache.hadoop.mapreduce.lib.output.FileOutputCommitterFactory"
+  val FILE_COMMITTER_FACTORY = "mapreduce.fileoutputcommitter.factory.class"
 
   /**
    * What buffer to use.
