@@ -47,14 +47,14 @@ private[cloud] abstract class NumbersRddTests extends CloudSuite {
     val sparkConf = newSparkConf()
     // speculation enabled as it makes committing more complicated
     conf.setBoolean("spark.speculation", true)
+    val dest = testPath(filesystem, pathname)
+    filesystem.delete(dest, true)
     val context = new SparkContext("local", "test", sparkConf)
-    val dest = testPath(filesystem, "numbers_rdd_tests")
     try {
       val conf = context.hadoopConfiguration
       assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
       val entryCount = testEntryCount
       val numbers = context.makeRDD(1 to entryCount)
-      filesystem.delete(dest, true)
       logInfo(s"\nGenerating output under $dest\n")
 //      val lineLen = numbers.map(line => Integer.toHexString(line))
       saveRDD(numbers, dest)
@@ -63,19 +63,36 @@ private[cloud] abstract class NumbersRddTests extends CloudSuite {
     }
     val fsInfo = filesystem.toString.replace("{", "\n{")
     logInfo(s"Filesystem statistics\n $fsInfo")
+    var size = 0L
+    var files = 0
+    var dirs = 0
     val listing = listFiles(filesystem, dest, true).map{ s =>
-        val details = if (s.isFile) s" [${s.getLen}]" else ""
-        s"  ${s.getPath}$details"
+      size += s.getLen
+      if (s.isFile) {
+        files += 1
+      } else {
+        dirs += 1
+      }
+      val details = if (s.isFile) s" [${s.getLen}]" else ""
+      s"  ${s.getPath}$details"
     }
-    logInfo(s"Contents of $dest:\n" + listing.mkString("\n"))
+    val text = s"Contents of $dest:\n" + listing.mkString("\n") + "\n" +
+        s"Dirs: $dirs, Files: $files, total bytes = $size"
+    logInfo(text)
+    assert(size > 0, text)
+  }
+
+  protected def pathname = {
+    "numbers_rdd_tests"
   }
 
   /**
    * Save the RDD
+   *
    * @param numbers RDD to save
    * @param dest destination path
    */
-  private def saveRDD( numbers: RDD[Int], dest: Path): Unit = {
+  protected def saveRDD(numbers: RDD[Int], dest: Path): Unit = {
     numbers.saveAsTextFile(dest.toString)
   }
 
@@ -84,7 +101,7 @@ private[cloud] abstract class NumbersRddTests extends CloudSuite {
    * @param numbers RDD to save
    * @param dest destination path
    */
-  private def saveRDDviaMRv2( numbers: RDD[Int], dest: Path): Unit = {
+  protected def saveRDDviaMRv2(numbers: RDD[Int], dest: Path): Unit = {
     val numText = numbers.map(x => (new IntWritable(x), new Text("a" * x)))
     numText.saveAsNewAPIHadoopFile[SequenceFileOutputFormat[IntWritable, Text]](
       dest.toString)
