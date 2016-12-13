@@ -29,4 +29,8 @@ class S3ANumbersSuite extends NumbersRddTests with S3ATestSetup {
     }
   }
 
+  override protected def pathname = {
+    "s3a_numbers_suite"
+  }
+
 }

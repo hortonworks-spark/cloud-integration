@@ -12,48 +12,15 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 
-# <a name="testing"></a>Testing Apache Spark's Cloud Integration
+## <a name="testing"></a>Testing Spark's Cloud Integration
 
-This repository contains tests which verify Apache Spark's
-integration and performance with object stores, specifically Amazon S3, Azure and Openstack.
-The underlying client libraries are part of Apache Hadoop —thus these tests can act as integration
-and regression tests for changes in the Hadoop codebase.
+This project contains tests which can run against the object stores. These verify
+functionality integration and performance.
 
-
-## Building a local version of Spark to test with
-
-This module needs a version of Spark with the `spark-cloud` module with it; at the time of
-writing this is not yet in ASF spark.
-
-1. Optional: Build any local Hadoop version which you want to use in these integration tests, 
- using `mvn install -DskipTests` in the `hadoop-trunk` dir. For example: `2.9.0-SNASPSHOT`
-
-1. add repository `https://github.com/steveloughran/spark.git`
-1. check out branch `features/SPARK-7481-cloud` from the `steveloughran` repo
-
-1. Build Spark with the version of Hadoop you built locally.
-
-        mvn install -DskipTests -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.9.0-SNAPSHOT 
-
-    This installs the spark JARs and POMs into the local maven repsitory, where they can be
-    used until midnight. You will need to repeat the spark and hadoop builds every morning.
-    Tip: if you are new to building spark, you can speed up your life by installing zinc via
-    apt-get, yum or homebrew, then launch it for background compilation with: `zinc -start`
-     
-    Once this operation is complete, you can run tests with the spark version set on this build
-    `-Dspark.version=2.x.y` ; the default, `2.1.0-SNAPSHOT` is that of spark's `master` branch
-    at the time of writing.
-    
-1. To do a full spark installation:
-
-        dev/make-distribution.sh -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.9.0-SNAPSHOT
+### Example Configuration for Testing Cloud Data
 
 
-
-## Test Configuration
-
-
-The tests need a configuration file to declare the (secret) bindings to the cloud infrastructure.
+The test runs need a configuration file to declare the (secret) bindings to the cloud infrastructure.
 The configuration used is the Hadoop XML format, because it allows XInclude importing of
 secrets kept out of any source tree.
 
@@ -66,16 +33,6 @@ which can be done in the command line
 ```bash
 mvn test -Dcloud.test.configuration.file=../cloud.xml
 ```
-
-As this project looks for, and reads in any `build.properties` file in the project
-directory, the path *may* be declarable in that file:
-
-```properties
-cloud.test.configuration.file=/Users/stevel/aws/cloud.xml
-```
-
-However, attempts to do this appear to fail. Help welcome.
-
 
 *Important*: keep all credentials out of SCM-managed repositories. Even if `.gitignore`
 or equivalent is used to exclude the file, they may unintenally get bundled and released
@@ -245,7 +202,7 @@ Finally, the CSV file tests can be skipped entirely by declaring the URL to be "
   <value/>
 </property>
 ```
-### Azure Test Options
+## Azure Test Options
 
 
 <table class="table">
@@ -269,7 +226,7 @@ Finally, the CSV file tests can be skipped entirely by declaring the URL to be "
 
 ## Running a Single Test Case
 
-Each test takes time, especially if the tests are being run outside of the
+Each cloud test takes time, especially if the tests are being run outside of the
 infrastructure of the specific cloud infrastructure provider.
 Accordingly, it is important to be able to work on a single test case at a time
 when implementing or debugging a test.
@@ -295,8 +252,8 @@ For example, here is the test `NewHadoopAPI`.
 This test can be executed as part of the suite `S3aIOSuite`, by setting the `suites` maven property to the classname
 of the test suite:
 
-```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.hortonworks.sparkspark.cloud.s3.S3AIOSuite
+```bash
+mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=org.apache.spark.cloud.s3.S3aIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -306,11 +263,11 @@ The named test suite will be skipped and a message logged to highlight this.
 A single test can be explicitly run by including the key in the `suites` property
 after the suite name
 
-```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-Dsuites=com.hortonworks.spark.cloud.s3.S3AIOSuite NewHadoopAPI`
+```bash
+mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml '-Dsuites=com.hortonworks.spark.cloud.s3.S3ABasicIOSuite FileOutput'
 ```
 
-This will run all tests in the `S3AIOSuite` suite whose name contains the string `NewHadoopAPI`;
+This will run all tests in the `S3ABasicIOSuite` suite whose name contains the string `FileOutput`;
 here just one test. Again, the test will be skipped if the `cloud.xml` configuration file does
 not enable s3a tests.
 
@@ -318,13 +275,13 @@ To run all tests of a specific infrastructure, use the `wildcardSuites` property
 under which all test suites should be executed.
 
 ```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud.s3`
+mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud`
 ```
 
 Note that an absolute path is used to refer to the test configuration file in these examples.
 If a relative path is supplied, it must be relative to the project base, *not the cloud module*.
 
-## Integration tests
+# Integration tests
 
 The module includes a set of tests which work as integration tests, as well as unit tests. These
 can be executed against live spark clusters, and can be configured to scale up, so testing
@@ -332,14 +289,12 @@ scalability.
 
 | job | arguments | test |
 |------|----------|------|
-| `com.hortonworks.spark.cloud.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
-| `com.hortonworks.spark.cloud.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
-| `com.hortonworks.spark.cloud.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
-| `com.hortonworks.spark.cloud.S3ALineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
+| `org.apache.spark.cloud.examples.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
+| `org.apache.spark.cloud.examples.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
+| `org.apache.spark.cloud.examples.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
+| `org.apache.spark.cloud.s3.examples.S3LineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
 
-## Best Practices
-
-### Best Practices for Adding a New Test
+## Best Practices for Adding a New Test
 
 1. Use `ctest()` to define a test case conditional on the suite being enabled.
 1. Keep the test time down through small values such as: numbers of files, dataset sizes, operations.
@@ -353,7 +308,7 @@ though command line arguments.
 wait for object store changes to become visible.
 1. Have a long enough timeout that remote tests over slower connections will not timeout.
 
-### Best Practices for Adding a New Test Suite
+## Best Practices for Adding a New Test Suite
 
 1. Extend `CloudSuite`
 1. Have an `after {}` clause which cleans up all object stores —this keeps costs down.
@@ -363,7 +318,7 @@ than the specific test directory. This is critical to support parallel test exec
 1. If extra conditions are needed before a test suite can be executed, override the `enabled` method
 to probe for the extra conditions being met.
 
-### Keeping Test Costs Down
+## Keeping Test Costs Down
 
 Object stores incur charges for storage and for GET operations out of the datacenter where
 the data is stored.
@@ -389,33 +344,3 @@ these files in the relevant id/secret properties of the XML configuration file.
 are not senstitive -for example, they refer to in-house (test) object stores, authentication is
 done via IAM EC2 VM credentials, or the credentials are short-lived AWS STS-issued credentials
 with a lifespan of minutes and access only to transient test buckets.
-
-## Working with Hadoop 3.x
-
-Hive doesn't know how to handle Hadoop version 3; all the dataframe tests will fail against
-Hadoop 3.x binaries.
-
-There's a patch in some of the Hadoop branches to let you build hadoop with a different
-declare version than that in the POM. All the jars will have the POM version, but
-the version returned by calls to `VersionInfo` will return the value set in `declared.hadoop.version`.
-
-
-```bash
-mvn install -DskipTests -Ddeclared.hadoop.version=2.11
-```
-
-### Working with Private repositories and older artifact names
-
-(This is primarily of interest to colleagues testing releases with this code.)
-
-1. To build with a different version of spark, define it in `spark.version`
-1. To use the older artifact name, `spark-cloud`, define `spark.cloud.jar` to this name.
-1. To use a different repository for artifacts, redefine `central.repo`
-
-Example:
-
-```bash
-mvt -Dspark.version=2.0.0.2.5.0.14-5 \
-  -Dspark.cloud.jar=spark-cloud \
-  -Dcentral.repo=http://PRIVATE-REPO/nexus/content/ 
-```

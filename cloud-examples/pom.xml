@@ -19,7 +19,7 @@
 
   <properties>
     <!-- These examples use the version of Hadoop which Spark was built with-->
-    <spark.version>2.1.0-SNAPSHOT</spark.version>
+    <spark.version>2.2.0-SNAPSHOT</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
     <maven.properties.version>1.0-alpha-2</maven.properties.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -42,7 +42,39 @@
     the credentials needed to test against target cloud infrastructures. -->
     <cloud.test.configuration.file>(unset)</cloud.test.configuration.file>
     <log4j.debug>false</log4j.debug>
+    <central.repo>https://repo1.maven.org/maven2</central.repo>
+    <!-- earlier versions of the SPARK-7481 patch had it as spark-cloud.JAR; this
+    variable makes it possible to run these tests against that version. -->
+    <spark.cloud.jar>spark-hadoop-cloud</spark.cloud.jar>
   </properties>
+
+  <repositories>
+    <repository>
+      <id>central</id>
+      <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->
+      <name>Maven Repository</name>
+      <url>${central.repo}</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>central</id>
+      <url>${central.repo}</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -73,7 +105,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
+      <artifactId>${spark.cloud.jar}_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
     </dependency>
     <dependency>
@@ -300,4 +332,78 @@
 
     </plugins>
   </build>
+
+  <profiles>
+    <!--
+ This is a profile to enable the use of the ASF snapshot and staging repositories
+ during a build. It is useful when testing againt nightly or RC releases of dependencies.
+ It MUST NOT be used when building copies of Spark to use in production of for distribution,
+ -->
+    <profile>
+      <id>snapshots-and-staging</id>
+      <properties>
+        <!-- override point for ASF staging/snapshot repos -->
+        <asf.staging>https://repository.apache.org/content/groups/staging/</asf.staging>
+        <asf.snapshots>https://repository.apache.org/content/repositories/snapshots/</asf.snapshots>
+      </properties>
+
+      <pluginRepositories>
+        <pluginRepository>
+          <id>ASF Staging</id>
+          <url>${asf.staging}</url>
+        </pluginRepository>
+        <pluginRepository>
+          <id>ASF Snapshots</id>
+          <url>${asf.snapshots}</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+        </pluginRepository>
+
+      </pluginRepositories>
+      <repositories>
+        <repository>
+          <id>ASF Staging</id>
+          <url>${asf.staging}</url>
+        </repository>
+        <repository>
+          <id>ASF Snapshots</id>
+          <url>${asf.snapshots}</url>
+          <snapshots>
+            <enabled>true</enabled>
+          </snapshots>
+          <releases>
+            <enabled>false</enabled>
+          </releases>
+        </repository>
+      </repositories>
+    </profile>
+
+    <profile>
+      <id>declare-http-components</id>
+      <properties>
+        <!--  org.apache.httpcomponents/httpclient-->
+        <commons.httpclient.version>4.5.2</commons.httpclient.version>
+        <commons.httpcore.version>4.4.4</commons.httpcore.version>
+      </properties>
+      <dependencies>
+        <!--Explicit declaration to force in Spark version into transitive dependencies -->
+        <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <version>${commons.httpclient.version}</version>
+        </dependency>
+        <!--Explicit declaration to force in Spark version into transitive dependencies -->
+        <dependency>
+          <groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+          <version>${commons.httpcore.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+
+  </profiles>
 </project>

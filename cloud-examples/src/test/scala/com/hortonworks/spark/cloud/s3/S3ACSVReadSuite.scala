@@ -56,7 +56,7 @@ private[cloud] class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     val sceneInfo = fs.getFileStatus(source)
     logInfo(s"Compressed size = ${sceneInfo.getLen}")
     validateCSV(sc, source)
-    logInfo(s"Filesystem statistics ${fs}")
+    logInfo(s"Filesystem statistics $fs")
   }
 
   /**
@@ -88,6 +88,26 @@ private[cloud] class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     val source = CSV_TESTFILE.get
     validateCSV(sc, source)
     logInfo(s"Filesystem statistics ${getFilesystem(source)}")
+  }
+
+  ctest("listFiles",
+    "List all files under the CSV parent dir") {
+    val source = CSV_TESTFILE.get
+    val fs = getFilesystem(source)
+    val parent = source.getParent
+    val s3a = fs.asInstanceOf[org.apache.hadoop.fs.s3a.S3AFileSystem]
+    val files = duration("listFiles") {
+      listFiles(fs, parent, true)
+    }
+    val slice = duration("slice") {
+      files.slice(0, 1000)
+    }
+
+    val (len, size) = duration("slice.length") {
+      slice.map(fs => (1, fs.getLen)).reduce((l, r) => (l._1 + r._1, l._2 + r._2))
+    }
+    logInfo(s"Length of slice $len, size = $size")
+    logInfo(s"Filesystem statistics $fs")
   }
 
   ctest("ReadBytesReturned",
@@ -164,4 +184,16 @@ private[cloud] class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     b.append(s"mean=${stats.mean(col)}; ")
     b.toString()
   }
+
+  ctest("listCSVDireRecursively",
+    "Recursive Read of the CSV") {
+    val source = CSV_TESTFILE.get
+    sc = new SparkContext("local", "CSVgz", newSparkConf(source))
+    val fs = getFilesystem(source)
+    val sceneInfo = fs.getFileStatus(source)
+    logInfo(s"Compressed size = ${sceneInfo.getLen}")
+    validateCSV(sc, source)
+    logInfo(s"Filesystem statistics ${fs}")
+  }
+
 }

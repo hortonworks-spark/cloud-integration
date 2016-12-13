@@ -233,7 +233,7 @@ private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with
     sparkConf.setAll(PARQUET_OPTIONS)
     hconf(sparkConf, BLOCK_SIZE, 1 * 1024 * 1024)
     hconf(sparkConf, MULTIPART_SIZE, MIN_PERMITTED_MULTIPART_SIZE)
-    hconf(sparkConf, READAHEAD_RANGE, "128K")
+    hconf(sparkConf, READAHEAD_RANGE, 128 * 1024)
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, FAST_UPLOAD, "true")

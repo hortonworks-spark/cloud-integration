@@ -37,7 +37,7 @@ private[cloud] abstract class NumbersRddTests extends CloudSuite {
   /**
    * cleanup is currently disabled
    */
-  override protected def cleanFSInTeardownEnabled: Boolean = false;
+  override protected def cleanFSInTeardownEnabled: Boolean = true;
 
 
   ctest("SaveRDD",
