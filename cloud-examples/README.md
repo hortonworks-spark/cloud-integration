@@ -411,11 +411,14 @@ mvn install -DskipTests -Ddeclared.hadoop.version=2.11
 1. To build with a different version of spark, define it in `spark.version`
 1. To use the older artifact name, `spark-cloud`, define `spark.cloud.jar` to this name.
 1. To use a different repository for artifacts, redefine `central.repo`
+1. If the spark cloud POM doesn't declare the httpcomponent versions, you need to
+explicitly list them through `-Pdeclare-http-components`
 
 Example:
 
 ```bash
-mvt -Dspark.version=2.0.0.2.5.0.14-5 \
+mvn test -T 1C -Dspark.version=2.0.0.2.5.0.14-5 \
   -Dspark.cloud.jar=spark-cloud \
+  -Pdeclare-http-components \
   -Dcentral.repo=http://PRIVATE-REPO/nexus/content/ 
 ```
