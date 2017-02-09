@@ -21,7 +21,7 @@ import scala.collection.mutable
 
 import com.hortonworks.spark.cloud.CloudSuite
 import com.hortonworks.spark.cloud.common.ReadSample
-import org.apache.hadoop.fs.{FSDataInputStream, Path}
+import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path, RemoteIterator}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.stat.{MultivariateStatisticalSummary, Statistics}
@@ -185,8 +185,8 @@ private[cloud] class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     b.toString()
   }
 
-  ctest("listCSVDireRecursively",
-    "Recursive Read of the CSV") {
+  ctest("getSceneInfo",
+    "Get the scene info") {
     val source = CSV_TESTFILE.get
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
     val fs = getFilesystem(source)
@@ -195,5 +195,51 @@ private[cloud] class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     validateCSV(sc, source)
     logInfo(s"Filesystem statistics ${fs}")
   }
+
+  /**
+   * Iterator over remote output.
+   *
+   * @param source source iterator
+   * @tparam T type of response
+   */
+  class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Iterator[T] {
+    def hasNext: Boolean = source.hasNext
+
+    def next: T = source.next()
+  }
+
+  /**
+   * This doesn't do much, except that it is designed to be pasted straight into
+   * Zeppelin and work
+   */
+  ctest("DirOps", "simple directory ops in spark context process") {
+    val source = CSV_TESTFILE.get
+    sc = new SparkContext("local", "CSVgz", newSparkConf(source))
+
+    import org.apache.hadoop.fs._
+    val landsat = "s3a://landsat-pds/scene_list.gz"
+    val landsatPath = new Path(landsat)
+    val fs = FileSystem.get(landsatPath.toUri, sc.hadoopConfiguration)
+    val files = fs.listFiles(landsatPath.getParent, false)
+    val listing = new RemoteOutputIterator(files)
+    listing.foreach(print(_))
+
+  }
+
+    ctest("Boris", "boris bike stuff") {
+    val source = CSV_TESTFILE.get
+    sc = new SparkContext("local", "CSVgz", newSparkConf(source))
+
+    import org.apache.hadoop.fs._
+    val dir = "s3a://hwdev-steve-datasets-east/travel/borisbike/"
+    val dirPath = new Path(dir)
+    val fs = FileSystem.get(dirPath.toUri, sc.hadoopConfiguration)
+    val files = fs.listFiles(dirPath, false)
+    val listing = new RemoteOutputIterator(files)
+    listing.foreach(print(_))
+
+  }
+
+
 
 }

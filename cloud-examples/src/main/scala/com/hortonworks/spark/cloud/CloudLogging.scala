@@ -30,7 +30,7 @@ import org.slf4j.{Logger, LoggerFactory}
  * The original org.apache.spark implementation of this used reflection to talk to SLF4J; this
  * one does not.
  */
-private[spark] trait CloudLogging {
+trait CloudLogging {
 
   // Make the log field transient so that objects with Logging can
   // be serialized and used on another machine
