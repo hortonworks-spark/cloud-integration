@@ -19,6 +19,11 @@ integration and performance with object stores, specifically Amazon S3, Azure an
 The underlying client libraries are part of Apache Hadoop —thus these tests can act as integration
 and regression tests for changes in the Hadoop codebase.
 
+The generated artifact contains a test suite, `com.hortonworks.spark.cloud.CloudSuite`,
+which can be used as a base class for integration tests.
+
+The artifact is *not* indended to be used in production code, purely in
+`test` scope.
 
 ## Building a local version of Spark to test with
 

@@ -23,8 +23,10 @@ import java.net.{URI, URL}
 import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.s3.S3AConstants._
-import com.hortonworks.spark.cloud.s3.S3AFeatures
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileStatus, FileSystem, LocalFileSystem, Path}
+
+import org.apache.spark.SparkConf
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -238,10 +240,6 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, FAST_UPLOAD, "true")
     hconf(sparkConf, FAST_UPLOAD_BUFFER, FAST_UPLOAD_BUFFER_ARRAY)
-    if (S3AFeatures.S3A_COMMITTER_EXISTS) {
-      hconf(sparkConf, MR_COMMITTER_CLASS, S3A_OUTPUT_COMMITTER_MRV1)
-    }
-
   }
 
   /**

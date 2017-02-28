@@ -5,7 +5,7 @@
   <name>cloud-examples</name>
 
   <packaging>jar</packaging>
-  <version>1.0</version>
+  <version>1.0-SNAPSHOT</version>
 
 <!--
 
@@ -89,7 +89,6 @@
       <artifactId>spark-core_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
       <type>test-jar</type>
-      <scope>test</scope>
     </dependency>
 
 
@@ -123,7 +122,6 @@
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
       <version>2.2.1</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -135,13 +133,11 @@
       <groupId>org.scalacheck</groupId>
       <artifactId>scalacheck_${scala.binary.version}</artifactId>
       <version>1.11.3</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>4.11</version>
-      <scope>test</scope>
     </dependency>
 
     <dependency>
@@ -384,23 +380,18 @@
 
     <profile>
       <id>declare-http-components</id>
-      <properties>
-        <!--  org.apache.httpcomponents/httpclient-->
-        <commons.httpclient.version>4.5.2</commons.httpclient.version>
-        <commons.httpcore.version>4.4.4</commons.httpcore.version>
-      </properties>
       <dependencies>
         <!--Explicit declaration to force in Spark version into transitive dependencies -->
         <dependency>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpclient</artifactId>
-          <version>${commons.httpclient.version}</version>
+          <version>4.5.2</version>
         </dependency>
         <!--Explicit declaration to force in Spark version into transitive dependencies -->
         <dependency>
           <groupId>org.apache.httpcomponents</groupId>
           <artifactId>httpcore</artifactId>
-          <version>${commons.httpcore.version}</version>
+          <version>4.4.4</version>
         </dependency>
       </dependencies>
     </profile>
