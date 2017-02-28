@@ -31,7 +31,7 @@ The file must be declared to the maven test run in the property `cloud.test.conf
 which can be done in the command line
 
 ```bash
-mvn test -Dcloud.test.configuration.file=../cloud.xml
+mvn -T 1C test -Dcloud.test.configuration.file=../cloud.xml
 ```
 
 *Important*: keep all credentials out of SCM-managed repositories. Even if `.gitignore`
@@ -193,6 +193,9 @@ the original S3 endpoint. This is done by default, though it can also be set exp
 </property>
 ```
 
+If you are testing with Hadoop 2.8+ you can also use the per-bucket options
+to set the locations. This is already done in `rc/test/resources/core-site.xml`
+
 Finally, the CSV file tests can be skipped entirely by declaring the URL to be ""
 
 
@@ -239,7 +242,6 @@ a detailed description (this is included in logs), and the actual function to ex
 For example, here is the test `NewHadoopAPI`.
 
 ```scala
-
   ctest("NewHadoopAPI",
     "Use SparkContext.saveAsNewAPIHadoopFile() to save data to a file") {
     sc = new SparkContext("local", "test", newSparkConf())
@@ -253,7 +255,7 @@ This test can be executed as part of the suite `S3aIOSuite`, by setting the `sui
 of the test suite:
 
 ```bash
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=org.apache.spark.cloud.s3.S3aIOSuite
+mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=org.apache.spark.cloud.s3.S3aIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -264,7 +266,7 @@ A single test can be explicitly run by including the key in the `suites` propert
 after the suite name
 
 ```bash
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml '-Dsuites=com.hortonworks.spark.cloud.s3.S3ABasicIOSuite FileOutput'
+mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml '-Dsuites=com.hortonworks.spark.cloud.s3.S3ABasicIOSuite FileOutput'
 ```
 
 This will run all tests in the `S3ABasicIOSuite` suite whose name contains the string `FileOutput`;
@@ -275,7 +277,7 @@ To run all tests of a specific infrastructure, use the `wildcardSuites` property
 under which all test suites should be executed.
 
 ```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud`
+mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud`
 ```
 
 Note that an absolute path is used to refer to the test configuration file in these examples.

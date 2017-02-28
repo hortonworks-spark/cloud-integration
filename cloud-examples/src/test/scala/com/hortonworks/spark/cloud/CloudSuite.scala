@@ -37,7 +37,7 @@ import org.apache.spark.{LocalSparkContext, SparkConf}
  * options to enable/disable tests, and a mechanism to conditionally declare tests
  * based on these details
  */
-private[cloud] abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
+abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
     with LocalSparkContext with BeforeAndAfter with Matchers with TimeOperations
     with ObjectStoreOperations with Eventually {
 
