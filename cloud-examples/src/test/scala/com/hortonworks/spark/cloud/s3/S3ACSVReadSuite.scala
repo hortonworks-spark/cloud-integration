@@ -29,7 +29,7 @@ import org.apache.spark.mllib.stat.{MultivariateStatisticalSummary, Statistics}
 /**
  * A suite of tests reading in the S3A CSV file.
  */
-private[cloud] class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
+class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
 
   /**
    * Minimum number of lines, from `gunzip` + `wc -l`.

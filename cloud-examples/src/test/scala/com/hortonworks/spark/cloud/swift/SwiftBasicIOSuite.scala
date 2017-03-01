@@ -19,7 +19,7 @@ package com.hortonworks.spark.cloud.swift
 
 import com.hortonworks.spark.cloud.common.BasicIOTests
 
-private[cloud] class SwiftBasicIOSuite extends BasicIOTests with SwiftTestSetup {
+class SwiftBasicIOSuite extends BasicIOTests with SwiftTestSetup {
 
   init()
 

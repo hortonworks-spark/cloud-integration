@@ -29,7 +29,7 @@ import org.apache.spark.sql.types.StringType
  *
  * It doesn't verify timings, though some information is printed.
  */
-private[cloud] class CloudDataFrames extends ObjectStoreExample {
+class CloudDataFrames extends ObjectStoreExample {
 
   /**
    * List of the command args for the current example.
@@ -104,7 +104,8 @@ private[cloud] class CloudDataFrames extends ObjectStoreExample {
       }
 
       // log any published filesystem state
-      logInfo(s"FS: ${FileSystem.get(dest.toUri, hConf)}")
+      val destFS = FileSystem.get(dest.toUri, hConf)
+      logInfo(s"FS: ${destFS}")
 
       // now there are some files in the generated directory tree. Enumerate them
       logInfo("scanning binary files")
@@ -112,6 +113,8 @@ private[cloud] class CloudDataFrames extends ObjectStoreExample {
       val binaries = sc.binaryFiles(s"$base/orc,$base/parquet/*,$base/json,$base/csv")
       val totalSize = binaries.map(_._2.toArray().length).sum()
       logInfo(s"total size = $totalSize")
+      // log any published filesystem state
+      logInfo(s"FS: ${destFS}")
     } finally {
       spark.stop()
     }
@@ -120,7 +123,7 @@ private[cloud] class CloudDataFrames extends ObjectStoreExample {
 
 }
 
-private[cloud] object CloudDataFrames {
+object CloudDataFrames {
 
   def main(args: Array[String]) {
     new CloudDataFrames().run(args)

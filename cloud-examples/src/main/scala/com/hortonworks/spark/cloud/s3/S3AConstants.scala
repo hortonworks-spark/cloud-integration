@@ -71,30 +71,6 @@ object S3AConstants {
    */
   val S3A_CSV_PATH_DEFAULT = "s3a://landsat-pds/scene_list.gz"
 
-  val MR_COMMITTER_CLASS = "mapred.output.committer.class"
-
-  /**
-   * The S3A Committer factory.
-   */
-  val S3A_COMMITTER_CLASS = "org.apache.hadoop.fs.s3a.commit.S3AOutputCommitter"
-
-  /**
-   * Key for setting the underlying committer for `FileOutputFormat`.
-   */
-  val MR_COMMITTER_FACTORY = "mapreduce.fileoutputcommitter.factory.class"
-
-  /**
-   * The S3A Committer factory.
-   */
-  val S3A_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.S3AOutputCommitterFactory"
-  /**
-   * V1 committer.
-   */
-  val S3A_OUTPUT_COMMITTER_MRV1 = "org.apache.hadoop.fs.s3a.commit.S3OutputCommitterMRv1"
-
-  /** The default committer factory. */
-  val FILE_COMMITTER_FACTORY = "mapreduce.fileoutputcommitter.factory.class"
-
   /**
    * What buffer to use.
    * Default is `FAST_UPLOAD_BUFFER_DISK`

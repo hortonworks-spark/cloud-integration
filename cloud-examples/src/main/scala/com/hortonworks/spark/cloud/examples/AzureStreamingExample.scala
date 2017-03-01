@@ -26,7 +26,7 @@ import org.apache.spark.streaming.{Seconds, StreamingContext}
 /**
  * Simple example of streaming on Azure.
  */
-private[cloud] class AzureStreamingExample extends ObjectStoreExample {
+class AzureStreamingExample extends ObjectStoreExample {
 
   /**
    * List of the command args for the current example.
@@ -101,7 +101,7 @@ private[cloud] class AzureStreamingExample extends ObjectStoreExample {
 
 }
 
-private[cloud] object AzureStreamingExample {
+ object AzureStreamingExample {
 
   def main(args: Array[String]) {
     new AzureStreamingExample().run(args)

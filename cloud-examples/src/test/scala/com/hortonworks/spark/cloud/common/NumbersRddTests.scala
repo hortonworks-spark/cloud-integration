@@ -28,7 +28,7 @@ import org.apache.spark.rdd.RDD
 /**
  * Generate
  */
-private[cloud] abstract class NumbersRddTests extends CloudSuite {
+abstract class NumbersRddTests extends CloudSuite {
 
   after {
     cleanFilesystemInTeardown()

@@ -26,7 +26,7 @@ import org.apache.spark.SparkConf
  * Test the `FileGenerator` entry point. Use a small file number to keep the unit tests fast; some
  * cloud infras are very slow here. System tests can use the CLI instead.
  */
-private[cloud] abstract class FileGeneratorTests extends CloudSuite {
+abstract class FileGeneratorTests extends CloudSuite {
 
   ctest("FileGenerator", "Execute the FileGenerator example") {
     val conf = newSparkConf()

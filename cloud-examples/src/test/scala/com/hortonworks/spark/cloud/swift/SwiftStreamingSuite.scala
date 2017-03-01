@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.StreamingTests
 /**
  * Test Streaming.
  */
-private[cloud] class SwiftStreamingSuite extends StreamingTests with SwiftTestSetup {
+class SwiftStreamingSuite extends StreamingTests with SwiftTestSetup {
 
   init()
 

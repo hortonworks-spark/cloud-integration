@@ -24,7 +24,7 @@ import org.apache.spark.SparkConf
  * Offers: entry point, some operations to add configuration parameters to spark contexts,
  * and some methods to help parse arguments.
  */
-private[cloud] trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
+trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
     with CloudLogging with Serializable {
 
   /**

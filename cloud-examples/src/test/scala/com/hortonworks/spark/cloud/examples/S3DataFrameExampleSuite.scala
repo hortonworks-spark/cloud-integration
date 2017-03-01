@@ -23,7 +23,7 @@ import com.hortonworks.spark.cloud.s3.S3ATestSetup
 /**
  * Test the [S3DataFrames] logic.
  */
-private[cloud] class S3DataFrameExampleSuite extends CloudSuite with S3ATestSetup {
+class S3DataFrameExampleSuite extends CloudSuite with S3ATestSetup {
 
   init()
 

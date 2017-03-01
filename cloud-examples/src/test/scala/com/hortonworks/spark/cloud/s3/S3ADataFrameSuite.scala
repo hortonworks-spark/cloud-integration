@@ -23,7 +23,7 @@ import com.hortonworks.spark.cloud.common.DataFrameTests
 /**
  * Test the [S3DataFrames] logic.
  */
-private[cloud] class S3ADataFrameSuite extends DataFrameTests with S3ATestSetup {
+class S3ADataFrameSuite extends DataFrameTests with S3ATestSetup {
 
   init()
 

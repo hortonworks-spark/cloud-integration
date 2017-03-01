@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 /**
  * Test the `S3LineCount` entry point.
  */
-private[cloud] class S3ALineCountWritebackSuite extends CloudSuite with S3ATestSetup {
+class S3ALineCountWritebackSuite extends CloudSuite with S3ATestSetup {
 
   init()
 

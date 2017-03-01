@@ -25,7 +25,7 @@ import org.apache.spark.SparkConf
 /**
  * Test the `S3FileGenerator` entry point.
  */
-private[cloud] class S3AFileGeneratorSuite extends FileGeneratorTests with S3ATestSetup {
+class S3AFileGeneratorSuite extends FileGeneratorTests with S3ATestSetup {
 
   init()
 

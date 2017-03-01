@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.FileGeneratorTests
 /**
  * Test the `FileGenerator` entry point.
  */
-private[cloud] class SwiftFileGeneratorSuite extends FileGeneratorTests with SwiftTestSetup {
+class SwiftFileGeneratorSuite extends FileGeneratorTests with SwiftTestSetup {
 
   init()
 

@@ -17,10 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import org.apache.hadoop.fs.s3native.NativeS3FileSystem
-import org.apache.http.message.TokenParser
 import org.jets3t.service.S3ServiceException
-import org.joda.time.LocalTime
 import org.scalatest.Matchers
 
 import org.apache.spark.SparkFunSuite
@@ -30,14 +27,10 @@ import org.apache.spark.SparkFunSuite
  * Dependency problems should be picked up at compile time; runtime may
  * identify problems with any other transitive library
  */
-private[cloud] class S3DependencyCheckSuite extends SparkFunSuite with Matchers {
+class S3DependencyCheckSuite extends SparkFunSuite with Matchers {
 
   test("Create S3A FS Instance") {
-    new org.apache.hadoop.fs.s3a.S3AFileSystem()
-  }
-
-  test("Create S3N FS Instance") {
-    new NativeS3FileSystem()
+    instantiate("org.apache.hadoop.fs.s3a.S3AFileSystem")
   }
 
   test("Create Jets3t class") {
@@ -48,13 +41,6 @@ private[cloud] class S3DependencyCheckSuite extends SparkFunSuite with Matchers 
     instantiate("com.amazonaws.services.s3.S3ClientOptions")
   }
 
-  test("Create Joda Time class") {
-    new LocalTime()
-  }
-
-  test("http core") {
-    new TokenParser()
-  }
 
   test("hive") {
     instantiate("org.apache.hadoop.hive.conf.HiveConf")
@@ -63,7 +49,7 @@ private[cloud] class S3DependencyCheckSuite extends SparkFunSuite with Matchers 
   /**
    * Instantiate the class.
    * This is wrapped because scalatest gets confused about instantiation Errors raised
-   * in a test method.
+   * in a test case: they aren't methods, see.
    * @param classname class to instantiate.
    */
   def instantiate(classname: String) {

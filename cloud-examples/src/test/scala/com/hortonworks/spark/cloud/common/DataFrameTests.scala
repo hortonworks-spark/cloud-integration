@@ -22,17 +22,11 @@ import com.hortonworks.spark.cloud.{CloudDataFrames, CloudSuite}
 /**
  * Test dataframe and object store integration
  */
-private[cloud] abstract class DataFrameTests extends CloudSuite {
+abstract class DataFrameTests extends CloudSuite {
 
   after {
     cleanFilesystemInTeardown()
   }
-
-  /**
-   * Check for the FS being defined
-   * @return true if the test suite is enabled.
-   */
-//  override protected def enabled: Boolean = super.enabled && isFilesystemDefined
 
   /**
    * Override point: the data frame operation to execute

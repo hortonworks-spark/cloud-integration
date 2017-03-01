@@ -26,7 +26,7 @@ import org.apache.spark.SparkFunSuite
 /**
  * Some diagnostics related to logging.
  */
-private[cloud] class LoggingCheckSuite extends SparkFunSuite with Matchers {
+class LoggingCheckSuite extends SparkFunSuite with Matchers {
   val LogLevels = "com.hortonworks.spark.test.loglevels"
   val Log4JBinding = ""
 

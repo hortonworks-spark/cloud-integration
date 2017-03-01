@@ -26,7 +26,7 @@ import org.apache.spark.sql.types.StringType
 /**
  * Test Azure and DataFrames
  */
-private[cloud] class AzureDataFrameSuite extends DataFrameTests with AzureTestSetup {
+class AzureDataFrameSuite extends DataFrameTests with AzureTestSetup {
 
   init()
 

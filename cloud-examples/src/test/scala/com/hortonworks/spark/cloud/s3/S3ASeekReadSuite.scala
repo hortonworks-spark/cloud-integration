@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 /**
  * Tests reading in the S3A CSV file using sequential and Random IO.
  */
-private[cloud] class S3ASeekReadSuite extends CloudSuite with S3ATestSetup {
+class S3ASeekReadSuite extends CloudSuite with S3ATestSetup {
 
   import com.hortonworks.spark.cloud.s3.S3AConstants._
 

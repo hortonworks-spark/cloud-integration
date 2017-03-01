@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.{CloudStreaming, CloudSuite}
 /**
  * Test Streaming.
  */
-private[cloud] abstract class StreamingTests extends CloudSuite  {
+abstract class StreamingTests extends CloudSuite  {
 
   after {
     cleanFilesystemInTeardown()

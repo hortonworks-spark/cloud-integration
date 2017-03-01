@@ -23,7 +23,7 @@ import com.hortonworks.spark.cloud.common.StreamingTests
 /**
  * Test Streaming against S3A.
  */
-private[cloud] class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
+class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
 
   init()
 

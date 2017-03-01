@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.BasicIOTests
 /**
  * Azure's basic IO operations.
  */
-private[cloud] class AzureBasicIOSuite extends BasicIOTests with AzureTestSetup {
+class AzureBasicIOSuite extends BasicIOTests with AzureTestSetup {
 
   init()
 

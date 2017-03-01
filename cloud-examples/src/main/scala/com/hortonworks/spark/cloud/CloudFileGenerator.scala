@@ -28,7 +28,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
  * Generate files containing some numbers in the remote repository.
  */
-private[cloud] class CloudFileGenerator extends ObjectStoreExample {
+class CloudFileGenerator extends ObjectStoreExample {
 
   /**
    * List of the command args for the current example.
@@ -103,6 +103,7 @@ private[cloud] class CloudFileGenerator extends ObjectStoreExample {
         }
         (jobDest.toUri, written, crc.getValue, executionTime)
       }).cache()
+
       logInfo(s"Initial File System state = $destFs")
 
       // Trigger the evaluations of the RDDs
@@ -111,7 +112,6 @@ private[cloud] class CloudFileGenerator extends ObjectStoreExample {
       }
       // use the length of the first file as the length of all of them
       val expectedFileLength: Long = executionResults(0)._2
-      val expectedCRC: Long = executionResults(0)._3
 
       val execTimeRDD = putDataRDD.map(_._2)
       val aggregatedExecutionTime = execTimeRDD.sum().toLong
@@ -127,6 +127,7 @@ private[cloud] class CloudFileGenerator extends ObjectStoreExample {
               s" actual $actual")
         }
       }
+
       // list all files under the path using listFiles; verify size
       val (listing, listDuration) = duration2(destFs.listFiles(destPath, true))
       logInfo(s"time to list paths under $destPath: $listDuration")
@@ -158,7 +159,7 @@ private[cloud] class CloudFileGenerator extends ObjectStoreExample {
 
 }
 
-private[cloud] object CloudFileGenerator {
+ object CloudFileGenerator {
 
   def main(args: Array[String]) {
     new CloudFileGenerator().run(args)

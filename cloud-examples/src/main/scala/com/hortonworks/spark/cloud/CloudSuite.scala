@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud
 
 import java.io.{File, FileNotFoundException}
 import java.net.{URI, URL}
+import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.collection.JavaConverters._
 
@@ -303,6 +304,8 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
 
 object CloudSuite extends CloudLogging with CloudTestKeys {
 
+  private val configLogged = new AtomicBoolean(false)
+
   /**
    * Locate a class/resource as a resource URL.
    * This does not attempt to load a class, merely verify that it is present
@@ -325,7 +328,9 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
     if (filename != null && !filename.isEmpty && !CLOUD_TEST_UNSET_STRING.equals(filename)) {
       val f = new File(filename)
       if (f.exists()) {
-        logInfo(s"Loading configuration from $f")
+        if (!configLogged.getAndSet(true)) {
+          logInfo(s"Loading configuration from $f")
+        }
         val c = new Configuration(true)
         c.addResource(f.toURI.toURL)
         Some(c)

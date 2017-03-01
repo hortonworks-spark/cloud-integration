@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.DataFrameTests
 /**
  * Test Azure and DataFrames
  */
-private[cloud] class SwiftDataFrameSuite extends DataFrameTests with SwiftTestSetup {
+class SwiftDataFrameSuite extends DataFrameTests with SwiftTestSetup {
 
   init()
 

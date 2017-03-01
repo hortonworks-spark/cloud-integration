@@ -22,7 +22,7 @@ import java.util.Locale
 /**
  * Trait to add timing to operations.
  */
-private[cloud] trait TimeOperations extends CloudLogging {
+trait TimeOperations extends CloudLogging {
 
   /**
    * Convert a time in nanoseconds into a human-readable form for logging.

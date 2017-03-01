@@ -29,7 +29,7 @@ import org.apache.spark.deploy.SparkHadoopUtil
 /**
  * Basic IO Tests. The test path is cleaned up afterwards.
  */
-private[cloud] abstract class BasicIOTests extends CloudSuite {
+abstract class BasicIOTests extends CloudSuite {
 
   after {
     cleanFilesystemInTeardown()

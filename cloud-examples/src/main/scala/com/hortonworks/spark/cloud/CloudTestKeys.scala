@@ -44,7 +44,7 @@ package com.hortonworks.spark.cloud
  *</configuration>
  * ```
  */
-private[cloud] trait CloudTestKeys {
+trait CloudTestKeys {
 
   /**
    * A system property which will be set on parallel test runs.

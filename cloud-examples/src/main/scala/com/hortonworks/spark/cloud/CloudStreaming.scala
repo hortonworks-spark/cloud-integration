@@ -29,7 +29,7 @@ import org.apache.spark.streaming._
 /**
  * An example/test for streaming with a source of cloud infrastructure.
  */
-private[cloud] class CloudStreaming extends ObjectStoreExample {
+class CloudStreaming extends ObjectStoreExample {
 
   /**
    * List of the command args for the current example.
@@ -129,7 +129,7 @@ private[cloud] class CloudStreaming extends ObjectStoreExample {
 
 }
 
-private[cloud] object CloudStreaming {
+ object CloudStreaming {
 
   def main(args: Array[String]) {
     new CloudStreaming().run(args)

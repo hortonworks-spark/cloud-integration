@@ -31,7 +31,7 @@ import org.apache.spark.sql.types.DataTypes.{DoubleType, IntegerType, TimestampT
  * A suite of tests working with boris bike data from Transport for London.
  * If you don't have the
  */
-private[cloud] class BorisBikeSuite extends CloudSuite with S3ATestSetup {
+class BorisBikeSuite extends CloudSuite with S3ATestSetup {
 
   /**
    * Minimum number of lines, from `gunzip` + `wc -l`.

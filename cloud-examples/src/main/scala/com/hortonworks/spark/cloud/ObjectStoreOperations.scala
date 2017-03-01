@@ -34,7 +34,7 @@ import org.apache.spark.sql._
 /**
  * Extra Hadoop operations for object store integration.
  */
-private[cloud] trait ObjectStoreOperations extends CloudLogging {
+trait ObjectStoreOperations extends CloudLogging {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {

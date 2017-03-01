@@ -53,7 +53,7 @@ import org.apache.spark.sql.types.DataTypes._
  *
  * }}}
  */
-private[cloud] class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
+class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
 
   /**
    * List of the command args for the current example.

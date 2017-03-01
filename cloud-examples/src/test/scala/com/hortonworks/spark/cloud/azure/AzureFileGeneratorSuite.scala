@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.FileGeneratorTests
 /**
  * Test the `FileGenerator` entry point under Azure.
  */
-private[cloud] class AzureFileGeneratorSuite extends FileGeneratorTests with AzureTestSetup {
+class AzureFileGeneratorSuite extends FileGeneratorTests with AzureTestSetup {
 
   init()
 

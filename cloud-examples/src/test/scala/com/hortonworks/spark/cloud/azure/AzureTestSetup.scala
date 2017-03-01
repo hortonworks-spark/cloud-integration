@@ -27,11 +27,11 @@ import org.apache.hadoop.fs.FileSystem
  * will compile against Hadoop versions which lack the hadoop-azure module. However, all
  * the tests will be skipped.
  */
-private[cloud] trait AzureTestSetup extends CloudSuite {
+trait AzureTestSetup extends CloudSuite {
 
   override def enabled: Boolean =  {
     testConfiguration.exists(_.getBoolean(AZURE_TESTS_ENABLED, false)) &&
-        azureFsOnClasspath
+        azureFsOnClasspath && super.enabled
   }
 
   def initFS(): FileSystem = {

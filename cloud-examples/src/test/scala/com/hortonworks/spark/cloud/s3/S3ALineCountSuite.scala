@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.CloudSuite
 /**
  * Test the `S3LineCount` entry point.
  */
-private[cloud] class S3ALineCountSuite extends CloudSuite with S3ATestSetup {
+class S3ALineCountSuite extends CloudSuite with S3ATestSetup {
 
   init()
 

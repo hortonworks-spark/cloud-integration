@@ -28,7 +28,7 @@ import org.apache.spark.mllib.linalg.Vectors;
  * @param bytesRead how many bytes were actually returned
  * @param pos position in the object where the read was requested.
  */
-private[cloud] class ReadSample(
+class ReadSample(
     val started: Long,
     val duration: Long,
     val blockSize: Int,

@@ -28,7 +28,7 @@ import org.apache.spark.sql.SparkSession
 /**
  * Fun with the boris bike dataset
  */
-private[cloud] class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
+class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
 
   /**
    * List of the command args for the current example.

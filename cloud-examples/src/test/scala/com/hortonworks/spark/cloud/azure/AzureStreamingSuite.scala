@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.StreamingTests
 /**
  * Test Streaming under Azure.
  */
-private[cloud] class AzureStreamingSuite extends StreamingTests with AzureTestSetup {
+class AzureStreamingSuite extends StreamingTests with AzureTestSetup {
 
   init()
 

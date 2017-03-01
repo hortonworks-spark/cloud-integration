@@ -22,12 +22,9 @@ import com.hortonworks.spark.cloud.common.BasicIOTests
 /**
  * Basic S3A IO Tests.
  */
-private[cloud] class S3ABasicIOSuite extends BasicIOTests with S3ATestSetup {
+class S3ABasicIOSuite extends BasicIOTests with S3ATestSetup {
 
   init()
-
-  override def enabled: Boolean =
-    testConfiguration.exists(_.getBoolean(S3A_TESTS_ENABLED, false))
 
   def init(): Unit = {
     // propagate S3 credentials
