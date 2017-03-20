@@ -34,7 +34,7 @@ import org.apache.spark.sql._
 /**
  * Extra Hadoop operations for object store integration.
  */
-trait ObjectStoreOperations extends CloudLogging {
+trait ObjectStoreOperations extends CloudLogging with CloudTestKeys {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -164,30 +164,6 @@ trait ObjectStoreOperations extends CloudLogging {
   }
 
   /**
-   * Does this configuration use the S3A committer? Note that this doesn't verify that
-   * the version of Hadoop being tested supports committer factories, only that the test
-   * configuration has configured the committer
-   * @param conf configuration to test
-   * @return true if the S3A committer is chosen
-   */
-  def isS3CommitterEnabled(conf: Configuration): Boolean = {
-    S3A_COMMITTER_FACTORY == committerFactoryClassname(conf)
-  }
-
-  /**
-   * Return the committer for the File output format.
-   * Note that this doesn't verify that
-   * the version of Hadoop being tested supports committer factories, only that the test
-   * configuration has configured the committer
-   *
-   * @param conf configuration to test
-   * @return classname of the committer
-   */
-  def committerFactoryClassname(conf: Configuration): String = {
-    conf.get(MR_COMMITTER_FACTORY, FILE_COMMITTER_FACTORY)
-  }
-
-  /**
    * Take a dotted classname and return the resource
    * @param classname classname to look for
    * @return the resource for the .class
@@ -215,8 +191,8 @@ trait ObjectStoreOperations extends CloudLogging {
     "spark.sql.parquet.filterPushdown" -> "true")
 
   val MAPREDUCE_OPTIONS = Map(
-    "spark.hadoop.mapreduce.fileoutputcommitter.algorithm.version" -> "2",
-    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup-failures.ignored" -> "true")
+    "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
+    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
 
   // //    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",
 

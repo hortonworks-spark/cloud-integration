@@ -7,15 +7,15 @@
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
 
-<!--
+  <!--
 
-  <repositories>
-    <repository>
-      <id>Spark Staging Repo</id>
-      <url>https://repository.apache.org/content/repositories/orgapachespark-1075/</url>
-    </repository>
-  </repositories>
--->
+    <repositories>
+      <repository>
+        <id>Spark Staging Repo</id>
+        <url>https://repository.apache.org/content/repositories/orgapachespark-1075/</url>
+      </repository>
+    </repositories>
+  -->
 
   <properties>
     <!-- These examples use the version of Hadoop which Spark was built with-->
@@ -45,7 +45,9 @@
     <central.repo>https://repo1.maven.org/maven2</central.repo>
     <!-- earlier versions of the SPARK-7481 patch had it as spark-cloud.JAR; this
     variable makes it possible to run these tests against that version. -->
-    <spark.cloud.jar>spark-hadoop-cloud</spark.cloud.jar>
+    <spark.cloud.module.name>spark-hadoop-cloud</spark.cloud.module.name>
+    <spark.cloud.module.type>jar</spark.cloud.module.type>
+    <committer>org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactor</committer>
   </properties>
 
   <repositories>
@@ -91,7 +93,6 @@
       <type>test-jar</type>
     </dependency>
 
-
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
@@ -104,8 +105,9 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>${spark.cloud.jar}_${scala.binary.version}</artifactId>
+      <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
       <version>${spark.version}</version>
+      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -173,21 +175,21 @@
         </executions>
       </plugin>
 
-<!--
-      <plugin>
-      <groupId>org.scala-tools</groupId>
-      <artifactId>maven-scala-plugin</artifactId>
-      <version>${maven-scala-plugin.version}</version>
-      <executions>
-        <execution>
-        <goals>
-          <goal>compile</goal>
-          <goal>testCompile</goal>
-        </goals>
-        </execution>
-      </executions>
-      </plugin>
--->
+      <!--
+            <plugin>
+            <groupId>org.scala-tools</groupId>
+            <artifactId>maven-scala-plugin</artifactId>
+            <version>${maven-scala-plugin.version}</version>
+            <executions>
+              <execution>
+              <goals>
+                <goal>compile</goal>
+                <goal>testCompile</goal>
+              </goals>
+              </execution>
+            </executions>
+            </plugin>
+      -->
 
       <plugin>
         <groupId>net.alchim31.maven</groupId>
@@ -235,11 +237,11 @@
           <jvmArgs>
             <jvmArg>-Xms1024m</jvmArg>
             <jvmArg>-Xmx1024m</jvmArg>
-<!--
-            <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
-            <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
-            <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
--->
+            <!--
+                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                        <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+            -->
           </jvmArgs>
           <javacArgs>
             <javacArg>-source</javacArg>
@@ -260,7 +262,7 @@
         <version>${maven-surefire-plugin.version}</version>
         <!-- Note config is repeated in scalatest config -->
         <configuration>
-            <skipTests>true</skipTests>
+          <skipTests>true</skipTests>
           <includes>
             <include>**/Test*.java</include>
             <include>**/*Test.java</include>
@@ -304,9 +306,8 @@
             <spark.ui.enabled>false</spark.ui.enabled>
             <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
             <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
-            <!-- optionally set for cloud infrastructure tests -->
             <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
-
+            <cloud.test.committer>${committer}</cloud.test.committer>
           </systemProperties>
 
         </configuration>
@@ -394,6 +395,34 @@
           <version>4.4.4</version>
         </dependency>
       </dependencies>
+    </profile>
+
+    <profile>
+      <id>oldjar</id>
+      <properties>
+        <spark.cloud.module.name>spark-cloud</spark.cloud.module.name>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>directory-commit</id>
+      <properties>
+        <committer>org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory</committer>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>partition-commit</id>
+      <properties>
+        <committer>org.apache.hadoop.fs.s3a.commit.staging.PartitonedStagingCommitterFactory</committer>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>magic-commit</id>
+      <properties>
+        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
+      </properties>
     </profile>
 
   </profiles>

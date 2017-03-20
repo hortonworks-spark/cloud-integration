@@ -49,17 +49,19 @@ abstract class NumbersRddTests extends CloudSuite {
     conf.setBoolean("spark.speculation", true)
     val dest = testPath(filesystem, pathname)
     filesystem.delete(dest, true)
-    val context = new SparkContext("local", "test", sparkConf)
+    sc = new SparkContext("local", "test", sparkConf)
+    val hadoopConf = sc.hadoopConfiguration
+    assert(1 === hadoopConf.getInt(MR_ALGORITHM_VERSION, 0))
     try {
-      val conf = context.hadoopConfiguration
+      val conf = sc.hadoopConfiguration
       assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
       val entryCount = testEntryCount
-      val numbers = context.makeRDD(1 to entryCount)
+      val numbers = sc.makeRDD(1 to entryCount)
       logInfo(s"\nGenerating output under $dest\n")
 //      val lineLen = numbers.map(line => Integer.toHexString(line))
       saveRDD(numbers, dest)
     } finally {
-      context.stop()
+      sc.stop()
     }
     val fsInfo = filesystem.toString.replace("{", "\n{")
     logInfo(s"Filesystem statistics\n $fsInfo")

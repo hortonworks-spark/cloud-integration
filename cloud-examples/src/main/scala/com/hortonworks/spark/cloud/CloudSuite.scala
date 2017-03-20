@@ -25,9 +25,6 @@ import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.s3.S3AConstants._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileStatus, FileSystem, LocalFileSystem, Path}
-
-import org.apache.spark.SparkConf
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite, Matchers}
@@ -285,7 +282,6 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * Get the file status of a path.
    * @param path path to query
    * @return the status
-   * @throws FileNotFoundException if there is no entity there
    */
   def stat(path: Path): FileStatus = {
     filesystem.getFileStatus(path)
@@ -325,19 +321,23 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
   def loadConfiguration(): Option[Configuration] = {
     val filename = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE, "")
     logDebug(s"Configuration property = `$filename`")
+    val config = new Configuration(true)
     if (filename != null && !filename.isEmpty && !CLOUD_TEST_UNSET_STRING.equals(filename)) {
       val f = new File(filename)
       if (f.exists()) {
         if (!configLogged.getAndSet(true)) {
           logInfo(s"Loading configuration from $f")
         }
-        val c = new Configuration(true)
-        c.addResource(f.toURI.toURL)
-        Some(c)
+        config.addResource(f.toURI.toURL)
       } else {
         throw new FileNotFoundException(s"No file '$filename'" +
             s" in property $SYSPROP_CLOUD_TEST_CONFIGURATION_FILE")
       }
+      // setup the committer from any property passed in
+      val committer = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE,
+          OUTPUTCOMMITTER_FACTORY_DEFAULT)
+      config.set(OUTPUTCOMMITTER_FACTORY_CLASS, committer)
+      Some(config)
     } else {
       None
     }

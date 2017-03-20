@@ -21,7 +21,6 @@ import java.io.FileNotFoundException
 
 import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic
-import org.apache.hadoop.io.{IntWritable, LongWritable}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.deploy.SparkHadoopUtil
@@ -60,16 +59,20 @@ abstract class BasicIOTests extends CloudSuite {
     assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
     val entryCount = testEntryCount
     val numbers = sc.parallelize(1 to entryCount)
-    val example1 = testPath(filesystem, "example1")
-    numbers.saveAsTextFile(example1.toString)
-    val st = stat(example1)
+    val output = testPath(filesystem, "FileOutput")
+    numbers.saveAsTextFile(output.toString)
+    val st = stat(output)
     assert(st.isDirectory, s"Not a dir: $st")
-    val children = filesystem.listStatus(example1)
-    assert(children.nonEmpty, s"No children under $example1")
+
+    // child entries that aren't just the SUCCESS marker
+    val children = filesystem.listStatus(output)
+      .filter(_.getPath.getName != "_SUCCESS")
+    assert(children.nonEmpty, s"No children under $output")
+
     children.foreach { child =>
       logInfo(s"$child")
-      assert(child.getLen > 0 || child.getPath.getName === "_SUCCESS",
-        s"empty output $child")
+      assert(child.getLen > 0, s"empty output $child")
+      assert(child.getBlockSize > 0, s"Zero blocksize in $child")
     }
     val parts = children.flatMap { child =>
       if (child.getLen > 0) Seq(child) else Nil
@@ -89,13 +92,22 @@ abstract class BasicIOTests extends CloudSuite {
     val destFile = testPath(filesystem, "example1")
     saveTextFile(numbers, destFile)
     val basePathStatus = filesystem.getFileStatus(destFile)
+    // check blocksize in file status
     val hadoopUtils = new SparkHadoopUtil
-    val leafDirStatus = duration("listLeafDir") {
+    duration("listLeafDir") {
       hadoopUtils.listLeafDirStatuses(filesystem, basePathStatus)
     }
-    val leafFileStatus = duration("listLeafDir") {
+    val (leafFileStatus, _) = duration2 {
       hadoopUtils.listLeafStatuses(filesystem, basePathStatus)
     }
+    // files are either empty or have a block size
+    leafFileStatus.foreach(s => assert(s.getLen == 0 || s.getBlockSize > 0))
+
   }
 
+  ctest("Blocksize", "verify default block size is a viable number") {
+    val blockSize = filesystem.getDefaultBlockSize();
+    assert(blockSize > 512,
+      s"Block size o ${filesystem.getUri} too low for partitioning to work: $blockSize")
+  }
 }

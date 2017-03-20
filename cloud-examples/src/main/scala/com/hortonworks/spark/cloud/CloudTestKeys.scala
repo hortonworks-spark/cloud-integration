@@ -156,4 +156,15 @@ trait CloudTestKeys {
    * Data in this bucket under the `/test` directory will be deleted during test suite teardowns;
    */
   val SWIFT_TEST_URI = "swift.test.uri"
+
+  val SYSPROP_CLOUD_TEST_COMMITTER = "cloud.test.committer"
+
+  val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class";
+
+  val OUTPUTCOMMITTER_FACTORY_DEFAULT =
+    "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory";
+
+  val MR_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
+  val MR_COMMITTER_CLEANUPFAILURES_IGNORED = "mapreduce.fileoutputcommitter.cleanup-failures.ignored"
+
 }

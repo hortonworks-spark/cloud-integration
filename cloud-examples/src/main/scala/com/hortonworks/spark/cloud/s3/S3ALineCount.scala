@@ -88,7 +88,6 @@ object S3ALineCount extends S3AExampleSetup {
       } else {
         // destination provided
         val destUri = new URI(dest.get)
-        logInfo(s"Destination $destUri with committer ${committerFactoryClassname(conf)}")
         val destFs = FileSystem.get(destUri, conf)
         val destPath = new Path(destUri)
         duration("setup dest path") {

@@ -57,8 +57,6 @@ import com.hortonworks.spark.cloud.s3.S3AConstants._
     if (useCSVEndpoint) {
       enableCSVEndpoint(config)
     }
-    // switch to the s3a committer; this is only used if it exists
-    config.set(FILE_COMMITTER_FACTORY, S3A_COMMITTER_FACTORY)
   }
 
   lazy val CSV_TESTFILE: Option[Path] = {

@@ -57,7 +57,8 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
    * @param source source iterator
    * @tparam T type of response
    */
-  class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Iterator[T] {
+  class RemoteOutputIterator[T](private val source: RemoteIterator[T])
+    extends Iterator[T] {
     def hasNext: Boolean = source.hasNext
 
     def next: T = source.next()
@@ -67,19 +68,19 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
    * This doesn't do much, except that it is designed to be pasted straight into
    * Zeppelin and work
    */
-ctest("DirOps", "simple directory ops in spark context process") {
-val source = CSV_TESTFILE.get
-sc = new SparkContext("local", "CSVgz", newSparkConf(source))
+  ctest("DirOps", "simple directory ops in spark context process") {
+    val source = CSV_TESTFILE.get
+    sc = new SparkContext("local", "CSVgz", newSparkConf(source))
 
-import org.apache.hadoop.fs._
-val landsat = "s3a://landsat-pds/scene_list.gz"
-val landsatPath = new Path(landsat)
-val fs = FileSystem.get(landsatPath.toUri, sc.hadoopConfiguration)
-val files = fs.listFiles(landsatPath.getParent, false)
-val listing = new RemoteOutputIterator(files)
-listing.foreach(print(_))
+    import org.apache.hadoop.fs._
+    val landsat = "s3a://landsat-pds/scene_list.gz"
+    val landsatPath = new Path(landsat)
+    val fs = FileSystem.get(landsatPath.toUri, sc.hadoopConfiguration)
+    val files = fs.listFiles(landsatPath.getParent, false)
+    val listing = new RemoteOutputIterator(files)
+    listing.foreach(print(_))
 
-}
+  }
 
   ctest("Boris", "boris bike stuff") {
     val source = CSV_TESTFILE.get
@@ -108,7 +109,7 @@ listing.foreach(print(_))
     val sql = new org.apache.spark.sql.hive.HiveContext(sc)
 
     val range = "2013-01-01-to-2013-01-05"
-    val srcDataPath = new Path(srcPath, range+".csv.gz")
+    val srcDataPath = new Path(srcPath, range + ".csv.gz")
     // this is used to implicitly convert an RDD to a DataFrame.
     import sql.implicits._
     import org.apache.spark.sql.functions._
@@ -140,16 +141,15 @@ Rental Id: int, Duration: int,
     val toDouble = udf[Double, String](_.toDouble)
 
     val csvDF = csvdata
-      .withColumnRenamed("Rental Id" ,"rentalId") 
-      .withColumnRenamed("Duration" ,"duration")
-      .withColumnRenamed("Bike Id" ,"bike")
+      .withColumnRenamed("Rental Id", "rentalId")
+      .withColumnRenamed("Duration", "duration")
+      .withColumnRenamed("Bike Id", "bike")
       .withColumnRenamed("Start Date", "startDate")
       .withColumnRenamed("StartStation Id", "startStationId")
       .withColumnRenamed("StartStation Name", "startStationName")
-      .withColumnRenamed("End Date" ,"endDate")
-      .withColumnRenamed("EndStation Id" ,"endStationId") 
-      .withColumnRenamed("EndStation Name" ,"endStationName" )
-
+      .withColumnRenamed("End Date", "endDate")
+      .withColumnRenamed("EndStation Id", "endStationId")
+      .withColumnRenamed("EndStation Name", "endStationName")
 
     val parquetPath = new Path(destPath, s"$range.parquet")
     csvDF.write.mode("overwrite").parquet(parquetPath.toString)
@@ -165,11 +165,6 @@ Rental Id: int, Duration: int,
     cleanedDF.orderBy(asc("duration")).show()
     cleanedDF.orderBy(desc("duration")).show()
 
-
-
   }
-
-
-
 
 }

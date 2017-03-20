@@ -87,6 +87,8 @@ class CloudDataFrames extends ObjectStoreExample {
       // load a DF and verify it has the expected number of rows
       // return how long it took
       def validate(source: Path, srcFormat: String): Long = {
+        val status = fs.getFileStatus(source)
+        assert(status.isDirectory || status.getBlockSize > 0, s"Block size 0 in $status")
         val (loadedCount, loadTime) = duration2(load(spark, source, srcFormat).count())
         logInfo(s"Loaded $source in $loadTime nS")
         require(rowCount == loadedCount,

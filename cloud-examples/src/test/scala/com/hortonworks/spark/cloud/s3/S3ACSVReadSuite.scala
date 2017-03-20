@@ -91,11 +91,11 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
   }
 
   ctest("listFiles",
-    "List all files under the CSV parent dir") {
+    "List all files under the CSV parent dir",
+    false) {
     val source = CSV_TESTFILE.get
     val fs = getFilesystem(source)
     val parent = source.getParent
-    val s3a = fs.asInstanceOf[org.apache.hadoop.fs.s3a.S3AFileSystem]
     val files = duration("listFiles") {
       listFiles(fs, parent, true)
     }
@@ -225,21 +225,5 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     listing.foreach(print(_))
 
   }
-
-    ctest("Boris", "boris bike stuff") {
-    val source = CSV_TESTFILE.get
-    sc = new SparkContext("local", "CSVgz", newSparkConf(source))
-
-    import org.apache.hadoop.fs._
-    val dir = "s3a://hwdev-steve-datasets-east/travel/borisbike/"
-    val dirPath = new Path(dir)
-    val fs = FileSystem.get(dirPath.toUri, sc.hadoopConfiguration)
-    val files = fs.listFiles(dirPath, false)
-    val listing = new RemoteOutputIterator(files)
-    listing.foreach(print(_))
-
-  }
-
-
 
 }
