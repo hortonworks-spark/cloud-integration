@@ -167,4 +167,7 @@ trait CloudTestKeys {
   val MR_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
   val MR_COMMITTER_CLEANUPFAILURES_IGNORED = "mapreduce.fileoutputcommitter.cleanup-failures.ignored"
 
+  val STAGING = "org.apache.hadoop.fs.s3a.commit.staging."
+  val DIRECTORY_COMMITTER = STAGING + "DirectoryStagingCommitterFactory"
+  val PARTITIONED_COMMITTER = STAGING + "PartitonedStagingCommitterFactory";
 }

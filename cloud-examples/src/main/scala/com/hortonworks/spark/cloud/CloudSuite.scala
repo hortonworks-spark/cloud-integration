@@ -23,6 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.collection.JavaConverters._
 
+import com.hortonworks.spark.cloud.CloudSuite.{OUTPUTCOMMITTER_FACTORY_CLASS, STAGING}
 import com.hortonworks.spark.cloud.s3.S3AConstants._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
@@ -176,9 +177,13 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    */
   protected def cleanFilesystem(): Unit = {
     val target = s"${filesystem.getUri}$TestDir"
-    note(s"Cleaning $target")
-    if (filesystem.exists(TestDir) && !filesystem.delete(TestDir, true)) {
-      logWarning(s"Deleting $target returned false")
+    if (filesystem.isInstanceOf[LocalFileSystem]) {
+      logDebug(s"not touching local FS $filesystem")
+    } else {
+      note(s"Cleaning $target")
+      if (filesystem.exists(TestDir) && !filesystem.delete(TestDir, true)) {
+        logWarning(s"Deleting $target returned false")
+      }
     }
   }
 
@@ -296,6 +301,17 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
     FileSystem.newInstance(path.toUri, conf)
   }
 
+  /**
+   * Is a staging committer being used? If so, filesystem needs to be
+   * set up right.
+   *
+   * @param config config to probe
+   * @return true if this is staging. Not checked: does Hadoop support staging.
+   */
+  def isUsingStagingCommitter(config: Configuration): Boolean = {
+    val committer = config.get(OUTPUTCOMMITTER_FACTORY_CLASS)
+    committer.startsWith(STAGING)
+  }
 }
 
 object CloudSuite extends CloudLogging with CloudTestKeys {
@@ -334,12 +350,18 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
             s" in property $SYSPROP_CLOUD_TEST_CONFIGURATION_FILE")
       }
       // setup the committer from any property passed in
-      val committer = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE,
-          OUTPUTCOMMITTER_FACTORY_DEFAULT)
+      val orig = config
+        .get(OUTPUTCOMMITTER_FACTORY_CLASS, OUTPUTCOMMITTER_FACTORY_DEFAULT)
+      val committer = System.getProperty(SYSPROP_CLOUD_TEST_COMMITTER,
+        orig)
+      if (committer != OUTPUTCOMMITTER_FACTORY_DEFAULT) {
+        logInfo(s"Using committer $committer")
+      }
       config.set(OUTPUTCOMMITTER_FACTORY_CLASS, committer)
       Some(config)
     } else {
       None
     }
   }
+
 }

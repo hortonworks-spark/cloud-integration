@@ -17,15 +17,10 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import scala.collection.mutable
-
 import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.common.ReadSample
-import org.apache.hadoop.fs.{FSDataInputStream, Path, RemoteIterator}
+import org.apache.hadoop.fs.RemoteIterator
 
 import org.apache.spark.SparkContext
-import org.apache.spark.mllib.stat.{MultivariateStatisticalSummary, Statistics}
-import org.apache.spark.sql.types.DataTypes.{DoubleType, IntegerType, TimestampType}
 
 /**
  * A suite of tests working with boris bike data from Transport for London.
@@ -111,8 +106,6 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     val range = "2013-01-01-to-2013-01-05"
     val srcDataPath = new Path(srcPath, range + ".csv.gz")
     // this is used to implicitly convert an RDD to a DataFrame.
-    import sql.implicits._
-    import org.apache.spark.sql.functions._
     val csvdata = sql.read.options(Map(
       "header" -> "true",
       "timestampFormat" -> "yyyy-MM-dd HH:mm:ss.SSSZZZ",

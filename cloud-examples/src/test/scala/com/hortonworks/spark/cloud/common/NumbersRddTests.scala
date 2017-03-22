@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud.common
 
 import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, Path}
+import org.apache.hadoop.fs.CommonConfigurationKeysPublic._
 import org.apache.hadoop.io.{IntWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 
@@ -39,7 +40,6 @@ abstract class NumbersRddTests extends CloudSuite {
    */
   override protected def cleanFSInTeardownEnabled: Boolean = true;
 
-
   ctest("SaveRDD",
     """Generate an RDD and save it. No attempt is made to validate the output, so that
       | All post-test-setup FS IO which takes place is related to the committer.
@@ -49,12 +49,25 @@ abstract class NumbersRddTests extends CloudSuite {
     conf.setBoolean("spark.speculation", true)
     val dest = testPath(filesystem, pathname)
     filesystem.delete(dest, true)
+    // if the conf uses
+    val testConf = testConfiguration.get
+    val usingStagingCommitter = isUsingStagingCommitter(testConf)
+    if (usingStagingCommitter) {
+      // switch back to a localFS
+      logInfo("Switching to local file:// fs for default FS")
+      val testDir = GenericTestUtils.getTestDir("numbers")
+      hconf(sparkConf, FS_DEFAULT_NAME_KEY, testDir.toURI.toString)
+    }
+
+
     sc = new SparkContext("local", "test", sparkConf)
     val hadoopConf = sc.hadoopConfiguration
-    assert(1 === hadoopConf.getInt(MR_ALGORITHM_VERSION, 0))
     try {
       val conf = sc.hadoopConfiguration
-      assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
+      if (!usingStagingCommitter) {
+        //    assert(1 === hadoopConf.getInt(MR_ALGORITHM_VERSION, 0), "commit algorithm 2")
+        assert(filesystemURI.toString === conf.get(FS_DEFAULT_NAME_KEY))
+      }
       val entryCount = testEntryCount
       val numbers = sc.makeRDD(1 to entryCount)
       logInfo(s"\nGenerating output under $dest\n")
