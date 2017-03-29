@@ -88,6 +88,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
         .builder
         .appName("S3AIOExample")
         .config(sparkConf)
+        .config("spark.master", "local")
         .getOrCreate()
 
     val numRows = 1000
@@ -101,7 +102,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       // for the source CSV file random IO means too many
       // small riles,
       config.set(INPUT_FADVISE, NORMAL_IO)
-      val srcFS = FileSystem.get(srcURI, config)
+      val srcFS = srcPath.getFileSystem(config)
       val sourceFileStatus = srcFS.getFileStatus(srcPath)
 
       // for parquet, turn on random access.
@@ -109,11 +110,13 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       // for IO in production.
       config.set(INPUT_FADVISE, RANDOM_IO)
       val landsatPath = new Path(destPath, "landsat")
+      val landsatOrcPath = new Path(landsatPath, "orc")
+      val landsatParqetPath = new Path(landsatPath, "parquet")
+      val landsatParqet = landsatParqetPath.toString
       val landsat = landsatPath.toUri.toString
       // load this FS instance into memory with random
-      val destFS = FileSystem.get(destPath.toUri, config)
-      destFS.delete(destPath, true)
-
+      val destFS = destPath.getFileSystem(config)
+      destFS.delete(landsatPath, true)
 
       //  entityId,acquisitionDate,cloudCover,processingLevel,path,row,min_lat,min_lon
       // ,max_lat,max_lon,download_url
@@ -157,9 +160,10 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       csvData.cache()
 
 //      val landsat = "s3a://hwdev-stevel-demo/landsat"
-      csvData.write.parquet(landsat)
+      csvData.write.parquet(landsatParqetPath.toString)
+      csvData.write.orc(landsatOrcPath.toString)
 
-/*
+      /*
       val landsatOrc = "s3a://hwdev-stevel-demo/landsatOrc"
       csvData.write.mode("overwrite").orc(landsatOrc)
 */
@@ -181,7 +185,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
           .option("mergeSchema", "false")
           .option("filterPushdown", "true")
            // filter("cloudCover < 30")
-          .parquet(landsat)
+          .parquet(landsatParqet)
           .where("cloudcover >= 100")
 
 
@@ -189,7 +193,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       df.describe().show(10, true)
 
       val sqlDF = spark.sql(s"SELECT id, acquisitionDate,cloudCover" +
-          s" FROM parquet.`${landsat}`")
+          s" FROM parquet.`${landsatParqetPath}`")
       val negativeClouds = sqlDF.filter("cloudCover < 30")
 //      println(s"${negativeClouds.count()} entries with negative cloud cover")
       negativeClouds.show()
@@ -202,6 +206,14 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       spark.stop()
     }
     0
+  }
+
+}
+
+object S3DataFrameExample {
+
+  def main(args: Array[String]) {
+    new S3DataFrameExample().run(args)
   }
 
 }

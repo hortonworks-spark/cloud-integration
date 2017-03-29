@@ -80,9 +80,7 @@ class CloudDataFrames extends ObjectStoreExample {
 
       // write a DF
       def write(format: String): Path = {
-        duration(s"write $format") {
-          save(sourceData, new Path(generatedBase, format), format)
-        }
+        save(sourceData, new Path(generatedBase, format), format)
       }
       // load a DF and verify it has the expected number of rows
       // return how long it took

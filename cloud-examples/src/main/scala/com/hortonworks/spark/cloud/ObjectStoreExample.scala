@@ -178,7 +178,7 @@ trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
 
   /**
    * Set the base spark/Hadoop/ORC/parquet options to be used in examples.
-   *
+   * Also patches spark.master to local, unless already set.
    * @param sparkConf spark configuration to patch
    * @param randomIO is the IO expected to be random access?
    */
@@ -189,5 +189,8 @@ trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
     sparkConf.setAll(MAPREDUCE_OPTIONS)
     sparkConf.setAll(ORC_OPTIONS)
     sparkConf.setAll(PARQUET_OPTIONS)
+    if (!sparkConf.contains("spark.master")) {
+      sparkConf.set("spark.master", "local")
+    }
   }
 }

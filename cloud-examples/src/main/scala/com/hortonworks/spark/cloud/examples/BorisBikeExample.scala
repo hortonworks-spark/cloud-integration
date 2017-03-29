@@ -24,6 +24,7 @@ import org.apache.hadoop.conf.Configuration
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.DataTypes._
 
 /**
  * Fun with the boris bike dataset
@@ -46,8 +47,18 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
    */
   override def action(sparkConf: SparkConf,
       args: Array[String]): Int = {
-    if (args.length < 1 || args.length > 2) {
+/*
+    if (args.length < 2 || args.length > 2) {
       return usage()
+    }
+
+*/
+
+    def argPath(index: Int): Option[String] = {
+      if (args.length > index)
+        Some(args(index))
+      else
+        None
     }
 /*
     val source = S3A_CSV_PATH_DEFAULT
@@ -74,85 +85,80 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
     try {
       val sc = spark.sparkContext
 
-      val bucket = "hwdev-steve-datasets-east"
-      val srcDir = s"s3a://$bucket/travel/borisbike/"
+      val srcBucket = "hwdev-steve-datasets-east"
+
+      val srcDir = argPath(0).getOrElse(
+        s"s3a://$srcBucket/travel/borisbike/")
       val srcPath = new Path(srcDir)
 
-      val destPath = new Path(s"s3a://$bucket/travel/orc/borisbike/")
-      val fs = FileSystem.get(srcPath.toUri, sc.hadoopConfiguration)
+
+      val destBucket = "hwdev-steve-london"
+      val destDir = argPath(1)
+        .getOrElse(s"s3a://$srcBucket/travel/orc/borisbike/")
+      val destPath = new Path(destDir)
+      val fs = srcPath.getFileSystem(sc.hadoopConfiguration)
       fs.delete(destPath, true)
       val srcFS = fs
 
       val sql = new org.apache.spark.sql.SQLContext(sc)
 
-      val srcDataPath = new Path(srcPath, "2013-01-01-to-2013-01-05.csv.gz")
-      // this is used to implicitly convert an RDD to a DataFrame.
-      val csvdata = sql.read.options(Map(
-        "header" -> "true",
-        "ignoreLeadingWhiteSpace" -> "true",
-        "ignoreTrailingWhiteSpace" -> "true",
-        "timestampFormat" -> "yyyy-MM-dd HH:mm:ss.SSSZZZ",
-        "inferSchema" -> "true",
-        "mode" -> "FAILFAST"))
-        .format("com.databricks.spark.csv")
-        .load(srcDataPath.toString)
+
 
       val config = new Configuration(sc.hadoopConfiguration)
       config.set(INPUT_FADVISE, RANDOM_IO)
-      val landsatPath = new Path(destPath, "landsat")
-      val landsat = landsatPath.toUri.toString
-      val source = landsat
       // load this FS instance into memory with random
-      val destFS = FileSystem.get(destPath.toUri, config)
+      val destFS = destPath.getFileSystem(config)
       destFS.delete(destPath, true)
 
 
-      //  entityId,acquisitionDate,cloudCover,processingLevel,path,row,min_lat,min_lon
-      // ,max_lat,max_lon,download_url
       val parquetOptions = Map(
         "mergeSchema" -> "false"
       )
 
-      // what you need to read in the landsat data
-/*
-      val csvdata = spark.read.options(Map(
+      val csvOptions = Map(
         "header" -> "true",
         "ignoreLeadingWhiteSpace" -> "true",
         "ignoreTrailingWhiteSpace" -> "true",
         "timestampFormat" -> "yyyy-MM-dd HH:mm:ss.SSSZZZ",
         "inferSchema" -> "true",
-        "mode" -> "FAILFAST"))
-          .csv("s3a://landsat-pds/scene_list.gz")
-*/
-
-      val csvOptions = Map(
-        "header" -> "true",
-        "timestampFormat" -> "yyyy-MM-dd HH:mm:ss.SSSZZZ",
-        // double scan through file
-        //        "inferSchema" -> "true",
-        "mode" -> "FAILFAST"
-      )
-
-      val csv = spark.read.options(csvOptions).csv(source)
+        "mode" -> "FAILFAST")
+      // this is used to implicitly convert an RDD to a DataFrame.
+      val csv = sql.read.options(csvOptions)
+        .csv(srcPath.toString)
       /*
       csvdata: org.apache.spark.sql.DataFrame = [
       Rental Id: int, Duration: int,
        Bike Id: int, End Date: string, EndStation Id: int, EndStation Name: string, Start Date: string, StartStation Id: int, StartStation Name: string]
        */
 
-      val csvDF = csvdata
-        .withColumnRenamed("Rental Id", "rentalId")
-        .withColumnRenamed("Duration", "duration")
+      val csvDF = csv
+        .withColumnRenamed("Rental Id", "rental")
+        .withColumn("rental", csv.col("Rental Id").cast(IntegerType))
+        .withColumn("duration", csv.col("Duration").cast(IntegerType))
         .withColumnRenamed("Bike Id", "bike")
         .withColumnRenamed("End Date", "endDate")
-        .withColumnRenamed("EndStation Id", "endStationId")
+        .withColumnRenamed("EndStation Id", "endStation")
         .withColumnRenamed("EndStation Name", "endStationName")
         .withColumnRenamed("Start Date", "startDate")
         .withColumnRenamed("StartStation Id", "startStationId")
         .withColumnRenamed("StartStation Name", "startStationName")
-      csvDF.cache()
+      csvDF.repartition(8).cache()
+      val sourceRowCount = csvDF.count()
+      println(s"defaultParallelism ${sc.defaultParallelism}")
+      println(s"source: $srcPath contains ${sourceRowCount} rows")
       csvDF.show()
 
+      save(csvDF, destPath, "orc")
+
+      val orcDF = sql.read.orc(destPath.toString);
+      orcDF.show()
+      val orcRowCount = orcDF.count()
+      val generatedFiles = destFS.listStatus(destPath)
+        .filter(!_.getPath.getName.startsWith("_"))
+      generatedFiles.foreach( s =>
+      println(s"${s.getPath.getName} size = ${s.getLen/1024} KB"))
+
+      println(s"ORC: $destPath contains ${orcRowCount} rows")
 
       // log any published filesystem state
       print(s"\nSource: FS: $srcFS\n")
@@ -162,6 +168,14 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
       spark.stop()
     }
     0
+  }
+
+}
+
+object BorisBikeExample {
+
+  def main(args: Array[String]) {
+    new BorisBikeExample().run(args)
   }
 
 }

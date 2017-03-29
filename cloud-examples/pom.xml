@@ -432,5 +432,18 @@
       </properties>
     </profile>
 
+    <profile>
+      <id>s3a-tests</id>
+      <properties>
+        <cloud.test.configuration.file>
+          ../../cloud-test-configs/s3a.xml
+        </cloud.test.configuration.file>
+
+        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
+      </properties>
+    </profile>
+
+
+
   </profiles>
 </project>

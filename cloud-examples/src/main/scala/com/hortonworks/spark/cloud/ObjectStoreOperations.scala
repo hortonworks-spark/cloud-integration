@@ -34,7 +34,8 @@ import org.apache.spark.sql._
 /**
  * Extra Hadoop operations for object store integration.
  */
-trait ObjectStoreOperations extends CloudLogging with CloudTestKeys {
+trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
+  TimeOperations {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -141,7 +142,9 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys {
    * @return the path the DF was saved to
    */
   def save(df: DataFrame, dest: Path, format: String): Path = {
-    df.write.format(format).save(dest.toString)
+    duration(s"write to $dest in format $format") {
+      df.write.format(format).save(dest.toString)
+    }
     dest
   }
 

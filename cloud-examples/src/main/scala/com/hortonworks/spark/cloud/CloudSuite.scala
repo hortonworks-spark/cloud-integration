@@ -335,7 +335,7 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
    * @throws FileNotFoundException if a configuration is named but not present.
    */
   def loadConfiguration(): Option[Configuration] = {
-    val filename = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE, "")
+    val filename = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE, "").trim
     logDebug(s"Configuration property = `$filename`")
     val config = new Configuration(true)
     if (filename != null && !filename.isEmpty && !CLOUD_TEST_UNSET_STRING.equals(filename)) {
