@@ -69,6 +69,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
 */
     import org.apache.hadoop.fs._
 
+    sparkConf.set("spark.default.parallelism", "4")
     applyObjectStoreConfigurationOptions(sparkConf, false)
     hconf(sparkConf, FAST_UPLOAD, "true")
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
@@ -121,7 +122,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
         "ignoreTrailingWhiteSpace" -> "true",
         "timestampFormat" -> "yyyy-MM-dd HH:mm:ss.SSSZZZ",
         "inferSchema" -> "true",
-        "mode" -> "FAILFAST")
+        "mode" -> "DROPMALFORMED")
       // this is used to implicitly convert an RDD to a DataFrame.
       val csv = sql.read.options(csvOptions)
         .csv(srcPath.toString)
@@ -132,16 +133,15 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
        */
 
       val csvDF = csv
-        .withColumnRenamed("Rental Id", "rental")
-        .withColumn("rental", csv.col("Rental Id").cast(IntegerType))
+        .withColumn("rental", csv.col("Rental Id").cast(IntegerType).as("rental"))
         .withColumn("duration", csv.col("Duration").cast(IntegerType))
-        .withColumnRenamed("Bike Id", "bike")
-        .withColumnRenamed("End Date", "endDate")
-        .withColumnRenamed("EndStation Id", "endStation")
-        .withColumnRenamed("EndStation Name", "endStationName")
-        .withColumnRenamed("Start Date", "startDate")
-        .withColumnRenamed("StartStation Id", "startStationId")
-        .withColumnRenamed("StartStation Name", "startStationName")
+        .withColumn("bike", csv.col("Bike Id").cast(IntegerType))
+        .withColumn("started", csv.col("Start Date").cast(TimestampType))
+        .withColumn("startstation", csv.col("StartStation Id").cast(IntegerType))
+        .withColumnRenamed("StartStation Name", "startstation_name")
+        .withColumn("ended", csv.col("End Date")) //.cast(TimestampType))
+        .withColumn("endstation", csv.col("EndStation Id").cast(IntegerType))
+        .withColumnRenamed("EndStation Name", "endstation_name")
       csvDF.repartition(8).cache()
       val sourceRowCount = csvDF.count()
       println(s"defaultParallelism ${sc.defaultParallelism}")
