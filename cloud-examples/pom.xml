@@ -1,12 +1,35 @@
-<project>
-  <groupId>com.hortonworks.spark</groupId>
-  <artifactId>cloud-examples</artifactId>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Licensed to the Apache Software Foundation (ASF) under one or more
+  ~ contributor license agreements.  See the NOTICE file distributed with
+  ~ this work for additional information regarding copyright ownership.
+  ~ The ASF licenses this file to You under the Apache License, Version 2.0
+  ~ (the "License"); you may not use this file except in compliance with
+  ~ the License.  You may obtain a copy of the License at
+  ~
+  ~    http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <name>cloud-examples</name>
 
+  <groupId>com.hortonworks.cloud</groupId>
+  <artifactId>cloud-examples</artifactId>
+  <name>cloud-examples</name>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
-
+  <description>
+    Contains integration tests for verifying spark jobs using cloud infra
+    as a source and destination; tests designed to work as scalatest tests
+    and as jobs which can be scaled up to run in test clusters.
+  </description>
   <!--
 
     <repositories>
@@ -27,7 +50,7 @@
 
     <java.version>1.8</java.version>
     <scala.binary.version>2.11</scala.binary.version>
-    <scala.version>2.11.6</scala.version>
+    <scala.version>2.11.8</scala.version>
     <scala.version.tools>${scala.version}</scala.version.tools>
 
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
@@ -51,7 +74,24 @@
     variable makes it possible to run these tests against that version. -->
     <spark.cloud.module.name>spark-hadoop-cloud</spark.cloud.module.name>
     <spark.cloud.module.type>jar</spark.cloud.module.type>
-    <committer>org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactor</committer>
+    <committer>(unset)</committer>
+
+    <!-- are scale tests enabled ? -->
+    <fs.s3a.scale.test.enabled>unset</fs.s3a.scale.test.enabled>
+    <!-- Size in MB of huge files. -->
+    <fs.s3a.scale.test.huge.filesize>unset</fs.s3a.scale.test.huge.filesize>
+    <!-- Size in MB of the partion size in huge file uploads. -->
+    <fs.s3a.scale.test.huge.partitionsize>unset</fs.s3a.scale.test.huge.partitionsize>
+    <!-- Timeout in seconds for scale tests.-->
+    <fs.s3a.scale.test.timeout>3600</fs.s3a.scale.test.timeout>
+    <!-- are s3guard tests enabled ? -->
+    <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
+    <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
+    <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
+    <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
+    <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
+    <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
+
   </properties>
 
   <repositories>
@@ -443,6 +483,59 @@
       </properties>
     </profile>
 
+
+    <!-- Turn on s3guard tests-->
+    <profile>
+      <id>s3guard</id>
+      <activation>
+        <property>
+          <name>s3guard</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+      </properties>
+    </profile>
+
+    <!-- Switch to dynamo DB for s3guard. Has no effect unless s3guard is enabled -->
+    <profile>
+      <id>dynamo</id>
+      <activation>
+        <property>
+          <name>dynamo</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3guard.test.implementation>dynamo</fs.s3a.s3guard.test.implementation>
+      </properties>
+    </profile>
+
+    <!-- Switch to DynamoDBLocal for s3guard. Has no effect unless s3guard is enabled -->
+    <profile>
+      <id>dynamodblocal</id>
+      <activation>
+        <property>
+          <name>dynamodblocal</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3guard.test.implementation>dynamodblocal</fs.s3a.s3guard.test.implementation>
+      </properties>
+    </profile>
+
+    <!-- Switch s3guard from Authoritative=false to true
+     Has no effect unless s3guard is enabled -->
+    <profile>
+      <id>non-auth</id>
+      <activation>
+        <property>
+          <name>auth</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3guard.test.authoritative>true</fs.s3a.s3guard.test.authoritative>
+      </properties>
+    </profile>
 
 
   </profiles>

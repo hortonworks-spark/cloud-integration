@@ -30,6 +30,7 @@ import org.apache.spark.sql.types.DataType
 import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
 import org.apache.spark.sql.types.DataTypes._
 import org.apache.spark.sql.functions._
+
 /**
  * Fun with the boris bike dataset
  */
@@ -45,7 +46,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
 
   val _rental = "rental"
 
-  val _duration = "time"
+  val _time = "time"
 
   val _bike = "bike"
 
@@ -64,7 +65,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
   // Rental Id,Duration,Bike Id,End Date,EndStation Id,EndStation Name,Start Date,StartStation Id,StartStation Name
   def schema = Map(
     "Rental Id" -> (IntegerType, _rental),
-    "Duration" -> (IntegerType, _duration),
+    "Duration" -> (IntegerType, _time),
     "Bike Id" -> (IntegerType, _bike),
     "End Date" -> (StringType, _ended),
     "EndStation Id" -> (IntegerType, _endstation),
@@ -104,6 +105,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
     sparkConf.set("spark.default.parallelism", "4")
     applyObjectStoreConfigurationOptions(sparkConf, false)
     hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, INPUT_FADVISE, RANDOM_IO)
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
 
@@ -126,6 +128,9 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
     val destDir = argPath(1)
       .getOrElse(s"s3a://$srcBucket/travel/orc/borisbike/")
     val destPath = new Path(destDir)
+    val destDir2 = argPath(2)
+      .getOrElse(s"s3a://$srcBucket/travel/orc/borisbike/")
+    val destPath2 = new Path(destDir2)
 
 
     try {
@@ -142,9 +147,10 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
         case fnfe: FileNotFoundException =>
           destFS.delete(destPath, true)
       }
+      destFS.delete(destPath2, true)
 
       importFromCSV(spark, sc, sql, srcPath, destPath)
-      simpleOperations(spark, sc, sql, destPath, destPath)
+      simpleOperations(spark, sc, sql, destPath, destPath2)
 
       // log any published filesystem state
       println(s"Source: FS: ${srcPath.getFileSystem(sc.hadoopConfiguration)}")
@@ -154,7 +160,6 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
     }
     0
   }
-
 
   /**
    * The import routine, if you want to do it again
@@ -170,10 +175,6 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
     // load this FS instance into memory with random
     val destFS = destPath.getFileSystem(config)
     destFS.delete(destPath, true)
-
-    val parquetOptions = Map(
-      "mergeSchema" -> "false"
-    )
 
     val csvOptions = Map(
       "header" -> "true",
@@ -201,8 +202,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
       df.withColumn(newname, df.col(oldname).cast(t)).drop(oldname)
     }
 
-
-
+    // iterate through the dataframw patching its names
     var df = rawCsv;
     schema.foreach {
       (entry) =>
@@ -239,18 +239,24 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
       sc: SparkContext,
       sql: SQLContext,
       orcPath: Path,
-      destPath: Path): Unit = {
+      outPath: Path): Unit = {
     import sql.implicits._
     val orcDF = sql.read.orc(orcPath.toString);
-    orcDF.show()
+//    orcDF.show()
     val coreDF = orcDF
-      .select(_bike, _duration, _startstation_name, _endstation_name)
+      .select(_bike, _time, _startstation_name, _endstation_name)
+    coreDF.cache();
     coreDF.createGlobalTempView("boris")
 
-    coreDF
-      .groupBy(_startstation_name).count().sort($"count".desc).show()
-
     spark.sql("SELECT * FROM global_temp.boris").show()
+
+    coreDF.groupBy(_startstation_name).count().sort($"count".desc).show()
+
+    coreDF.sort($"time".desc).show()
+
+    duration(s"write to $outPath") {
+      coreDF.write.format("orc").save(outPath.toString)
+    }
 
   }
 }

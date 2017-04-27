@@ -31,14 +31,14 @@ This module needs a version of Spark with the `spark-cloud` module with it; at t
 writing this is not yet in ASF spark.
 
 1. Optional: Build any local Hadoop version which you want to use in these integration tests, 
- using `mvn install -DskipTests` in the `hadoop-trunk` dir. For example: `2.9.0-SNASPSHOT`
+ using `mvn install -DskipTests` in the `hadoop-trunk` dir. For example: `2.8.0`
 
 1. add repository `https://github.com/steveloughran/spark.git`
 1. check out branch `features/SPARK-7481-cloud` from the `steveloughran` repo
 
 1. Build Spark with the version of Hadoop you built locally.
 
-        mvn install -DskipTests -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.9.0-SNAPSHOT 
+        mvn install -DskipTests -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.8.0 
 
     This installs the spark JARs and POMs into the local maven repsitory, where they can be
     used until midnight. You will need to repeat the spark and hadoop builds every morning.
@@ -51,7 +51,7 @@ writing this is not yet in ASF spark.
     
 1. To do a full spark installation:
 
-        dev/make-distribution.sh -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.9.0-SNAPSHOT
+        dev/make-distribution.sh -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.8.0
 
 
 
@@ -76,7 +76,7 @@ As this project looks for, and reads in any `build.properties` file in the proje
 directory, the path *may* be declarable in that file:
 
 ```properties
-cloud.test.configuration.file=/Users/stevel/aws/cloud.xml
+cloud.test.configuration.file=/home/developer/aws/cloud.xml
 ```
 
 However, attempts to do this appear to fail. Help welcome.
@@ -94,7 +94,7 @@ referencing the secret credentials kept in the file `/home/hadoop/aws/auth-keys.
 ```xml
 <configuration>
   <include xmlns="http://www.w3.org/2001/XInclude"
-    href="file:///home/developer/aws/auth-keys.xml"/>
+    href="//home/developer/aws/auth-keys.xml"/>
 
   <property>
     <name>s3a.tests.enabled</name>
@@ -406,8 +406,12 @@ the version returned by calls to `VersionInfo` will return the value set in `dec
 
 
 ```bash
-mvn install -DskipTests -Ddeclared.hadoop.version=2.11
+mvn install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11
 ```
+
+1. the `-DskipShade` option skips the JAR shading process, which takes a long time and is not needed here.
+1. You cannot use a JAR built this way to work with HDFS; the version numbers just confuse things
+In particular: *Do not try to run Datanodes or Namenodes with a JAR numbered this way.*
 
 ### Working with Private repositories and older artifact names
 
@@ -416,7 +420,7 @@ mvn install -DskipTests -Ddeclared.hadoop.version=2.11
 1. To build with a different version of spark, define it in `spark.version`
 1. To use the older artifact name, `spark-cloud`, define `spark.cloud.jar` to this name.
 1. To use a different repository for artifacts, redefine `central.repo`
-1. If the spark cloud POM doesn't declare the httpcomponent versions, you need to
+1. If the spark cloud POM doesn't declare the Apache httpcomponent versions, you need to
 explicitly list them through `-Pdeclare-http-components`
 
 Example:
@@ -426,4 +430,14 @@ mvn test -T 1C -Dspark.version=2.0.0.2.5.0.14-5 \
   -Dspark.cloud.jar=spark-cloud \
   -Pdeclare-http-components \
   -Dcentral.repo=http://PRIVATE-REPO/nexus/content/ 
+```
+
+### Example test runs
+
+
+Run the s3a tests (assuming the s3a.xml file contained/referenced the s3a binding information),
+with the Spark 2.2.0-SNAPSHOT binaries.
+
+```bash
+mvn test -T 1C  -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.2.0-SNAPSHOT
 ```
