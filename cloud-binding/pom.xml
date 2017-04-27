@@ -197,6 +197,7 @@
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-annotations</artifactId>
+      <version>${hadoop.version}</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -207,7 +208,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
+      <artifactId>hadoop-client</artifactId>
+      <version>${hadoop.version}</version>
       <scope>compile</scope>
       <exclusions>
         <exclusion>
@@ -262,6 +264,10 @@
           <groupId>org.apache.zookeeper</groupId>
           <artifactId>zookeeper</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
 
@@ -273,7 +279,6 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-aws</artifactId>
       <version>${hadoop.version}</version>
-      
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -303,13 +308,17 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-annotations</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>joda-time</groupId>
+          <artifactId>joda-time</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
+
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-openstack</artifactId>
       <version>${hadoop.version}</version>
-      
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -337,7 +346,6 @@
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-azure</artifactId>
       <version>${hadoop.version}</version>
-      
       <exclusions>
         <exclusion>
           <groupId>org.apache.hadoop</groupId>
@@ -351,8 +359,12 @@
           <groupId>com.fasterxml.jackson.core</groupId>
           <artifactId>jackson-core</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+        </exclusion>
       </exclusions>
-    </dependency>
+  </dependency>
 
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
@@ -387,7 +399,6 @@
       <artifactId>jackson-dataformat-cbor</artifactId>
       <version>${fasterxml.jackson.version}</version>
     </dependency>
-
 
     <!--
     Add joda time to ensure that anything downstream which doesn't pull in spark-hive
@@ -479,6 +490,8 @@
       <id>spark-2.1</id>
       <properties>
         <spark.version>2.1.0</spark.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.11.7</scala.version>
       </properties>
     </profile>
 
@@ -486,6 +499,8 @@
       <id>spark-2.2-SNAPSHOT</id>
       <properties>
         <spark.version>2.2.0-SNAPSHOT</spark.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
 
@@ -494,6 +509,8 @@
       <id>spark-master</id>
       <properties>
         <spark.version>2.3.0-SNAPSHOT</spark.version>
+        <scala.binary.version>2.11</scala.binary.version>
+        <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
 
@@ -509,6 +526,13 @@
       <properties>
         <hadoop.version>2.8.0</hadoop.version>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-azure-datalake</artifactId>
+          <version>${hadoop.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
 
     <!-- Uses the fully shaded AWS JAR. Life is simpler -->
@@ -517,6 +541,13 @@
       <properties>
         <hadoop.version>2.9.0-SNAPSHOT</hadoop.version>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-azure-datalake</artifactId>
+          <version>${hadoop.version}</version>
+        </dependency>
+      </dependencies>
     </profile>
 
     <!-- Uses the fully shaded AWS JAR.  Adds a new store. -->
