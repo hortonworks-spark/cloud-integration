@@ -17,14 +17,18 @@
 
 package com.hortonworks.spark.cloud.s3
 
+
 import scala.collection.mutable
 
 import com.hortonworks.spark.cloud.CloudSuite
 import com.hortonworks.spark.cloud.common.ReadSample
-import org.apache.hadoop.fs.{FSDataInputStream, FileSystem, Path, RemoteIterator}
+import org.apache.hadoop.fs.{FSDataInputStream, Path, RemoteIterator}
+import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.hadoop.mapred.TextInputFormat
 
 import org.apache.spark.SparkContext
 import org.apache.spark.mllib.stat.{MultivariateStatisticalSummary, Statistics}
+import org.apache.spark.rdd.HadoopRDD
 
 /**
  * A suite of tests reading in the S3A CSV file.
@@ -90,8 +94,33 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     logInfo(s"Filesystem statistics ${getFilesystem(source)}")
   }
 
+
+  ctest("FileBlockLocationHandling",
+    """Check fileblock locations downgrade from "localhost" to "no location"
+      | so that scheduling is across the cluster """
+      .stripMargin) {
+    // have a default FS of the local filesystem
+
+    sc = new SparkContext("local", "test", newSparkConf(new Path("file://")))
+    val source = CSV_TESTFILE.get
+    val fs = getFilesystem(source)
+    val blockLocations = fs.getFileBlockLocations(source, 0, 1)
+    assert(1 === blockLocations.length,
+      s"block location array size wrong: ${blockLocations}")
+    val hosts = blockLocations(0).getHosts
+    assert(1 === hosts.length, s"wrong host size ${hosts}")
+    assert("localhost" === hosts(0), "hostname")
+
+    val path = source.toString
+    val rdd = sc.hadoopFile[LongWritable, Text, TextInputFormat](path, 1)
+    val input = rdd.asInstanceOf[HadoopRDD[_, _]]
+    val partitions = input.getPartitions
+    val locations = input.getPreferredLocations(partitions.head)
+    assert(locations.isEmpty, s"Location list not empty ${locations}")
+  }
+
   ctest("listFiles",
-    "List all files under the CSV parent dir",
+    "List all files under the CSV parent dir. Disabled as it dies on Hadoop <2.8",
     false) {
     val source = CSV_TESTFILE.get
     val fs = getFilesystem(source)

@@ -21,9 +21,12 @@ import java.io.FileNotFoundException
 
 import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic
+import org.apache.hadoop.io.{LongWritable, Text}
+import org.apache.hadoop.mapred.TextInputFormat
 
 import org.apache.spark.SparkContext
 import org.apache.spark.deploy.SparkHadoopUtil
+import org.apache.spark.rdd.HadoopRDD
 
 /**
  * Basic IO Tests. The test path is cleaned up afterwards.
@@ -50,7 +53,7 @@ abstract class BasicIOTests extends CloudSuite {
   }
 
   ctest("FileOutput",
-    """Use the classic File Output Committer to commit work to S3A.
+    """Use the classic File Output Committer to commit work.
       | This committer has race and failure conditions, with the commit being O(bytes)
       | and non-atomic.
     """.stripMargin) {
@@ -60,7 +63,8 @@ abstract class BasicIOTests extends CloudSuite {
     val entryCount = testEntryCount
     val numbers = sc.parallelize(1 to entryCount)
     val output = testPath(filesystem, "FileOutput")
-    numbers.saveAsTextFile(output.toString)
+    val path = output.toString
+    numbers.saveAsTextFile(path)
     val st = stat(output)
     assert(st.isDirectory, s"Not a dir: $st")
 
@@ -83,6 +87,20 @@ abstract class BasicIOTests extends CloudSuite {
     val input = sc.textFile(parts0.getPath.toString)
     val results = input.collect()
     assert(entryCount === results.length, s"size of results read in from $parts0")
+
+    val blockLocations = filesystem.getFileBlockLocations(parts0, 0, 1)
+    assert(1 === blockLocations.length,
+      s"block location array size wrong: ${blockLocations}")
+    val hosts = blockLocations(0).getHosts
+    assert(1 === hosts.length, s"wrong host size ${hosts}")
+    assert("localhost" === hosts(0), "hostname")
+
+    val hadoopRdd = sc.hadoopFile[LongWritable, Text, TextInputFormat](path, 1)
+      .asInstanceOf[HadoopRDD[_, _]]
+    val partitions = hadoopRdd.getPartitions
+    val locations = hadoopRdd.getPreferredLocations(partitions.head)
+    assert(locations.isEmpty, s"Location list not empty ${locations}")
+
     logInfo(s"Filesystem statistics ${filesystem}")
   }
 

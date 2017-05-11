@@ -42,7 +42,7 @@
 
   <properties>
     <!-- These examples use the version of Hadoop which Spark was built with-->
-    <spark.version>2.2.0-SNAPSHOT</spark.version>
+    <spark.version>2.3.0-SNAPSHOT</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
     <maven.properties.version>1.0-alpha-2</maven.properties.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -67,14 +67,18 @@
     <scalatest-maven-plugin.version>1.0</scalatest-maven-plugin.version>
     <!-- override point: Hadoop XML file containing (directly or via XInclude references)
     the credentials needed to test against target cloud infrastructures. -->
-    <cloud.test.configuration.file>(unset)</cloud.test.configuration.file>
+    <unset>unset</unset>
+    <cloud.test.configuration.file>${unset}</cloud.test.configuration.file>
     <log4j.debug>false</log4j.debug>
     <central.repo>https://repo1.maven.org/maven2</central.repo>
     <!-- earlier versions of the SPARK-7481 patch had it as spark-cloud.JAR; this
     variable makes it possible to run these tests against that version. -->
-    <spark.cloud.module.name>spark-hadoop-cloud</spark.cloud.module.name>
+    <spark.cloud.module.name>hadoop-cloud</spark.cloud.module.name>
     <spark.cloud.module.type>jar</spark.cloud.module.type>
-    <committer>(unset)</committer>
+    <committer>${unset}</committer>
+
+    <!-- set this to require a hadoop version-->
+    <required.hadoop.version>${unset}</required.hadoop.version>
 
     <!-- are scale tests enabled ? -->
     <fs.s3a.scale.test.enabled>unset</fs.s3a.scale.test.enabled>
@@ -88,16 +92,22 @@
     <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
     <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
     <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
+    <!-- if this flag is set, the code assumes that s3guard is being used and
+    then loads _SUCCESS as JSON-->
     <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
     <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
     <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
+    <!-- if this flag is set, the code assumes that s3guard is being used and
+    then loads _SUCCESS as JSON-->
+    <fs.s3a.s3guard.committer.test.enabled>false</fs.s3a.s3guard.committer.test.enabled>
 
   </properties>
 
   <repositories>
     <repository>
       <id>central</id>
-      <!-- This should be at top, it makes maven try the central repo first and then others and hence faster dep resolution -->
+      <!-- This must be at top, it makes maven try the central repository first
+       and then others and hence faster dependency resolution -->
       <name>Maven Repository</name>
       <url>${central.repo}</url>
       <releases>
@@ -191,6 +201,14 @@
       <artifactId>slf4j-log4j12</artifactId>
       <version>1.7.16</version>
     </dependency>
+<!--
+
+    <dependency>
+      <groupId>com.chuusai</groupId>
+      <artifactId>shapeless_2.11</artifactId>
+      <version>2.3.2</version>
+    </dependency>
+-->
 
   </dependencies>
   <build>
@@ -355,6 +373,7 @@
             <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
             <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
             <cloud.test.committer>${committer}</cloud.test.committer>
+            <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
           </systemProperties>
 
         </configuration>
@@ -483,6 +502,26 @@
       </properties>
     </profile>
 
+    <profile>
+      <id>hadoop-2.7</id>
+      <properties>
+        <required.hadoop.version>2.7.3</required.hadoop.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.8</id>
+      <properties>
+        <required.hadoop.version>2.8.0</required.hadoop.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>branch-2</id>
+      <properties>
+        <required.hadoop.version>2.9.0</required.hadoop.version>
+      </properties>
+    </profile>
 
     <!-- Turn on s3guard tests-->
     <profile>
@@ -494,6 +533,8 @@
       </activation>
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+        <fs.s3a.s3guard.commmiter.test.enabled>true</fs.s3a.s3guard.commmiter.test.enabled>
+        <required.hadoop.version>2.11</required.hadoop.version>
       </properties>
     </profile>
 

@@ -23,8 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 import scala.collection.JavaConverters._
 
-import com.hortonworks.spark.cloud.CloudSuite.{OUTPUTCOMMITTER_FACTORY_CLASS, STAGING}
-import com.hortonworks.spark.cloud.s3.S3AConstants._
+import com.hortonworks.spark.cloud.s3.S3AConstants
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
 import org.scalatest.concurrent.Eventually
@@ -40,7 +39,7 @@ import org.apache.spark.{LocalSparkContext, SparkConf}
  */
 abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
     with LocalSparkContext with BeforeAndAfter with Matchers with TimeOperations
-    with ObjectStoreOperations with Eventually {
+    with ObjectStoreOperations with Eventually with S3AConstants {
 
   import CloudSuite._
 
@@ -314,7 +313,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
   }
 }
 
-object CloudSuite extends CloudLogging with CloudTestKeys {
+object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
 
   private val configLogged = new AtomicBoolean(false)
 
@@ -331,14 +330,14 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
 
   /**
    * Load the configuration file from the system property `SYSPROP_CLOUD_TEST_CONFIGURATION_FILE`.
+   * Throws FileNotFoundException if a configuration is named but not present.
    * @return the configuration
-   * @throws FileNotFoundException if a configuration is named but not present.
    */
   def loadConfiguration(): Option[Configuration] = {
     val filename = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE, "").trim
     logDebug(s"Configuration property = `$filename`")
     val config = new Configuration(true)
-    if (filename != null && !filename.isEmpty && !CLOUD_TEST_UNSET_STRING.equals(filename)) {
+    if (filename != null && !filename.isEmpty && !UNSET_PROPERTY.equals(filename)) {
       val f = new File(filename)
       if (f.exists()) {
         if (!configLogged.getAndSet(true)) {
@@ -352,8 +351,7 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
       // setup the committer from any property passed in
       val orig = config
         .get(OUTPUTCOMMITTER_FACTORY_CLASS, OUTPUTCOMMITTER_FACTORY_DEFAULT)
-      val committer = System.getProperty(SYSPROP_CLOUD_TEST_COMMITTER,
-        orig)
+      val committer = System.getProperty(SYSPROP_CLOUD_TEST_COMMITTER, orig)
       if (committer != OUTPUTCOMMITTER_FACTORY_DEFAULT) {
         logInfo(s"Using committer $committer")
       }
@@ -362,6 +360,17 @@ object CloudSuite extends CloudLogging with CloudTestKeys {
     } else {
       None
     }
+  }
+
+  /**
+   * Overlay a set of system properties to a configuration, unless the key
+   * is "(unset")
+   * @param conf config to patch
+   * @param keys list of system properties
+   */
+  def overlayConfiguration(conf: Configuration, keys: Seq[String]): Unit = {
+    keys.foreach(key => if (System.getProperty(key) != UNSET_PROPERTY)
+      conf.set(key, System.getProperty(key), "system property"))
   }
 
 }

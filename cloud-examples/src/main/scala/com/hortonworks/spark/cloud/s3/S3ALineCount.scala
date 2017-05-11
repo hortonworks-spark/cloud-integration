@@ -19,7 +19,6 @@ package com.hortonworks.spark.cloud.s3
 
 import java.net.URI
 
-import com.hortonworks.spark.cloud.s3.S3AConstants._
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.{SparkConf, SparkContext}

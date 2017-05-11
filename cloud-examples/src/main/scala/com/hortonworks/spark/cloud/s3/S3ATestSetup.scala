@@ -26,9 +26,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 /**
  * Trait for S3A tests.
  */
-trait S3ATestSetup extends CloudSuite {
-
-import com.hortonworks.spark.cloud.s3.S3AConstants._
+trait S3ATestSetup extends CloudSuite with S3AConstants {
 
   override def enabled: Boolean = {
     testConfiguration.exists(_.getBoolean(S3A_TESTS_ENABLED, false)) &&

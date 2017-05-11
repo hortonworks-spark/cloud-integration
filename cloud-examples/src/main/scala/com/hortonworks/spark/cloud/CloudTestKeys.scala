@@ -57,12 +57,6 @@ trait CloudTestKeys {
   val SYSPROP_CLOUD_TEST_CONFIGURATION_FILE = "cloud.test.configuration.file"
 
   /**
-   * Maven doesn't pass down empty properties as strings; it converts them to the string "null".
-   * Here a special string is used to handle that scenario to make it clearer what's happening.
-   */
-  val CLOUD_TEST_UNSET_STRING = "(unset)"
-
-  /**
    * Prefix for scale tests.
    */
   val SCALE_TEST = "scale.test."
@@ -157,17 +151,46 @@ trait CloudTestKeys {
    */
   val SWIFT_TEST_URI = "swift.test.uri"
 
-  val SYSPROP_CLOUD_TEST_COMMITTER = "cloud.test.committer"
-
-  val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class";
-
-  val OUTPUTCOMMITTER_FACTORY_DEFAULT =
-    "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory";
-
   val MR_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
   val MR_COMMITTER_CLEANUPFAILURES_IGNORED = "mapreduce.fileoutputcommitter.cleanup-failures.ignored"
 
-  val STAGING = "org.apache.hadoop.fs.s3a.commit.staging."
-  val DIRECTORY_COMMITTER = STAGING + "DirectoryStagingCommitterFactory"
-  val PARTITIONED_COMMITTER = STAGING + "PartitonedStagingCommitterFactory";
+  val SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
+  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
+  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION_DEFAULT = 2
+  // Skip cleanup _temporary folders under job's output directory
+  val FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED = "mapreduce.fileoutputcommitter.cleanup.skipped"
+
+  /**
+   * Indicates that any s3guard tests are enabled
+   */
+  val S3GUARD_TEST_ENABLED = "fs.s3a.s3guard.test.enabled"
+  /**
+   * Indicates that any s3guard tests are enabled
+   */
+  val S3GUARD_COMMITTER_TEST_ENABLED = "fs.s3a.s3guard.committer.test.enabled"
+
+  /**
+   * This is the "Pending" directory of the FileOutputCommitter;
+   * data written here is, in that algorithm, renamed into place.
+   * Value: {@value }.
+   */
+  val PENDING_DIR_NAME = "_temporary"
+  /**
+   * Marker file to create on success.
+   */
+  val SUCCESS_FILE_NAME = "_SUCCESS"
+
+  /**
+   * Name of a property for a required hadoop version; lets you verify that
+   * the transitive hadoop versions is what you want.
+   */
+  val REQUIRED_HADOOP_VERSION = "required.hadoop.version"
+
+  /**
+   * Maven doesn't pass down empty properties as strings; it converts them to the string "null".
+   * Here a special string is used to handle that scenario to make it clearer what's happening.
+   */
+  val UNSET_PROPERTY = "unset"
+
+
 }

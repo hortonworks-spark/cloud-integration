@@ -21,7 +21,7 @@ package com.hortonworks.spark.cloud.s3
  * S3A constants. Different Hadoop versions have an incomplete set of these; keeping them
  * in source here ensures that there are no compile/link problems.
  */
-object S3AConstants {
+trait S3AConstants {
   val ACCESS_KEY = "fs.s3a.access.key"
   val SECRET_KEY = "fs.s3a.secret.key"
   val AWS_CREDENTIALS_PROVIDER = "fs.s3a.aws.credentials.provider"
@@ -66,28 +66,36 @@ object S3AConstants {
   val RANDOM_IO = "random"
 
   val SPARK_PARQUET_COMMITTER_CLASS = "spark.sql.parquet.output.committer.class"
-  /**
-   * Default source of a public multi-MB CSV file.
-   */
-  val S3A_CSV_PATH_DEFAULT = "s3a://landsat-pds/scene_list.gz"
 
   /**
    * What buffer to use.
    * Default is `FAST_UPLOAD_BUFFER_DISK`
    */
- val FAST_UPLOAD_BUFFER = "fs.s3a.fast.upload.buffer"
+  val FAST_UPLOAD_BUFFER = "fs.s3a.fast.upload.buffer"
   /**
    * Buffer blocks to disk.
    * Capacity is limited to available disk space.
    */
- val FAST_UPLOAD_BUFFER_DISK = "disk"
+  val FAST_UPLOAD_BUFFER_DISK = "disk"
   /**
    * Use an in-memory array. Fast but will run of heap rapidly.
    */
- val FAST_UPLOAD_BUFFER_ARRAY = "array"
+  val FAST_UPLOAD_BUFFER_ARRAY = "array"
   /**
    * Use a byte buffer. May be more memory efficient than the
    * `FAST_UPLOAD_BUFFER_ARRAY`.
    */
- val FAST_UPLOAD_BYTEBUFFER = "bytebuffer"
+  val FAST_UPLOAD_BYTEBUFFER = "bytebuffer"
+
+  val SYSPROP_CLOUD_TEST_COMMITTER = "cloud.test.committer"
+
+  val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class";
+
+  val OUTPUTCOMMITTER_FACTORY_DEFAULT =
+    "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory";
+
+  val STAGING = "org.apache.hadoop.fs.s3a.commit.staging."
+  val DIRECTORY_COMMITTER = STAGING + "DirectoryStagingCommitterFactory"
+  val PARTITIONED_COMMITTER = STAGING + "PartitonedStagingCommitterFactory";
+
 }

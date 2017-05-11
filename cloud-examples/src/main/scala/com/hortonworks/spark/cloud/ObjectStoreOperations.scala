@@ -17,11 +17,12 @@
 
 package com.hortonworks.spark.cloud
 
+import java.io.EOFException
 import java.net.URL
 
 import scala.reflect.ClassTag
 
-import com.hortonworks.spark.cloud.s3.S3AConstants._
+import com.fasterxml.jackson.databind.JsonNode
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
@@ -35,7 +36,7 @@ import org.apache.spark.sql._
  * Extra Hadoop operations for object store integration.
  */
 trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
-  TimeOperations {
+  TimeOperations{
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -119,13 +120,27 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
   }
 
   /**
-   * Put a string to the destination
+   * Put a string to the destination.
    * @param path path
    * @param conf configuration to use when requesting the filesystem
    * @param body string body
    */
   def put(path: Path, conf: Configuration, body: String): Unit = {
     val fs = FileSystem.get(path.toUri, conf)
+    put(fs, path, body)
+  }
+
+  /**
+   * Put a string to the destination.
+   *
+   * @param fs dest FS
+   * @param path path to file
+   * @param body string body
+   */
+  def put(
+      fs: FileSystem,
+      path: Path,
+      body: String): Unit = {
     val out = fs.create(path, true)
     try {
       IOUtils.write(body, out)
@@ -135,7 +150,42 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
   }
 
   /**
+   * Get a file from a path.
+   *
+   * @param fs filesystem
+   * @param path path to file
+   * @return the contents of the path
+   */
+  def get(fs: FileSystem, path: Path): String = {
+    val in = fs.open(path)
+    try {
+      val s= IOUtils.toString(in)
+      in.close()
+      s
+    } finally {
+      IOUtils.closeQuietly(in)
+    }
+  }
+
+  /**
+   * Load a file as JSON; fail fast if the file is 0 bytes long
+   *
+   * @param fs filesystem
+   * @param path path to file
+   * @return the contents of the path as a JSON node
+   */
+  def loadJson(fs: FileSystem, path: Path): JsonNode = {
+    val status = fs.getFileStatus(path)
+    if (status.getLen == 0) {
+      throw new EOFException("Empty File: " + path)
+    }
+    import com.fasterxml.jackson.databind.ObjectMapper
+    new ObjectMapper().readTree(get(fs, path))
+  }
+
+  /**
    * Save a dataframe in a specific format.
+   *
    * @param df dataframe
    * @param dest destination path
    * @param format format

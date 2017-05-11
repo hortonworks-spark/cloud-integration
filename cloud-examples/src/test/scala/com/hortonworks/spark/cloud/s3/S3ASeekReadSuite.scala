@@ -26,8 +26,6 @@ import org.apache.hadoop.fs.{FileSystem, Path}
  */
 class S3ASeekReadSuite extends CloudSuite with S3ATestSetup {
 
-  import com.hortonworks.spark.cloud.s3.S3AConstants._
-
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
   override def inputPolicy: String = SEQUENTIAL_IO

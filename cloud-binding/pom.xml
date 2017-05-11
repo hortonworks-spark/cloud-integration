@@ -478,7 +478,6 @@
       </repositories>
     </profile>
 
-
     <profile>
       <id>spark-2.0</id>
       <properties>
@@ -503,7 +502,6 @@
         <scala.version>2.11.8</scala.version>
       </properties>
     </profile>
-
 
     <profile>
       <id>spark-master</id>
@@ -550,7 +548,17 @@
       </dependencies>
     </profile>
 
-    <!-- Uses the fully shaded AWS JAR.  Adds a new store. -->
+    <!--
+     Hive only works with Hadoop thinking it is a v2 binary, build it with that
+
+      -Ddeclared.hadoop.version=2.11
+
+     After which you can't work with HDFS very well. Only useful for testing
+     client-code and miniclusters.
+
+      * Uses the fully shaded AWS JAR.
+      * Adds a new store: hadoop-aliyun
+     -->
     <profile>
       <id>hadoop-trunk</id>
       <properties>
@@ -559,12 +567,16 @@
       <dependencies>
         <dependency>
           <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-azure-datalake</artifactId>
+          <version>${hadoop.version}</version>
+        </dependency>
+        <dependency>
+          <groupId>org.apache.hadoop</groupId>
           <artifactId>hadoop-aliyun</artifactId>
           <version>${hadoop.version}</version>
         </dependency>
       </dependencies>
     </profile>
-
 
   </profiles>
 </project>

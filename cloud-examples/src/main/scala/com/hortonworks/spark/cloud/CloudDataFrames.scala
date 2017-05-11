@@ -17,6 +17,7 @@
 
 package com.hortonworks.spark.cloud
 
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.SparkConf
@@ -78,9 +79,9 @@ class CloudDataFrames extends ObjectStoreExample {
       // formats to generate
       val formats = Seq("orc", "parquet", "json", "csv")
 
-      // write a DF
-      def write(format: String): Path = {
-        save(sourceData, new Path(generatedBase, format), format)
+      // write a DF; return path and time to save
+      def write(format: String): (Path, Long) = {
+        duration2(save(sourceData, new Path(generatedBase, format), format))
       }
       // load a DF and verify it has the expected number of rows
       // return how long it took
@@ -94,18 +95,17 @@ class CloudDataFrames extends ObjectStoreExample {
         loadTime
       }
 
-      val roundTripTimes = formats.map { format =>
-        (format, validate(write(format), format))
-      }.sortWith((l, r) => l._2 < r._2)
+      val results: Seq[(String, Path, Long, Long)] = formats.map { format =>
+        val (written, writeTime) = write(format)
+        (format, written, writeTime, validate(written, format))
+      }.sortWith((l, r) => l._3 < r._3)
 
       logInfo("Round Trip Times")
-      roundTripTimes.foreach { result =>
-        logInfo(s"${result._1} : ${toHuman(result._2)}")
+      results.foreach { result =>
+        logInfo(s"${result._1} : ${toHuman(result._3)} at ${result._2}")
       }
 
-      // log any published filesystem state
       val destFS = FileSystem.get(dest.toUri, hConf)
-      logInfo(s"FS: ${destFS}")
 
       // now there are some files in the generated directory tree. Enumerate them
       logInfo("scanning binary files")
@@ -113,14 +113,30 @@ class CloudDataFrames extends ObjectStoreExample {
       val binaries = sc.binaryFiles(s"$base/orc,$base/parquet/*,$base/json,$base/csv")
       val totalSize = binaries.map(_._2.toArray().length).sum()
       logInfo(s"total size = $totalSize")
+
       // log any published filesystem state
       logInfo(s"FS: ${destFS}")
+
+
+      extraValidation(spark, hConf, destFS, results)
     } finally {
       spark.stop()
     }
     0
   }
 
+  /**
+   * Override point for any extra validation of the output.
+   * @param fs filesystem used
+   * @param results the list of results: (format, path, t(write), t(read))
+   */
+  def extraValidation(
+      session: SparkSession,
+      conf: Configuration,
+      fs: FileSystem,
+      results: Seq[(String, Path, Long, Long)]): Unit = {
+
+  }
 }
 
 object CloudDataFrames {

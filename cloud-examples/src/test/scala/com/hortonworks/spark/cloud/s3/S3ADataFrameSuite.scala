@@ -40,6 +40,6 @@ class S3ADataFrameSuite extends DataFrameTests with S3ATestSetup {
    * Switch to random IO if the s3a implementation supports it.
    * @return the IO type
    */
-  override protected def inputPolicy: String = S3AConstants.RANDOM_IO
+  override protected def inputPolicy: String = RANDOM_IO
 
 }

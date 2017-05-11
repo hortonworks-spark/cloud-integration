@@ -36,6 +36,7 @@ object GenericTestUtils {
    */
   val DEFAULT_TEST_DATA_DIR: String = "target" + File.separator + "test" +
     File.separator + "data"
+
   /**
    * The default path for using in Hadoop path references: {@value }
    */
@@ -100,7 +101,6 @@ object GenericTestUtils {
    */
   def getRandomizedTestDir: File = new File(getRandomizedTempPath)
     .getAbsoluteFile
-
 
   /**
    * Get a temp path.

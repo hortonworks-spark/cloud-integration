@@ -18,15 +18,13 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
-import com.hortonworks.spark.cloud.s3.S3AConstants._
-import com.hortonworks.spark.cloud.s3.S3ALineCount.hconf
 
 import org.apache.spark.SparkConf
 
 /**
  * Base Class for examples working with S3.
  */
-trait S3AExampleSetup extends ObjectStoreExample {
+trait S3AExampleSetup extends ObjectStoreExample with S3AConstants {
 
   /**
    * Set the standard S3A Hadoop options to be used in test/examples.

@@ -22,5 +22,5 @@ package com.hortonworks.spark.cloud.s3
  */
 class S3ARandomSeekReadSuite extends S3ASeekReadSuite {
 
-  override def inputPolicy: String = S3AConstants.RANDOM_IO
+  override def inputPolicy: String = RANDOM_IO
 }
