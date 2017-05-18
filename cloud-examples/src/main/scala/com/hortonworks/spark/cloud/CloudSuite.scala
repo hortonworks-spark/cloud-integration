@@ -362,6 +362,12 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
     }
   }
 
+  def getAnyConfiguration(): Configuration = {
+    loadConfiguration().getOrElse(
+      return new Configuration()
+    )
+  }
+
   /**
    * Overlay a set of system properties to a configuration, unless the key
    * is "(unset")

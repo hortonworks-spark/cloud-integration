@@ -29,7 +29,7 @@ import org.apache.spark.SparkFunSuite
 class HadoopVersionSuite extends SparkFunSuite with Matchers {
 
   test("Check Hadoop version") {
-    val configuration = loadConfiguration().get
+    val configuration = getAnyConfiguration
 
     overlayConfiguration(
       configuration,
@@ -44,8 +44,5 @@ class HadoopVersionSuite extends SparkFunSuite with Matchers {
     val v = configuration.get(REQUIRED_HADOOP_VERSION, UNSET_PROPERTY)
     Assume.assumeTrue(v != UNSET_PROPERTY)
     assert(v == VersionInfo.getVersion())
-
-
-
   }
 }

@@ -19,196 +19,89 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.hortonworks.spark</groupId>
+    <version>1.0-SNAPSHOT</version>
+    <artifactId>cloud-integration</artifactId>
+    <relativePath>../pom.xml</relativePath>
+  </parent>
 
-  <groupId>com.hortonworks.cloud</groupId>
   <artifactId>cloud-examples</artifactId>
   <name>cloud-examples</name>
   <packaging>jar</packaging>
   <version>1.0-SNAPSHOT</version>
+
   <description>
     Contains integration tests for verifying spark jobs using cloud infra
     as a source and destination; tests designed to work as scalatest tests
     and as jobs which can be scaled up to run in test clusters.
   </description>
-  <!--
-
-    <repositories>
-      <repository>
-        <id>Spark Staging Repo</id>
-        <url>https://repository.apache.org/content/repositories/orgapachespark-1075/</url>
-      </repository>
-    </repositories>
-  -->
 
   <properties>
-    <!-- These examples use the version of Hadoop which Spark was built with-->
-    <spark.version>2.3.0-SNAPSHOT</spark.version>
-    <scala.binary.version>2.11</scala.binary.version>
-    <maven.properties.version>1.0-alpha-2</maven.properties.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-
-    <java.version>1.8</java.version>
-    <scala.binary.version>2.11</scala.binary.version>
-    <scala.version>2.11.8</scala.version>
-    <scala.version.tools>${scala.version}</scala.version.tools>
-
-    <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
-    <test.build.data>${test.build.dir}</test.build.data>
-    <hadoop.tmp.dir>${project.build.directory}/test</hadoop.tmp.dir>
-
-    <!-- plugin versions -->
-    <maven-exec-plugin.version>1.4.0</maven-exec-plugin.version>
-    <maven-surefire-plugin.version>2.19</maven-surefire-plugin.version>
-    <!-- org.scala.tools-->
-    <maven-scala-plugin.version>2.15.2</maven-scala-plugin.version>
-    <!--net.alchim31.maven -->
-    <alchim.scala-maven-plugin.version>3.2.2</alchim.scala-maven-plugin.version>
-    <scalatest-maven-plugin.version>1.0</scalatest-maven-plugin.version>
-    <!-- override point: Hadoop XML file containing (directly or via XInclude references)
-    the credentials needed to test against target cloud infrastructures. -->
-    <unset>unset</unset>
-    <cloud.test.configuration.file>${unset}</cloud.test.configuration.file>
-    <log4j.debug>false</log4j.debug>
-    <central.repo>https://repo1.maven.org/maven2</central.repo>
-    <!-- earlier versions of the SPARK-7481 patch had it as spark-cloud.JAR; this
-    variable makes it possible to run these tests against that version. -->
-    <spark.cloud.module.name>hadoop-cloud</spark.cloud.module.name>
-    <spark.cloud.module.type>jar</spark.cloud.module.type>
-    <committer>${unset}</committer>
-
-    <!-- set this to require a hadoop version-->
-    <required.hadoop.version>${unset}</required.hadoop.version>
-
-    <!-- are scale tests enabled ? -->
-    <fs.s3a.scale.test.enabled>unset</fs.s3a.scale.test.enabled>
-    <!-- Size in MB of huge files. -->
-    <fs.s3a.scale.test.huge.filesize>unset</fs.s3a.scale.test.huge.filesize>
-    <!-- Size in MB of the partion size in huge file uploads. -->
-    <fs.s3a.scale.test.huge.partitionsize>unset</fs.s3a.scale.test.huge.partitionsize>
-    <!-- Timeout in seconds for scale tests.-->
-    <fs.s3a.scale.test.timeout>3600</fs.s3a.scale.test.timeout>
-    <!-- are s3guard tests enabled ? -->
-    <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
-    <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
-    <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
-    <!-- if this flag is set, the code assumes that s3guard is being used and
-    then loads _SUCCESS as JSON-->
-    <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
-    <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
-    <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
-    <!-- if this flag is set, the code assumes that s3guard is being used and
-    then loads _SUCCESS as JSON-->
-    <fs.s3a.s3guard.committer.test.enabled>false</fs.s3a.s3guard.committer.test.enabled>
 
   </properties>
 
-  <repositories>
-    <repository>
-      <id>central</id>
-      <!-- This must be at top, it makes maven try the central repository first
-       and then others and hence faster dependency resolution -->
-      <name>Maven Repository</name>
-      <url>${central.repo}</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </repository>
-  </repositories>
-
-  <pluginRepositories>
-    <pluginRepository>
-      <id>central</id>
-      <url>${central.repo}</url>
-      <releases>
-        <enabled>true</enabled>
-      </releases>
-      <snapshots>
-        <enabled>false</enabled>
-      </snapshots>
-    </pluginRepository>
-  </pluginRepositories>
 
   <dependencies>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
     </dependency>
 
     <!--Used for test classes -->
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
       <type>test-jar</type>
     </dependency>
 
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-streaming_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
-      <type>jar</type>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-hive_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-mllib_${scala.binary.version}</artifactId>
-      <version>${spark.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>
-      <version>2.2.1</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>1.9.5</version>
-      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.scalacheck</groupId>
       <artifactId>scalacheck_${scala.binary.version}</artifactId>
-      <version>1.11.3</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.11</version>
     </dependency>
 
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
-      <version>1.7.16</version>
     </dependency>
-<!--
 
     <dependency>
-      <groupId>com.chuusai</groupId>
-      <artifactId>shapeless_2.11</artifactId>
-      <version>2.3.2</version>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
     </dependency>
--->
 
   </dependencies>
   <build>
@@ -396,188 +289,4 @@
     </plugins>
   </build>
 
-  <profiles>
-    <!--
- This is a profile to enable the use of the ASF snapshot and staging repositories
- during a build. It is useful when testing againt nightly or RC releases of dependencies.
- It MUST NOT be used when building copies of Spark to use in production of for distribution,
- -->
-    <profile>
-      <id>snapshots-and-staging</id>
-      <properties>
-        <!-- override point for ASF staging/snapshot repos -->
-        <asf.staging>https://repository.apache.org/content/groups/staging/</asf.staging>
-        <asf.snapshots>https://repository.apache.org/content/repositories/snapshots/</asf.snapshots>
-      </properties>
-
-      <pluginRepositories>
-        <pluginRepository>
-          <id>ASF Staging</id>
-          <url>${asf.staging}</url>
-        </pluginRepository>
-        <pluginRepository>
-          <id>ASF Snapshots</id>
-          <url>${asf.snapshots}</url>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-        </pluginRepository>
-
-      </pluginRepositories>
-      <repositories>
-        <repository>
-          <id>ASF Staging</id>
-          <url>${asf.staging}</url>
-        </repository>
-        <repository>
-          <id>ASF Snapshots</id>
-          <url>${asf.snapshots}</url>
-          <snapshots>
-            <enabled>true</enabled>
-          </snapshots>
-          <releases>
-            <enabled>false</enabled>
-          </releases>
-        </repository>
-      </repositories>
-    </profile>
-
-    <profile>
-      <id>declare-http-components</id>
-      <dependencies>
-        <!--Explicit declaration to force in Spark version into transitive dependencies -->
-        <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-          <version>4.5.2</version>
-        </dependency>
-        <!--Explicit declaration to force in Spark version into transitive dependencies -->
-        <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-          <version>4.4.4</version>
-        </dependency>
-      </dependencies>
-    </profile>
-
-    <profile>
-      <id>oldjar</id>
-      <properties>
-        <spark.cloud.module.name>spark-cloud</spark.cloud.module.name>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>directory-commit</id>
-      <properties>
-        <committer>org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory</committer>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>partition-commit</id>
-      <properties>
-        <committer>org.apache.hadoop.fs.s3a.commit.staging.PartitonedStagingCommitterFactory</committer>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>magic-commit</id>
-      <properties>
-        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>s3a-tests</id>
-      <properties>
-        <cloud.test.configuration.file>
-          ../../cloud-test-configs/s3a.xml
-        </cloud.test.configuration.file>
-
-        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>hadoop-2.7</id>
-      <properties>
-        <required.hadoop.version>2.7.3</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>hadoop-2.8</id>
-      <properties>
-        <required.hadoop.version>2.8.0</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>branch-2</id>
-      <properties>
-        <required.hadoop.version>2.9.0</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <!-- Turn on s3guard tests-->
-    <profile>
-      <id>s3guard</id>
-      <activation>
-        <property>
-          <name>s3guard</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
-        <fs.s3a.s3guard.commmiter.test.enabled>true</fs.s3a.s3guard.commmiter.test.enabled>
-        <required.hadoop.version>2.11</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <!-- Switch to dynamo DB for s3guard. Has no effect unless s3guard is enabled -->
-    <profile>
-      <id>dynamo</id>
-      <activation>
-        <property>
-          <name>dynamo</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3guard.test.implementation>dynamo</fs.s3a.s3guard.test.implementation>
-      </properties>
-    </profile>
-
-    <!-- Switch to DynamoDBLocal for s3guard. Has no effect unless s3guard is enabled -->
-    <profile>
-      <id>dynamodblocal</id>
-      <activation>
-        <property>
-          <name>dynamodblocal</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3guard.test.implementation>dynamodblocal</fs.s3a.s3guard.test.implementation>
-      </properties>
-    </profile>
-
-    <!-- Switch s3guard from Authoritative=false to true
-     Has no effect unless s3guard is enabled -->
-    <profile>
-      <id>non-auth</id>
-      <activation>
-        <property>
-          <name>auth</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3guard.test.authoritative>true</fs.s3a.s3guard.test.authoritative>
-      </properties>
-    </profile>
-
-
-  </profiles>
 </project>

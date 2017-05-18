@@ -12,9 +12,9 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 
-# <a name="testing"></a>Testing Apache Spark's Cloud Integration
+# Cloud Examples
 
-This repository contains tests which verify Apache Spark's
+This modules contains tests which verify Apache Spark's
 integration and performance with object stores, specifically Amazon S3, Azure and Openstack.
 The underlying client libraries are part of Apache Hadoop —thus these tests can act as integration
 and regression tests for changes in the Hadoop codebase.
@@ -54,6 +54,32 @@ writing this is not yet in ASF spark.
         dev/make-distribution.sh -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.8.0
 
 
+## Building a compatible Hadoop version
+
+
+If you are working with Hadoop 2.7-2.8 you can use the shipping versions.
+
+To work with Hadoop trunk or s3guard branches, you need to build a local version
+of Hadoop with its internal version information set to 2.11, so that the hive 1.2.1
+JAR in Spark doesn't refuse to work with Hadoop
+
+
+```
+mvn -T1C install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11 
+
+```
+
+You may also need to make sure the versions of Guava used are consistent.
+That is left as an exercise for the reader.
+
+There is a test which explicitly checks the Hadoop version matches that passed
+in as `hadoop.required.version`; it implicitly checks that Guava is compatible
+across artifacts.
+
+
+```
+mvn -T1C test -DwildcardSuites=com.hortonworks.spark.cloud.common.HadoopVersionSuite  -Phadoop-3.0
+```
 
 ## Test Configuration
 
@@ -69,7 +95,7 @@ The file must be declared to the maven test run in the property `cloud.test.conf
 which can be done in the command line
 
 ```bash
-mvn test -Dcloud.test.configuration.file=../cloud.xml
+mvn -T1C test -Dcloud.test.configuration.file=../cloud.xml
 ```
 
 As this project looks for, and reads in any `build.properties` file in the project
@@ -301,7 +327,7 @@ This test can be executed as part of the suite `S3aIOSuite`, by setting the `sui
 of the test suite:
 
 ```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.hortonworks.sparkspark.cloud.s3.S3AIOSuite
+mvn -T1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.hortonworks.sparkspark.cloud.s3.S3AIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -312,7 +338,7 @@ A single test can be explicitly run by including the key in the `suites` propert
 after the suite name
 
 ```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-Dsuites=com.hortonworks.spark.cloud.s3.S3AIOSuite NewHadoopAPI`
+mvn -T1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-Dsuites=com.hortonworks.spark.cloud.s3.S3AIOSuite NewHadoopAPI`
 ```
 
 This will run all tests in the `S3AIOSuite` suite whose name contains the string `NewHadoopAPI`;
@@ -323,7 +349,7 @@ To run all tests of a specific infrastructure, use the `wildcardSuites` property
 under which all test suites should be executed.
 
 ```
-mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud.s3`
+mvn -T1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud.s3`
 ```
 
 Note that an absolute path is used to refer to the test configuration file in these examples.
@@ -406,7 +432,7 @@ the version returned by calls to `VersionInfo` will return the value set in `dec
 
 
 ```bash
-mvn install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11
+mvn -T1C install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11
 ```
 
 1. the `-DskipShade` option skips the JAR shading process, which takes a long time and is not needed here.
@@ -426,18 +452,21 @@ explicitly list them through `-Pdeclare-http-components`
 Example:
 
 ```bash
-mvn test -T 1C -Dspark.version=2.0.0.2.5.0.14-5 \
+mvn -T1C test -T 1C -Dspark.version=2.0.0.2.5.0.14-5 \
   -Dspark.cloud.jar=spark-cloud \
-  -Pdeclare-http-components \
   -Dcentral.repo=http://PRIVATE-REPO/nexus/content/ 
 ```
+
+You can of course also have private profiles in ` ~/.m2/settings.xml`.
+
+This is the best way to have consistent private repositories across multiple builds
 
 ### Example test runs
 
 
 Run the s3a tests (assuming the s3a.xml file contained/referenced the s3a binding information),
-with the Spark 2.2.0-SNAPSHOT binaries.
+with the Spark 2.3.0-SNAPSHOT binaries.
 
 ```bash
-mvn test -T 1C  -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.2.0-SNAPSHOT
+mvn -T1C test -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.3.0-SNAPSHOT
 ```

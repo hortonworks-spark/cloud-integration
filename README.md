@@ -1,12 +1,22 @@
-# spark-cloud-examples
+# Cloud Integration for Apache Spark
+
+The [cloud-integration](https://github.com/hortonworks-spark/cloud-integration) repository provides modules to
+improve Apache Spark's integration with cloud infrastructures.
+
+These modules
+
+## Modules
+
+### cloud-examples
 
 This does the packaging/integration tests for Spark and cloud against AWS, Azure and openstack.
 
-These are basic tests of the core functionality of I/O, streaming, using spark as a destination of work.
+These are basic tests of the core functionality of I/O, streaming.
 As well as running as unit tests, they have CLI entry points which can be used for scalable functional testing.
 
-(Though some of the code there is now starting to work with some private repos that I've created off public datasets; ping
-for help setting up your own copies).
 
-Passing these tests does not mean that you can safely use the object stores, particularly S3, as a destination of work.
-It's not consistent, and data may be lost.
+### s3guard-spark
+
+Support for the s3guard committers in Apache Spark.
+
+
