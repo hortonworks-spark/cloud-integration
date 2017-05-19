@@ -15,35 +15,26 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.utils
 
-import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.azure.AzureException
+import org.apache.hadoop.fs.s3a.RenameFailedException
 
 /**
- * Class to make Hadoop configurations serializable; uses the
- * `Writeable` operations to do this.
- * Note: this only serializes the explicitly set values, not any set
- * in site/default or other XML resources.
- * @param conf
+ * This class is used to ensure that a recent Hadoop version is on the classpath.
+ *
+ * If it does not compile: the version of Spark it is built against has out of date
+ * dependencies.
+ *
+ * If it does not load, the version of Spark it is running against is out of date.
+ *
+ * Currently: requires Hadoo 2.8+
  */
-class ConfigSerDeser(var conf: Configuration) extends Serializable {
+class ForceRecentHadoopVersion {
 
-  def this() {
-    this(new Configuration())
-  }
+  /** compile/link failure against Hadop 2.6 */
+  val requireAzure = new AzureException("needs Hadoop 2.7+")
 
-  def get(): Configuration = conf
-
-  private def writeObject (out: java.io.ObjectOutputStream): Unit = {
-    conf.write(out)
-  }
-
-  private def readObject (in: java.io.ObjectInputStream): Unit = {
-    conf = new Configuration()
-    conf.readFields(in)
-  }
-
-  private def readObjectNoData(): Unit = {
-    conf = new Configuration()
-  }
+  /** compile failure against Hadoop 2.7 */
+  val requireRecentAWS = new RenameFailedException("/", "Needs something", "")
 }

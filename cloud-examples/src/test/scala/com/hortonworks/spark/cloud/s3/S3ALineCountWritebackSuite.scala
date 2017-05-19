@@ -47,9 +47,9 @@ class S3ALineCountWritebackSuite extends CloudSuite with S3ATestSetup {
 
   ctest("S3ALineCountWriteback",
     "Execute the S3ALineCount example with the results written back to the test filesystem.",
-    !testAndCSVEndpointsDifferent(conf)) {
+    !testAndCSVEndpointsDifferent(getConf)) {
     val sourceFile = CSV_TESTFILE.get
-    val sourceFS = FileSystem.get(sourceFile.toUri, conf)
+    val sourceFS = FileSystem.get(sourceFile.toUri, getConf)
     val sourceInfo = sourceFS.getFileStatus(sourceFile)
     val sparkConf = newSparkConf()
     sparkConf.setAppName("S3LineCount")

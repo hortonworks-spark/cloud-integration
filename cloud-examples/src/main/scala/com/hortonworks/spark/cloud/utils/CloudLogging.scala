@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.utils
 
 import org.apache.log4j.{Level, LogManager, PropertyConfigurator}
 import org.slf4j.bridge.SLF4JBridgeHandler

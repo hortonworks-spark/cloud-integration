@@ -15,33 +15,35 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.azure
+package com.hortonworks.spark.cloud.utils
 
-import java.net.URI
-
-import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.conf.Configuration
 
 /**
- * Trait for Azure tests. Because no Azure-specific API calls are made, this test suite
- * will compile against Hadoop versions which lack the hadoop-azure module. However, all
- * the tests will be skipped.
+ * Class to make Hadoop configurations serializable; uses the
+ * `Writeable` operations to do this.
+ * Note: this only serializes the explicitly set values, not any set
+ * in site/default or other XML resources.
+ * @param conf
  */
-trait AzureTestSetup extends CloudSuite {
+class ConfigSerDeser(var conf: Configuration) extends Serializable {
 
-  override def enabled: Boolean =  {
-    getConf.getBoolean(AZURE_TESTS_ENABLED, false) &&
-        azureFsOnClasspath && super.enabled
+  def this() {
+    this(new Configuration())
   }
 
-  def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(AZURE_TEST_URI))
-    logDebug(s"Executing Azure tests against $uri")
-    createFilesystem(uri)
+  def get(): Configuration = conf
+
+  private def writeObject (out: java.io.ObjectOutputStream): Unit = {
+    conf.write(out)
   }
 
-  def azureFsOnClasspath: Boolean = {
-    null != CloudSuite.locateResource("org/apache/hadoop/fs/azure/AzureException.class")
+  private def readObject (in: java.io.ObjectInputStream): Unit = {
+    conf = new Configuration()
+    conf.readFields(in)
   }
 
+  private def readObjectNoData(): Unit = {
+    conf = new Configuration()
+  }
 }

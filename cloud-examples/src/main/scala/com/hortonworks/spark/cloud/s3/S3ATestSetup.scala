@@ -29,12 +29,12 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 trait S3ATestSetup extends CloudSuite with S3AConstants {
 
   override def enabled: Boolean = {
-    testConfiguration.exists(_.getBoolean(S3A_TESTS_ENABLED, false)) &&
+    getConf.getBoolean(S3A_TESTS_ENABLED, false) &&
       super.enabled
   }
 
   def initFS(): FileSystem = {
-    setupFilesystemConfiguration(conf)
+    setupFilesystemConfiguration(getConf)
 
     val s3aURI = new URI(requiredOption(S3A_TEST_URI))
     logDebug(s"Executing S3 tests against $s3aURI with read policy $inputPolicy")
@@ -58,7 +58,7 @@ trait S3ATestSetup extends CloudSuite with S3AConstants {
   }
 
   lazy val CSV_TESTFILE: Option[Path] = {
-    val pathname = conf.get(S3A_CSVFILE_PATH, S3A_CSV_PATH_DEFAULT)
+    val pathname = getConf.get(S3A_CSVFILE_PATH, S3A_CSV_PATH_DEFAULT)
     if (!pathname.isEmpty) Some(new Path(pathname)) else None
   }
 

@@ -24,6 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.s3.S3AConstants
+import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
 import org.scalatest.concurrent.Eventually
@@ -48,19 +49,16 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * This path does not contain any FS binding.
    */
   protected val TestDir: Path = {
-    new Path("/spark-cloud/" + this.getClass.getSimpleName)
+    new Path("/cloud-integration/" + this.getClass.getSimpleName)
   }
-
-  /**
-   * The configuration as loaded; may be undefined.
-   */
-  protected val testConfiguration: Option[Configuration] = loadConfiguration()
 
   /**
    * Accessor to the configuration, which must be non-empty.
    */
-  protected def conf: Configuration = testConfiguration.getOrElse {
-    throw new NoSuchElementException("No cloud test configuration provided")
+  private val config = loadConfiguration()
+
+  def getConf: Configuration = {
+    config
   }
 
   /**
@@ -91,7 +89,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
   /**
    * Determine the scale factor for larger tests.
    */
-  private lazy val scaleSizeFactor = conf.getInt(SCALE_TEST_SIZE_FACTOR,
+  private lazy val scaleSizeFactor = getConf.getInt(SCALE_TEST_SIZE_FACTOR,
     SCALE_TEST_SIZE_FACTOR_DEFAULT)
 
   /**
@@ -163,10 +161,10 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * @return the newly create FS.
    */
   protected def createFilesystem(fsURI: URI, registerToURI: Boolean = true): FileSystem = {
-    val fs = FileSystem.newInstance(fsURI, conf)
+    val fs = FileSystem.newInstance(fsURI, getConf)
     setFilesystem(fs)
     if (registerToURI) {
-      FSHelper.addFileSystemForTesting(fsURI, conf, fs)
+      FSHelper.addFileSystemForTesting(fsURI, getConf, fs)
     }
     fs
   }
@@ -209,7 +207,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * If this predicate is false, then tests defined in `ctest()` will be ignored
    * @return true if the test suite is enabled.
    */
-  protected def enabled: Boolean = testConfiguration.isDefined
+  protected def enabled: Boolean = true
 
   /**
    * Get a required option; throw an exception if the key is missing or an empty string.
@@ -217,7 +215,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * @return the trimmed string value.
    */
   protected def requiredOption(key: String): String = {
-    val v = conf.getTrimmed(key)
+    val v = getConf.getTrimmed(key)
     require(v != null && !v.isEmpty, s"Unset/empty configuration option $key")
     v
   }
@@ -264,7 +262,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
   def newSparkConf(fsuri: URI): SparkConf = {
     val sc = new SparkConf(false)
     addSuiteConfigurationOptions(sc)
-    conf.asScala.foreach { e =>
+    getConf.asScala.foreach { e =>
       hconf(sc, e.getKey, e.getValue)
     }
     hconf(sc, CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY, fsuri.toString)
@@ -279,7 +277,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * @return a configuration with the default FS that of the path.
    */
   def newSparkConf(path: Path): SparkConf = {
-    newSparkConf(path.getFileSystem(conf).getUri)
+    newSparkConf(path.getFileSystem(getConf).getUri)
   }
 
   /**
@@ -297,7 +295,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * @return a (cached) filesystem.
    */
   def getFilesystem(path: Path): FileSystem = {
-    FileSystem.newInstance(path.toUri, conf)
+    FileSystem.newInstance(path.toUri, getConf)
   }
 
   /**
@@ -308,7 +306,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * @return true if this is staging. Not checked: does Hadoop support staging.
    */
   def isUsingStagingCommitter(config: Configuration): Boolean = {
-    val committer = config.get(OUTPUTCOMMITTER_FACTORY_CLASS)
+    val committer = config.get(OUTPUTCOMMITTER_FACTORY_CLASS, "")
     committer.startsWith(STAGING)
   }
 }
@@ -333,11 +331,10 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
    * Throws FileNotFoundException if a configuration is named but not present.
    * @return the configuration
    */
-  def loadConfiguration(): Option[Configuration] = {
-    val filename = System.getProperty(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE, "").trim
-    logDebug(s"Configuration property = `$filename`")
+  def loadConfiguration(): Configuration = {
     val config = new Configuration(true)
-    if (filename != null && !filename.isEmpty && !UNSET_PROPERTY.equals(filename)) {
+    getKnownSysprop(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE).foreach { filename =>
+      logDebug(s"Configuration property = `$filename`")
       val f = new File(filename)
       if (f.exists()) {
         if (!configLogged.getAndSet(true)) {
@@ -346,26 +343,13 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
         config.addResource(f.toURI.toURL)
       } else {
         throw new FileNotFoundException(s"No file '$filename'" +
-            s" in property $SYSPROP_CLOUD_TEST_CONFIGURATION_FILE")
+          s" declared in property $SYSPROP_CLOUD_TEST_CONFIGURATION_FILE")
       }
-      // setup the committer from any property passed in
-      val orig = config
-        .get(OUTPUTCOMMITTER_FACTORY_CLASS, OUTPUTCOMMITTER_FACTORY_DEFAULT)
-      val committer = System.getProperty(SYSPROP_CLOUD_TEST_COMMITTER, orig)
-      if (committer != OUTPUTCOMMITTER_FACTORY_DEFAULT) {
-        logInfo(s"Using committer $committer")
-      }
-      config.set(OUTPUTCOMMITTER_FACTORY_CLASS, committer)
-      Some(config)
-    } else {
-      None
     }
-  }
-
-  def getAnyConfiguration(): Configuration = {
-    loadConfiguration().getOrElse(
-      return new Configuration()
-    )
+    // setup the committer from any property passed in
+    getKnownSysprop(SYSPROP_CLOUD_TEST_COMMITTER).foreach(committer =>
+      config.set(OUTPUTCOMMITTER_FACTORY_CLASS, committer))
+    config
   }
 
   /**
@@ -375,8 +359,31 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
    * @param keys list of system properties
    */
   def overlayConfiguration(conf: Configuration, keys: Seq[String]): Unit = {
-    keys.foreach(key => if (System.getProperty(key) != UNSET_PROPERTY)
-      conf.set(key, System.getProperty(key), "system property"))
+    keys.foreach(key => if (System.getProperty(key) != UNSET_PROPERTY) {
+      conf.set(key, System.getProperty(key), "system property")
+    })
+  }
+
+  /**
+   * Overlay a set of system properties to a configuration, unless the key
+   * is "(unset")
+   * @param conf config to patch
+   * @param keys list of system properties
+   */
+  def getTestOption(conf: Configuration, keys: Seq[String]): Unit = {
+    keys.foreach(key => getKnownSysprop(key).foreach( v =>
+      conf.set(key, v, "system property")))
+  }
+
+  /**
+   *  Get a known sysprop, return None if it was not there or it matched the
+   *  `unset` value
+   * @param key system property name
+   * @return any set value
+   */
+  def getKnownSysprop(key: String): Option[String] = {
+    val v = System.getProperty(key)
+    if (v == null || v.trim().isEmpty || v.trim == UNSET_PROPERTY) None else Some(v.trim)
   }
 
 }

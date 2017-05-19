@@ -17,6 +17,8 @@
 
 package com.hortonworks.spark.cloud
 
+import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
+
 import org.apache.spark.SparkConf
 
 /**
@@ -92,11 +94,10 @@ trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
     }
   }
 
-
-    /**
+  /**
    * Exit the system.
    * This may be overridden for tests: code must not assume that it never returns.
- *
+   *
    * @param exitCode exit code to exit with.
    */
   def exit(exitCode: Int): Unit = {

@@ -26,14 +26,15 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>cloud-examples</artifactId>
-  <name>cloud-examples</name>
+  <artifactId>cloud-committer</artifactId>
+  <name>cloud-committer</name>
   <packaging>jar</packaging>
 
   <description>
-    Contains integration tests for verifying spark jobs using cloud infra
-    as a source and destination; tests designed to work as scalatest tests
-    and as jobs which can be scaled up to run in test clusters.
+    Cloud commmiter.
+    Uses unstable internal APIs from Hadoop 3.x, and so must be kep in tight syc
+    with the hadoop version with which it was built.
+    Uses the cloud-examples modules for testing.
   </description>
 
   <properties>
@@ -148,6 +149,63 @@
       <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
+        <version>${alchim.scala-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>eclipse-add-source</id>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>scala-compile-first</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>scala-test-compile-first</id>
+            <phase>process-test-resources</phase>
+            <goals>
+              <goal>testCompile</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-scaladocs</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>doc-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+
+        <configuration>
+          <scalaVersion>${scala.version}</scalaVersion>
+          <recompileMode>incremental</recompileMode>
+          <useZincServer>true</useZincServer>
+          <args>
+            <arg>-unchecked</arg>
+            <arg>-deprecation</arg>
+            <arg>-feature</arg>
+          </args>
+          <jvmArgs>
+            <jvmArg>-Xms1024m</jvmArg>
+            <jvmArg>-Xmx1024m</jvmArg>
+            <!--
+                        <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
+                        <jvmArg>-XX:MaxPermSize=${MaxPermGen}</jvmArg>
+                        <jvmArg>-XX:ReservedCodeCacheSize=${CodeCacheSize}</jvmArg>
+            -->
+          </jvmArgs>
+          <javacArgs>
+            <javacArg>-source</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-target</javacArg>
+            <javacArg>${java.version}</javacArg>
+            <javacArg>-Xlint:all,-serial,-path</javacArg>
+          </javacArgs>
+        </configuration>
       </plugin>
 
       <!-- Enable surefire and scalatest in all children, in one place: -->
@@ -156,6 +214,27 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+        <!-- Note config is repeated in scalatest config -->
+        <configuration>
+          <skipTests>true</skipTests>
+          <includes>
+            <include>**/Test*.java</include>
+            <include>**/*Test.java</include>
+            <include>**/*TestCase.java</include>
+            <include>**/*Suite.java</include>
+          </includes>
+          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+
+          <systemProperties>
+            <java.awt.headless>true</java.awt.headless>
+            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
+            <spark.ui.enabled>false</spark.ui.enabled>
+            <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
+            <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
+          </systemProperties>
+          <failIfNoTests>false</failIfNoTests>
+        </configuration>
       </plugin>
 
 
@@ -163,20 +242,50 @@
       <plugin>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest-maven-plugin</artifactId>
+        <version>${scalatest-maven-plugin.version}</version>
+        <!-- Note config is repeated in surefire config -->
+        <configuration>
+          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+          <junitxml>.</junitxml>
+          <filereports>SparkTestSuite.txt</filereports>
+          <argLine>-ea</argLine>
+          <stderr/>
+          <environmentVariables>
+          </environmentVariables>
+          <systemProperties>
+            <!--<log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>-->
+            <log4j.debug>${log4j.debug}</log4j.debug>
+            <java.awt.headless>true</java.awt.headless>
+            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
+            <test.build.data>${test.build.data}</test.build.data>
+            <test.build.dir>${test.build.dir}</test.build.dir>
+            <hadoop.tmp.dir>${hadoop.tmp.dir}</hadoop.tmp.dir>
+            <spark.testing>1</spark.testing>
+            <spark.ui.enabled>false</spark.ui.enabled>
+            <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
+            <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
+            <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
+            <cloud.test.committer>${committer}</cloud.test.committer>
+            <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
+          </systemProperties>
+
+        </configuration>
+        <executions>
+          <execution>
+            <id>test</id>
+            <goals>
+              <goal>test</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
 
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
       </plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <configuration>
-          <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-        </configuration>
-      </plugin>
     </plugins>
   </build>
 

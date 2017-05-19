@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.FileSystem
 trait SwiftTestSetup extends CloudSuite {
 
   override def enabled: Boolean = {
-    testConfiguration.exists(_.getBoolean(SWIFT_TESTS_ENABLED, false))
+    getConf.getBoolean(SWIFT_TESTS_ENABLED, false)
   }
 
   def initFS(): FileSystem = {

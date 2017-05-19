@@ -30,7 +30,7 @@ class S3ALineCountSuite extends CloudSuite with S3ATestSetup {
 
   def init(): Unit = {
     if (enabled) {
-      setupFilesystemConfiguration(conf)
+      setupFilesystemConfiguration(getConf)
     }
   }
 

@@ -20,6 +20,7 @@ package com.hortonworks.spark.cloud
 import java.io.IOException
 import java.net.URI
 
+import com.hortonworks.spark.cloud.utils.ConfigSerDeser
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.util.PureJavaCrc32
 

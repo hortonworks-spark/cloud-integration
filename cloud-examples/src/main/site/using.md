@@ -85,5 +85,3 @@ while they are still being written. Applications can write straight to the monit
 
 #### <a name="checkpointing"></a>Checkpointing Streams to object stores
 
-
-### Testing

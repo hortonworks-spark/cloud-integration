@@ -46,11 +46,11 @@ abstract class NumbersRddTests extends CloudSuite {
     """.stripMargin) {
     val sparkConf = newSparkConf()
     // speculation enabled as it makes committing more complicated
-    conf.setBoolean("spark.speculation", true)
+    getConf.setBoolean("spark.speculation", true)
     val dest = testPath(filesystem, pathname)
     filesystem.delete(dest, true)
     // if the conf uses
-    val testConf = testConfiguration.get
+    val testConf = getConf
     val usingStagingCommitter = isUsingStagingCommitter(testConf)
     if (usingStagingCommitter) {
       // switch back to a localFS

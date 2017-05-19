@@ -49,7 +49,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
 
   def init(): Unit = {
     if (enabled) {
-      setupFilesystemConfiguration(conf)
+      setupFilesystemConfiguration(getConf)
     }
   }
 
@@ -120,8 +120,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
   }
 
   ctest("listFiles",
-    "List all files under the CSV parent dir. Disabled as it dies on Hadoop <2.8",
-    false) {
+    "List all files under the CSV parent dir") {
     val source = CSV_TESTFILE.get
     val fs = getFilesystem(source)
     val parent = source.getParent

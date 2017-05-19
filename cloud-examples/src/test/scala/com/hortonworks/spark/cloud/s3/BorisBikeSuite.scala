@@ -21,6 +21,7 @@ import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.RemoteIterator
 
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.SparkSession
 
 /**
  * A suite of tests working with boris bike data from Transport for London.
@@ -42,7 +43,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
 
   def init(): Unit = {
     if (enabled) {
-      setupFilesystemConfiguration(conf)
+      setupFilesystemConfiguration(getConf)
     }
   }
 
@@ -91,7 +92,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
 
   }
 
-  ctest("CSVToOrc", "boris bike stuff") {
+  ctest("CSVToORC", "boris bike stuff") {
     import org.apache.hadoop.fs._
     val bucket = "hwdev-steve-datasets-east"
     val srcDir = s"s3a://$bucket/travel/borisbike/"
@@ -101,7 +102,8 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     val destPath = new Path(s"s3a://$bucket/travel/orc/borisbike/")
     val fs = FileSystem.get(srcPath.toUri, sc.hadoopConfiguration)
     fs.delete(destPath, true)
-    val sql = new org.apache.spark.sql.hive.HiveContext(sc)
+
+    val sql = SparkSession.builder().enableHiveSupport().getOrCreate()
 
     val range = "2013-01-01-to-2013-01-05"
     val srcDataPath = new Path(srcPath, range + ".csv.gz")

@@ -39,7 +39,7 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup {
    */
   def init(): Unit = {
     if (enabled) {
-      setupFilesystemConfiguration(conf)
+      setupFilesystemConfiguration(getConf)
     }
   }
 
@@ -51,7 +51,7 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup {
    */
   def getCSVSourceAndFileSystem(): (Path, FileSystem) = {
     val source = CSV_TESTFILE.get
-    val config = new Configuration(conf)
+    val config = new Configuration(getConf)
     enableCSVEndpoint(config)
     val fs = FileSystem.newInstance(source.toUri, config)
     (source, fs)

@@ -23,13 +23,14 @@ import org.scalatest.Matchers
 import com.hortonworks.spark.cloud.CloudSuite._
 import org.apache.hadoop.util.VersionInfo
 import org.junit.Assume
+import org.junit.internal.AssumptionViolatedException
 
 import org.apache.spark.SparkFunSuite
 
 class HadoopVersionSuite extends SparkFunSuite with Matchers {
 
   test("Check Hadoop version") {
-    val configuration = getAnyConfiguration
+    val configuration = loadConfiguration()
 
     overlayConfiguration(
       configuration,
@@ -42,7 +43,13 @@ class HadoopVersionSuite extends SparkFunSuite with Matchers {
        | built by ${VersionInfo.getUser}
     """.stripMargin)
     val v = configuration.get(REQUIRED_HADOOP_VERSION, UNSET_PROPERTY)
-    Assume.assumeTrue(v != UNSET_PROPERTY)
-    assert(v == VersionInfo.getVersion())
+
+    val version = VersionInfo.getVersion()
+    logInfo(s"Hadoop declared version is ${version}")
+    if (v == UNSET_PROPERTY)  {
+      logWarning(s"Unset property ${REQUIRED_HADOOP_VERSION}")
+    } else {
+      assert(v == version)
+    }
   }
 }
