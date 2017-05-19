@@ -37,7 +37,7 @@ trait S3ATestSetup extends CloudSuite with S3AConstants {
     setupFilesystemConfiguration(getConf)
 
     val s3aURI = new URI(requiredOption(S3A_TEST_URI))
-    logDebug(s"Executing S3 tests against $s3aURI with read policy $inputPolicy")
+    logInfo(s"Executing S3 tests against $s3aURI with read policy $inputPolicy")
     createFilesystem(s3aURI)
   }
 

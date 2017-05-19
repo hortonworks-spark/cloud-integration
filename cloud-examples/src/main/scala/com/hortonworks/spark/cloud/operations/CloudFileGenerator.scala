@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.operations
 
 import java.io.IOException
 import java.net.URI
 
+import com.hortonworks.spark.cloud.ObjectStoreExample
 import com.hortonworks.spark.cloud.utils.ConfigSerDeser
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.util.PureJavaCrc32

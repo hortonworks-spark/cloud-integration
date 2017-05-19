@@ -17,7 +17,8 @@
 
 package com.hortonworks.spark.cloud.common
 
-import com.hortonworks.spark.cloud.{CloudDataFrames, CloudSuite}
+import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.operations.CloudDataFrames
 
 /**
  * Test dataframe and object store integration

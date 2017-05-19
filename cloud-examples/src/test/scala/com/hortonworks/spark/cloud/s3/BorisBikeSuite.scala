@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.RemoteIterator
+import org.apache.hadoop.fs._
 
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
@@ -67,22 +67,17 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
   ctest("DirOps", "simple directory ops in spark context process") {
     val source = CSV_TESTFILE.get
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
-
-    import org.apache.hadoop.fs._
     val landsat = "s3a://landsat-pds/scene_list.gz"
     val landsatPath = new Path(landsat)
     val fs = FileSystem.get(landsatPath.toUri, sc.hadoopConfiguration)
     val files = fs.listFiles(landsatPath.getParent, false)
     val listing = new RemoteOutputIterator(files)
     listing.foreach(print(_))
-
   }
 
   ctest("Boris", "boris bike stuff") {
     val source = CSV_TESTFILE.get
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
-
-    import org.apache.hadoop.fs._
     val dir = "s3a://hwdev-steve-datasets-east/travel/borisbike/"
     val dirPath = new Path(dir)
     val fs = FileSystem.get(dirPath.toUri, sc.hadoopConfiguration)
@@ -93,7 +88,6 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
   }
 
   ctest("CSVToORC", "boris bike stuff") {
-    import org.apache.hadoop.fs._
     val bucket = "hwdev-steve-datasets-east"
     val srcDir = s"s3a://$bucket/travel/borisbike/"
     val srcPath = new Path(srcDir)

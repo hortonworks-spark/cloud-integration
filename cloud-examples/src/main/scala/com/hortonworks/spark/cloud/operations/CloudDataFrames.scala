@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.operations
 
+import com.hortonworks.spark.cloud.ObjectStoreExample
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
@@ -75,14 +76,16 @@ class CloudDataFrames extends ObjectStoreExample {
 
       val generatedBase = new Path(dest, "generated")
       val fs = FileSystem.get(generatedBase.toUri, hConf)
-      fs.delete(generatedBase, true)
-      // formats to generate
+      fs.delete(generatedBase, true)      // formats to generate
       val formats = Seq("orc", "parquet", "json", "csv")
 
       // write a DF; return path and time to save
       def write(format: String): (Path, Long) = {
-        duration2(save(sourceData, new Path(generatedBase, format), format))
+        val path = new Path(generatedBase, format)
+        fs.delete(path, true)
+        duration2(save(sourceData, path, format))
       }
+
       // load a DF and verify it has the expected number of rows
       // return how long it took
       def validate(source: Path, srcFormat: String): Long = {

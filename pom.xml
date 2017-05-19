@@ -46,7 +46,6 @@
     <!-- These examples use the version of Hadoop which Spark was built with-->
     <spark.version>2.3.0-SNAPSHOT</spark.version>
     <scala.binary.version>2.11</scala.binary.version>
-    <maven.properties.version>1.0-alpha-2</maven.properties.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
@@ -124,6 +123,7 @@
     <maven-enforcer-plugin.version>1.4.1</maven-enforcer-plugin.version>
     <maven-javadoc-plugin.version>2.10.4</maven-javadoc-plugin.version>
     <maven-gpg-plugin.version>1.5</maven-gpg-plugin.version>
+    <maven.properties.version>1.0-alpha-2</maven.properties.version>
     <maven-remote-resources-plugin.version>1.5</maven-remote-resources-plugin.version>
     <maven-resources-plugin.version>3.0.1</maven-resources-plugin.version>
     <apache-rat-plugin.version>0.10</apache-rat-plugin.version>
@@ -289,6 +289,22 @@
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <version>3.6.1</version>
+          <configuration>
+            <source>${java.version}</source>
+            <target>${java.version}</target>
+            <useIncrementalCompilation>true</useIncrementalCompilation>
+            <encoding>UTF-8</encoding>
+            <maxmem>1024m</maxmem>
+            <fork>true</fork>
+            <compilerArgs>
+              <arg>-Xlint:all,-serial,-path</arg>
+            </compilerArgs>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-project-info-reports-plugin</artifactId>
           <version>2.9</version>
         </plugin>
@@ -317,13 +333,6 @@
                 <goal>testCompile</goal>
               </goals>
             </execution>
-            <execution>
-              <id>attach-scaladocs</id>
-              <phase>verify</phase>
-              <goals>
-                <goal>doc-jar</goal>
-              </goals>
-            </execution>
           </executions>
 
           <configuration>
@@ -336,7 +345,7 @@
               <arg>-feature</arg>
             </args>
             <jvmArgs>
-              <jvmArg>-Xms1024m</jvmArg>
+              <jvmArg>-Xms256m</jvmArg>
               <jvmArg>-Xmx1024m</jvmArg>
               <!--
                           <jvmArg>-XX:PermSize=${PermGen}</jvmArg>
@@ -353,36 +362,6 @@
             </javacArgs>
           </configuration>
         </plugin>
-
-        <!-- Enable surefire and scalatest in all children, in one place: -->
-        <!-- keep maven-failsafe-plugin version in sync -->
-        <!-- Surefire runs all Java tests -->
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>${maven-surefire-plugin.version}</version>
-          <!-- Note config is repeated in scalatest config -->
-          <configuration>
-            <skipTests>true</skipTests>
-            <includes>
-              <include>**/Test*.java</include>
-              <include>**/*Test.java</include>
-              <include>**/*TestCase.java</include>
-              <include>**/*Suite.java</include>
-            </includes>
-            <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-
-            <systemProperties>
-              <java.awt.headless>true</java.awt.headless>
-              <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
-              <spark.ui.enabled>false</spark.ui.enabled>
-              <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
-              <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
-            </systemProperties>
-            <failIfNoTests>false</failIfNoTests>
-          </configuration>
-        </plugin>
-
 
         <!-- Scalatest runs all Scala tests -->
         <plugin>
@@ -433,6 +412,19 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+<!--
+      <plugin>
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+-->
+    </plugins>
   </build>
   <profiles>
     <!--
@@ -487,27 +479,6 @@
       <id>oldjar</id>
       <properties>
         <spark.cloud.module.name>spark-cloud</spark.cloud.module.name>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>directory-commit</id>
-      <properties>
-        <committer>org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory</committer>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>partition-commit</id>
-      <properties>
-        <committer>org.apache.hadoop.fs.s3a.commit.staging.PartitonedStagingCommitterFactory</committer>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>magic-commit</id>
-      <properties>
-        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
       </properties>
     </profile>
 <!--
@@ -574,10 +545,42 @@
       </activation>
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
-        <fs.s3a.s3guard.commmiter.test.enabled>true</fs.s3a.s3guard.commmiter.test.enabled>
+        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <required.hadoop.version>2.11</required.hadoop.version>
       </properties>
     </profile>
+
+
+    <profile>
+      <id>staging</id>
+      <properties>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <required.hadoop.version>2.11</required.hadoop.version>
+        <committer>org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory</committer>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>partition</id>
+      <properties>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <required.hadoop.version>2.11</required.hadoop.version>
+        <committer>org.apache.hadoop.fs.s3a.commit.staging.PartitonedStagingCommitterFactory</committer>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>magic</id>
+      <properties>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <required.hadoop.version>2.11</required.hadoop.version>
+        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
+      </properties>
+    </profile>
+
 
     <!-- Switch to dynamo DB for s3guard. Has no effect unless s3guard is enabled -->
     <profile>

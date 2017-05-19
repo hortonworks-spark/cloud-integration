@@ -104,8 +104,10 @@
 
   </dependencies>
   <build>
+<!--
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
+-->
     <plugins>
       <!--read in a build.properties file if defined-->
       <plugin>
@@ -146,18 +148,14 @@
       -->
 
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+      </plugin>
+
+      <plugin>
         <groupId>net.alchim31.maven</groupId>
         <artifactId>scala-maven-plugin</artifactId>
       </plugin>
-
-      <!-- Enable surefire and scalatest in all children, in one place: -->
-      <!-- keep maven-failsafe-plugin version in sync -->
-      <!-- Surefire runs all Java tests -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-      </plugin>
-
 
       <!-- Scalatest runs all Scala tests -->
       <plugin>
@@ -177,6 +175,24 @@
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>
       </plugin>
+
+      <!--Clean up stuff which gets into the project dir on a test run-->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-clean-plugin</artifactId>
+        <version>3.0.0</version>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>metastore_db</directory>
+            </fileset>
+            <fileset>
+              <directory>spark-warehouse</directory>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+
     </plugins>
   </build>
 

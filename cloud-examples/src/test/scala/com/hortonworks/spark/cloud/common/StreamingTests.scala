@@ -17,7 +17,8 @@
 
 package com.hortonworks.spark.cloud.common
 
-import com.hortonworks.spark.cloud.{CloudStreaming, CloudSuite}
+import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.operations.CloudStreaming
 
 /**
  * Test Streaming.

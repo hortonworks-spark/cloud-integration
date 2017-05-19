@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudStreaming
+import com.hortonworks.spark.cloud.operations.CloudStreaming
 
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming._

@@ -26,9 +26,8 @@ import org.apache.hadoop.fs._
 
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.{DataFrame, SQLContext, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.DataTypes._
-import org.apache.spark.sql.functions._
 
 /**
  * Fun with the boris bike dataset
@@ -115,6 +114,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
         .builder
         .appName("BorisBike1")
         .config(sparkConf)
+        .enableHiveSupport()
         .getOrCreate()
 
     val srcBucket = "hwdev-steve-datasets-east"
@@ -134,7 +134,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
 
     try {
       val sc = spark.sparkContext
-      val sql = new org.apache.spark.sql.SQLContext(sc)
+      val sql = sc
 
       val config = new Configuration(sc.hadoopConfiguration)
       config.set(INPUT_FADVISE, RANDOM_IO)
@@ -148,8 +148,8 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
       }
       destFS.delete(destPath2, true)
 
-      importFromCSV(spark, sc, sql, srcPath, destPath)
-      simpleOperations(spark, sc, sql, destPath, destPath2)
+      importFromCSV(spark, sc, srcPath, destPath)
+      simpleOperations(spark, sc, destPath, destPath2)
 
       // log any published filesystem state
       println(s"Source: FS: ${srcPath.getFileSystem(sc.hadoopConfiguration)}")
@@ -166,7 +166,6 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
   def importFromCSV(
       spark: SparkSession,
       sc: SparkContext,
-      sql: SQLContext,
       srcPath: Path,
       destPath: Path): Unit = {
     val config = new Configuration(sc.hadoopConfiguration)
@@ -183,7 +182,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
       "inferSchema" -> "false",
       "mode" -> "DROPMALFORMED")
     // this is used to implicitly convert an RDD to a DataFrame.
-    val rawCsv = sql.read.options(csvOptions)
+    val rawCsv = spark.read.options(csvOptions)
       .csv(srcPath.toString)
 
     rawCsv.show()
@@ -221,7 +220,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
 
     logInfo(s"Reading ORC from $destPath")
 
-    val orcDF = sql.read.orc(destPath.toString);
+    val orcDF = spark.read.orc(destPath.toString);
     orcDF.show()
     val orcRowCount = orcDF.count()
     val generatedFiles = destFS.listStatus(destPath)
@@ -236,11 +235,10 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
   def simpleOperations(
       spark: SparkSession,
       sc: SparkContext,
-      sql: SQLContext,
       orcPath: Path,
       outPath: Path): Unit = {
-    import sql.implicits._
-    val orcDF = sql.read.orc(orcPath.toString);
+    import spark.implicits._
+    val orcDF = spark.read.orc(orcPath.toString);
 //    orcDF.show()
     val coreDF = orcDF
       .select(_bike, _time, _startstation_name, _endstation_name)

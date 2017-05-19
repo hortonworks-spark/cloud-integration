@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudFileGenerator
+import com.hortonworks.spark.cloud.operations.CloudFileGenerator
 
 /**
  * Generate a file containing some numbers in the remote repository.

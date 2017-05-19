@@ -17,8 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudDataFrames
 import com.hortonworks.spark.cloud.common.DataFrameTests
+import com.hortonworks.spark.cloud.operations.CloudDataFrames
 
 /**
  * Test the [S3DataFrames] logic.

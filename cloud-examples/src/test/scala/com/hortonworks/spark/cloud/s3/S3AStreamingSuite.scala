@@ -17,8 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudStreaming
 import com.hortonworks.spark.cloud.common.StreamingTests
+import com.hortonworks.spark.cloud.operations.CloudStreaming
 
 /**
  * Test Streaming against S3A.

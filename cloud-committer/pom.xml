@@ -31,7 +31,7 @@
   <packaging>jar</packaging>
 
   <description>
-    Cloud commmiter.
+    Cloud committer.
     Uses unstable internal APIs from Hadoop 3.x, and so must be kep in tight syc
     with the hadoop version with which it was built.
     Uses the cloud-examples modules for testing.

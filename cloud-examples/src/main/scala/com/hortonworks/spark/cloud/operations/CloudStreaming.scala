@@ -15,10 +15,11 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.operations
 
 import scala.collection.mutable.StringBuilder
 
+import com.hortonworks.spark.cloud.ObjectStoreExample
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.SparkConf

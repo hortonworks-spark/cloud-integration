@@ -22,6 +22,7 @@ import java.util
 import java.util.{ArrayList, List}
 
 import com.hortonworks.spark.cloud.ObjectStoreOperations
+import com.hortonworks.spark.cloud.persist.SuccessData
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.scalatest.Assertions
@@ -49,14 +50,14 @@ class S3AOperations(fs: FileSystem) extends ObjectStoreOperations with
      try {
        val status = s3aFS.getFileStatus(successFile)
        assert(status.getLen != 0, "Not committed with an S3A committer :" + destDir)
-       val body = get(fs, successFile)
-       val json = loadJson(fs, successFile)
-       val name = Option(json.get("committer")).map(_.asText("unknown"))
-         .getOrElse(throw new IOException(s"No committer in $body"))
+       val successData = SuccessData.load(s3aFS, successFile)
+       logInfo(s"success data at $successFile : ${successData.toString}")
+       logInfo(successData.dumpMetrics("  ", " =  ", "\n"))
 
-       committer.foreach(n => assert(n === name, s"in $body"))
-       val files = json.get("filenames")
-       assert(files != null, s"No 'filenames' in $body")
+       committer.foreach(n =>
+         assert(n === successData.getCommitter, s"in $successData"))
+       val files = successData.getFilenames
+       assert(files != null, s"No 'filenames' in $successData")
        // TODO: file analysis
 
      } catch {
