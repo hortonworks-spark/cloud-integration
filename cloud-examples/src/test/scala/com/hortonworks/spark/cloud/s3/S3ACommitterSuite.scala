@@ -18,8 +18,9 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.s3a.S3AFileSystem
 
+import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
 class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
@@ -33,15 +34,85 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     }
   }
 
-  ctest("SimpleOutput", "generate simple output for ease of breakpoints") {
-    val local = FileSystem.getLocal(getConf)
-    val sparkConf = newSparkConf(local.getUri)
-    sparkConf.setAppName("DataFrames")
-    val destDir = testPath(filesystem, "committer")
-    filesystem.delete(destDir, true)
+  // set the commit algorithm to 3 to force failures
+  val COMMITTER_OPTIONS = Map(
+    "spark.hadoop." + MR_ALGORITHM_VERSION -> "3",
+    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
+
+  /**
+   * Override point for suites: a method which is called
+   * in all the `newSparkConf()` methods.
+   * This can be used to alter values for the configuration.
+   * It is called before the configuration read in from the command line
+   * is applied, so that tests can override the values applied in-code.
+   *
+   * @param sparkConf spark configuration to alter
+   */
+  override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
+    super.addSuiteConfigurationOptions(sparkConf)
+    sparkConf.setAll(COMMITTER_OPTIONS)
+  }
+
+  ctest("propagation",  "verify property passdown") {
+    val name = expectSome(CloudSuite.getKnownSysprop(S3A_COMMITTER_NAME),
+      s"Unset property ${S3A_COMMITTER_NAME}")
+    logInfo(s"Committer name is $name")
+
+    val conf = getConf
+    assert(getConf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false),
+      "committer setup not passed in")
+    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
+    val cclass = Class.forName(committer)
+    logInfo(s"Committer is $cclass")
+  }
+
+  /**
+   * This is the least complex of the output writers, the original RDD
+   * API.
+   */
+  ctest("saveAsNewAPIHadoopFile",
+    "Write output via the RDD saveAsNewAPIHadoopFile API", true) {
+
+    // store the S3A FS the test is bonded to
+    val s3 = filesystem.asInstanceOf[S3AFileSystem]
+
+    // switch to the local FS for staging
+    val local = getLocalFS
+    setLocalFS();
+
+    val sparkConf = newSparkConf("saveAsFile", local.getUri)
+    val destDir = testPath(s3, "saveAsFile")
+    s3.delete(destDir, true)
     val spark = SparkSession
       .builder
-      .appName("DataFrames")
+      .config(sparkConf)
+      .enableHiveSupport
+      .getOrCreate()
+    val operations = new S3AOperations(s3)
+    val sc = spark.sparkContext
+    val conf = sc.hadoopConfiguration
+    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
+
+    val numRows = 10
+
+    val sourceData = sc.range(0, numRows).map(i => i)
+    val format = "orc"
+    duration(s"write to $destDir in format $format") {
+      saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
+    }
+    operations.maybeVerifyCommitter(destDir, None, conf, Some(1))
+  }
+
+  ctest("Dataframe", "Write output via the DataFrame API", false) {
+    val local = getLocalFS
+    val sparkConf = newSparkConf("DataFrames", local.getUri)
+    val s3 = filesystem.asInstanceOf[S3AFileSystem]
+    val destDir = testPath(s3, "dataframe-committer")
+    val committer = None
+
+    s3.delete(destDir, true)
+    val spark = SparkSession
+      .builder
       .config(sparkConf)
       .enableHiveSupport
       .getOrCreate()
@@ -54,9 +125,9 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     duration(s"write to $destDir in format $format") {
       sourceData.write.format(format).save(destDir.toString)
     }
-    val operations = new S3AOperations(filesystem)
-    if (conf.getBoolean(S3GUARD_COMMITTER_TEST_ENABLED, false)) {
-      operations.verifyS3Committer(destDir, None)
-    }
+    val operations = new S3AOperations(s3)
+    operations.maybeVerifyCommitter(destDir, None, conf, Some(1))
   }
+
+
 }

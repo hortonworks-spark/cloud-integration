@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.s3.S3AConstants
-import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
+import com.hortonworks.spark.cloud.utils.{CloudLogging, ExtraAssertions, TimeOperations}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
 import org.scalatest.concurrent.Eventually
@@ -40,7 +40,8 @@ import org.apache.spark.{LocalSparkContext, SparkConf}
  */
 abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
     with LocalSparkContext with BeforeAndAfter with Matchers with TimeOperations
-    with ObjectStoreOperations with Eventually with S3AConstants {
+    with ObjectStoreOperations with Eventually with S3AConstants with
+  ExtraAssertions {
 
   import CloudSuite._
 
@@ -53,7 +54,7 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
   }
 
   /**
-   * Accessor to the configuration, which must be non-empty.
+   * Accessor to the configuration.
    */
   private val config = loadConfiguration()
 
@@ -147,6 +148,21 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
       throw new IllegalArgumentException("Test filesystem cannot be local filesystem")
     }
     _filesystem = Some(fs)
+  }
+
+  /**
+   * Explicitly set the FS to be the local FS.
+   */
+  protected def setLocalFS(): Unit = {
+    _filesystem = Some(getLocalFS)
+  }
+
+  /**
+   * Get the local filesystem
+   * @return the local FS.
+   */
+  protected def getLocalFS: LocalFileSystem = {
+    FileSystem.getLocal(getConf)
   }
 
   /**
@@ -259,6 +275,19 @@ abstract class CloudSuite extends FunSuite with CloudLogging with CloudTestKeys
    * @param fsuri the URI of the default filesystem
    * @return the configuration
    */
+  def newSparkConf(name: String, fsuri: URI): SparkConf = {
+    val sparkConf = newSparkConf(fsuri)
+    sparkConf.setAppName("DataFrames")
+    sparkConf
+  }
+
+  /**
+   * Create a `SparkConf` instance, setting the default filesystem to that of `fsuri`.
+   * All options loaded from the test configuration
+   * XML file will be added as hadoop options.
+   * @param fsuri the URI of the default filesystem
+   * @return the configuration
+   */
   def newSparkConf(fsuri: URI): SparkConf = {
     val sc = new SparkConf(false)
     addSuiteConfigurationOptions(sc)
@@ -346,9 +375,21 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
           s" declared in property $SYSPROP_CLOUD_TEST_CONFIGURATION_FILE")
       }
     }
+    overlayConfiguration(
+      config,
+      Seq(
+        REQUIRED_HADOOP_VERSION,
+        S3A_COMMITTER_TEST_ENABLED,
+        S3GUARD_TEST_ENABLED
+      )
+    )
+
     // setup the committer from any property passed in
-    getKnownSysprop(SYSPROP_CLOUD_TEST_COMMITTER).foreach(committer =>
-      config.set(OUTPUTCOMMITTER_FACTORY_CLASS, committer))
+    getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
+      val factory = COMMITTERS(committer)
+      logInfo(s"Using committer factory $factory")
+      config.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
+    })
     config
   }
 
@@ -359,8 +400,10 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
    * @param keys list of system properties
    */
   def overlayConfiguration(conf: Configuration, keys: Seq[String]): Unit = {
-    keys.foreach(key => if (System.getProperty(key) != UNSET_PROPERTY) {
-      conf.set(key, System.getProperty(key), "system property")
+    keys.foreach(key => {
+      getKnownSysprop(key).foreach( v =>
+        conf.set(key, v, "system property")
+      )
     })
   }
 

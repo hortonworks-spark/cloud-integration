@@ -87,7 +87,7 @@ trait S3AConstants {
    */
   val FAST_UPLOAD_BYTEBUFFER = "bytebuffer"
 
-  val SYSPROP_CLOUD_TEST_COMMITTER = "cloud.test.committer"
+  val S3A_COMMITTER_NAME = "fs.s3a.committer.name"
 
   val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class";
 
@@ -97,5 +97,16 @@ trait S3AConstants {
   val STAGING = "org.apache.hadoop.fs.s3a.commit.staging."
   val DIRECTORY_COMMITTER = STAGING + "DirectoryStagingCommitterFactory"
   val PARTITIONED_COMMITTER = STAGING + "PartitonedStagingCommitterFactory";
+  val STAGING_COMMITTER = STAGING + "StagingCommitterFactory";
+  val MAGIC_COMMITTER = "org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory";
+  val DYNAMIC_COMMITTER = "org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory";
 
+
+  val COMMITTERS = Map(
+    "magic" -> MAGIC_COMMITTER,
+    "staging" -> STAGING_COMMITTER,
+    "dynamic" -> DYNAMIC_COMMITTER,
+    "directory" -> DIRECTORY_COMMITTER,
+    "partitioned" -> PARTITIONED_COMMITTER
+    )
 }

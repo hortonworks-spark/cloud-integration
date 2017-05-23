@@ -35,7 +35,14 @@ trait S3ATestSetup extends CloudSuite with S3AConstants {
 
   def initFS(): FileSystem = {
     setupFilesystemConfiguration(getConf)
+    createTestS3AFS
+  }
 
+  /**
+   * do the work of setting up the S3Test FS
+   * @return the filesystem
+   */
+  protected def createTestS3AFS: FileSystem = {
     val s3aURI = new URI(requiredOption(S3A_TEST_URI))
     logInfo(s"Executing S3 tests against $s3aURI with read policy $inputPolicy")
     createFilesystem(s3aURI)
@@ -44,6 +51,7 @@ trait S3ATestSetup extends CloudSuite with S3AConstants {
   /**
    * Overrride point: set up the configuration for the filesystem.
    * The base implementation sets up buffer directory, block size and IO Policy.
+ *
    * @param config configuration to set up
    */
   def setupFilesystemConfiguration(config: Configuration): Unit = {

@@ -168,7 +168,7 @@ trait CloudTestKeys {
   /**
    * Indicates that any committer tests are enabled
    */
-  val S3GUARD_COMMITTER_TEST_ENABLED = "fs.s3a.committer.test.enabled"
+  val S3A_COMMITTER_TEST_ENABLED = "fs.s3a.committer.test.enabled"
 
   /**
    * This is the "Pending" directory of the FileOutputCommitter;

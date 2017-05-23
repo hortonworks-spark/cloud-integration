@@ -38,9 +38,9 @@ object S3ADataFrames extends CloudDataFrames with S3AExampleSetup {
       results: Seq[(String, Path, Long, Long)]): Unit = {
 
     val operations = new S3AOperations(fs)
-    if (conf.getBoolean(S3GUARD_COMMITTER_TEST_ENABLED, false)) {
+    if (conf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false)) {
       results.foreach((tuple: (String, Path, Long, Long)) => {
-         operations.verifyS3Committer(tuple._2, None)
+         operations.verifyS3Committer(tuple._2, None, None)
       })
     }
 

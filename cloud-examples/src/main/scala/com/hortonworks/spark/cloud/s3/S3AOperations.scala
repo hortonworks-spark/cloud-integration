@@ -17,53 +17,89 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import java.io.{FileNotFoundException, IOException}
-import java.util
-import java.util.{ArrayList, List}
+import java.io.FileNotFoundException
+
+import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.ObjectStoreOperations
 import com.hortonworks.spark.cloud.persist.SuccessData
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.S3AFileSystem
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 import org.scalatest.Assertions
 
 /**
  * General S3A operations against a filesystem.
  */
-class S3AOperations(fs: FileSystem) extends ObjectStoreOperations with
-  Assertions {
+class S3AOperations(sourceFs: FileSystem)
+  extends ObjectStoreOperations with Assertions {
 
   /**
    * S3A Filesystem.
    */
-   private val s3aFS = fs.asInstanceOf[S3AFileSystem]
+  private val fs = sourceFs.asInstanceOf[S3AFileSystem]
 
   /**
    * Verify that an S3A committer was used
+   *
    * @param destDir destination directory of work
    * @param committer commiter name, if known
+   * @param fileCount expected number of files
    */
-   def verifyS3Committer(destDir: Path, committer: Option[String]): Unit = {
-     s3aFS.getFileStatus(destDir)
-     val successFile = new Path(destDir, SUCCESS_FILE_NAME)
+  def verifyS3Committer(
+      destDir: Path,
+      committer: Option[String],
+      fileCount: Option[Integer]): SuccessData = {
+    fs.getFileStatus(destDir)
+    val successFile = new Path(destDir, SUCCESS_FILE_NAME)
 
-     try {
-       val status = s3aFS.getFileStatus(successFile)
-       assert(status.getLen != 0, "Not committed with an S3A committer :" + destDir)
-       val successData = SuccessData.load(s3aFS, successFile)
-       logInfo(s"success data at $successFile : ${successData.toString}")
-       logInfo(successData.dumpMetrics("  ", " =  ", "\n"))
+    var status: FileStatus = null
+    try {
+      status = fs.getFileStatus(successFile)
+    } catch {
+      case _: FileNotFoundException =>
+        throw new FileNotFoundException(
+          "No commit success file: " + successFile)
+    }
+    assert(status.getLen != 0,
+      s"Not committed with an S3A committer : ${destDir}")
+    val successData = SuccessData.load(fs, successFile)
+    logInfo(s"success data at $successFile : ${successData.toString}")
+    logInfo(successData.dumpMetrics("  ", " =  ", "\n"))
+    committer.foreach(n =>
+      assert(n === successData.getCommitter, s"in $successData"))
+    val files = successData.getFilenames
+    assert(files != null, s"No 'filenames' in $successData")
+    fileCount.foreach(expected =>
+      assert(expected === files.size(), s"Not enough files in $successData"))
+    val fileset = files.asScala
+    fileset.map(p => fs.makeQualified(new Path(p))).foreach { p =>
+      val st = fs.getFileStatus(p)
+      logInfo(s"${st.getPath} size=${st.getLen}")
+    }
+    successData
+  }
 
-       committer.foreach(n =>
-         assert(n === successData.getCommitter, s"in $successData"))
-       val files = successData.getFilenames
-       assert(files != null, s"No 'filenames' in $successData")
-       // TODO: file analysis
-
-     } catch {
-       case _: FileNotFoundException =>
-         throw new FileNotFoundException("No commit success file: " + successFile)
-     }
-   }
+  /**
+   * If the committer is flagged as enabled, verify that it was used; return
+   * the success data.
+   *
+   * @param destDir destination
+   * @param committer Committer name to look for in data
+   * @param conf conf to query
+   * @param fileCount expected number of files
+   * @return any loaded success data
+   */
+  def maybeVerifyCommitter(
+      destDir: Path,
+      committer: Option[String],
+      conf: Configuration,
+      fileCount: Option[Integer]): Option[SuccessData] = {
+    if (conf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false)) {
+      Some(verifyS3Committer(destDir, None, fileCount))
+    } else {
+      None
+    }
+  }
 
 }

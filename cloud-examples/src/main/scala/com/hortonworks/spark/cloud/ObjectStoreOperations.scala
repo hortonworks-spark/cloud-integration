@@ -26,11 +26,12 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
+import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
 import org.apache.hadoop.io.{NullWritable, Text}
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 
 import org.apache.spark.SparkConf
-import org.apache.spark.rdd.RDD
+import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.apache.spark.sql._
 
 /**
@@ -74,16 +75,12 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
         (NullWritable.get(), text)
       }
     }
-    val pathFS = FileSystem.get(path.toUri, conf)
-    val confWithTargetFS = new Configuration(conf)
-    confWithTargetFS.set(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY,
-      pathFS.getUri.toString)
-    val pairOps = RDD.rddToPairRDDFunctions(r)(nullWritableClassTag, textClassTag, null)
+    val pairOps = new PairRDDFunctions(r)
     pairOps.saveAsNewAPIHadoopFile(
       path.toUri.toString,
       keyClass, valueClass,
-      classOf[org.apache.hadoop.mapreduce.lib.output.TextOutputFormat[NullWritable, Text]],
-      confWithTargetFS)
+      classOf[TextOutputFormat[NullWritable, Text]],
+      conf)
   }
 
   /**
@@ -245,7 +242,7 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     "spark.sql.parquet.filterPushdown" -> "true")
 
   val MAPREDUCE_OPTIONS = Map(
-    "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
+//    "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
     "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
 
   // //    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",

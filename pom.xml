@@ -105,7 +105,8 @@
     <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
     <!-- if this flag is set, the code assumes that s3guard is being used and
     then loads _SUCCESS as JSON-->
-    <fs.s3a.s3guard.committer.test.enabled>false</fs.s3a.s3guard.committer.test.enabled>
+    <fs.s3a.committer.test.enabled>false</fs.s3a.committer.test.enabled>
+    <fs.s3a.committer.name>unset</fs.s3a.committer.name>
 
 
     <!-- plugins -->
@@ -390,8 +391,9 @@
               <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
               <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
               <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
-              <cloud.test.committer>${committer}</cloud.test.committer>
               <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
+              <fs.s3a.committer.test.enabled>${fs.s3a.committer.test.enabled}</fs.s3a.committer.test.enabled>
+              <fs.s3a.committer.name>${fs.s3a.committer.name}</fs.s3a.committer.name>
             </systemProperties>
 
           </configuration>
@@ -546,6 +548,7 @@
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <required.hadoop.version>2.11</required.hadoop.version>
       </properties>
     </profile>
@@ -554,10 +557,23 @@
     <profile>
       <id>staging</id>
       <properties>
+        <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
+        <fs.s3a.committer.name>staging</fs.s3a.committer.name>
+      </properties>
+    </profile>
+
+
+    <profile>
+      <id>directory</id>
+      <properties>
         <required.hadoop.version>2.11</required.hadoop.version>
-        <committer>org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory</committer>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
+        <fs.s3a.committer.name>directory</fs.s3a.committer.name>
       </properties>
     </profile>
 
@@ -566,8 +582,9 @@
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <required.hadoop.version>2.11</required.hadoop.version>
-        <committer>org.apache.hadoop.fs.s3a.commit.staging.PartitonedStagingCommitterFactory</committer>
+        <fs.s3a.committer.name>partitioned</fs.s3a.committer.name>
       </properties>
     </profile>
 
@@ -576,8 +593,9 @@
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <required.hadoop.version>2.11</required.hadoop.version>
-        <committer>org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory</committer>
+        <fs.s3a.committer.name>magic</fs.s3a.committer.name>
       </properties>
     </profile>
 
