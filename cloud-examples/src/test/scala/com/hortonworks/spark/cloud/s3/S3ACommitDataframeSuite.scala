@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
-class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
+class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
 
   init()
 
@@ -49,53 +49,30 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
   }
 
-  ctest("propagation",  "verify property passdown") {
-    val name = expectSome(CloudSuite.getKnownSysprop(S3A_COMMITTER_NAME),
-      s"Unset property ${S3A_COMMITTER_NAME}")
-    logInfo(s"Committer name is $name")
 
-    val conf = getConf
-    assert(getConf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false),
-      "committer setup not passed in")
-    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
-    val cclass = Class.forName(committer)
-    logInfo(s"Committer is $cclass")
-  }
-
-  /**
-   * This is the least complex of the output writers, the original RDD
-   * API.
-   */
-  ctest("saveAsNewAPIHadoopFile",
-    "Write output via the RDD saveAsNewAPIHadoopFile API", true) {
-
-    // store the S3A FS the test is bonded to
-    val s3 = filesystem.asInstanceOf[S3AFileSystem]
-
-    // switch to the local FS for staging
+  ctest("Dataframe", "Write output via the DataFrame API") {
     val local = getLocalFS
-    setLocalFS();
+    val sparkConf = newSparkConf("DataFrames", local.getUri)
+    val s3 = filesystem.asInstanceOf[S3AFileSystem]
+    val destDir = testPath(s3, "dataframe-committer")
+    val committer = None
 
-    val sparkConf = newSparkConf("saveAsFile", local.getUri)
-    val destDir = testPath(s3, "saveAsFile")
     s3.delete(destDir, true)
     val spark = SparkSession
       .builder
       .config(sparkConf)
       .enableHiveSupport
       .getOrCreate()
-    val operations = new S3AOperations(s3)
+    import spark.implicits._
     val sc = spark.sparkContext
     val conf = sc.hadoopConfiguration
-    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
-
     val numRows = 10
-
-    val sourceData = sc.range(0, numRows).map(i => i)
-    val format = "orc"
+    val sourceData = spark.range(0, numRows).map(i => (i, i.toString))
+    val format = "csv"
     duration(s"write to $destDir in format $format") {
-      saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
+      sourceData.write.format(format).save(destDir.toString)
     }
+    val operations = new S3AOperations(s3)
     operations.maybeVerifyCommitter(destDir, None, conf, Some(1))
   }
 

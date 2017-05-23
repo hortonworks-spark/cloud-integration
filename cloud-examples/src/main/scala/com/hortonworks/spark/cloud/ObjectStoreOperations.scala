@@ -23,6 +23,7 @@ import java.net.URL
 import scala.reflect.ClassTag
 
 import com.fasterxml.jackson.databind.JsonNode
+import com.hortonworks.spark.cloud.s3.SparkS3ACommitter
 import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
@@ -242,10 +243,14 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     "spark.sql.parquet.filterPushdown" -> "true")
 
   val MAPREDUCE_OPTIONS = Map(
-//    "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
+    "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
     "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
 
-  // //    "spark.hadoop.mapreduce.fileoutputcommitter.cleanup.skipped" -> "true",
+  // set the commit algorithm to 3 to force failures
+  val COMMITTER_OPTIONS = Map(
+    "spark.hadoop." + MR_ALGORITHM_VERSION -> "3",
+    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
+
 
   /**
    * Set a Hadoop option in a spark configuration.
