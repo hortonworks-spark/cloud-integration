@@ -17,10 +17,11 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import java.io.IOException
+
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.{JobContext, OutputCommitter, TaskAttemptContext}
-import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter;
-
+import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter
 import org.apache.spark.SparkConf
 import org.apache.spark.internal.io.FileCommitProtocol.TaskCommitMessage
 import org.apache.spark.internal.io.{FileCommitProtocol, HadoopMapReduceCommitProtocol}
@@ -99,7 +100,12 @@ class SparkS3ACommitter(jobId: String, path: String)
   }
 
   override def abortJob(jobContext: JobContext): Unit = {
-    super.abortJob(jobContext)
+    try {
+      super.abortJob(jobContext)
+    } catch {
+      case e: IOException =>
+        logWarning("Abort operation failed", e)
+    }
   }
 
   override def setupTask(taskContext: TaskAttemptContext): Unit = {

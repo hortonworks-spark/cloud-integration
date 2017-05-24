@@ -35,6 +35,9 @@
     Uses unstable internal APIs from Hadoop 3.x, and so must be kep in tight syc
     with the hadoop version with which it was built.
     Uses the cloud-examples modules for testing.
+
+    This committer does not export any of its dependencies; applications
+    using the committer must do this.
   </description>
 
   <properties>
@@ -48,62 +51,25 @@
       <artifactId>spark-core_${scala.binary.version}</artifactId>
     </dependency>
 
-    <!--Used for test classes -->
     <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.binary.version}</artifactId>
-      <type>test-jar</type>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-client</artifactId>
+      <scope>provided</scope>
     </dependency>
-
+    <dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-aws</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-mllib_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.scalatest</groupId>
-      <artifactId>scalatest_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>1.9.5</version>
-    </dependency>
-    <dependency>
-      <groupId>org.scalacheck</groupId>
-      <artifactId>scalacheck_${scala.binary.version}</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <scope>provided</scope>
     </dependency>
 
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-    </dependency>
 
   </dependencies>
+
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
@@ -206,84 +172,6 @@
             <javacArg>-Xlint:all,-serial,-path</javacArg>
           </javacArgs>
         </configuration>
-      </plugin>
-
-      <!-- Enable surefire and scalatest in all children, in one place: -->
-      <!-- keep maven-failsafe-plugin version in sync -->
-      <!-- Surefire runs all Java tests -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
-        <!-- Note config is repeated in scalatest config -->
-        <configuration>
-          <skipTests>true</skipTests>
-          <includes>
-            <include>**/Test*.java</include>
-            <include>**/*Test.java</include>
-            <include>**/*TestCase.java</include>
-            <include>**/*Suite.java</include>
-          </includes>
-          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-
-          <systemProperties>
-            <java.awt.headless>true</java.awt.headless>
-            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
-            <spark.ui.enabled>false</spark.ui.enabled>
-            <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
-            <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
-          </systemProperties>
-          <failIfNoTests>false</failIfNoTests>
-        </configuration>
-      </plugin>
-
-
-      <!-- Scalatest runs all Scala tests -->
-      <plugin>
-        <groupId>org.scalatest</groupId>
-        <artifactId>scalatest-maven-plugin</artifactId>
-        <version>${scalatest-maven-plugin.version}</version>
-        <!-- Note config is repeated in surefire config -->
-        <configuration>
-          <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
-          <junitxml>.</junitxml>
-          <filereports>SparkTestSuite.txt</filereports>
-          <argLine>-ea</argLine>
-          <stderr/>
-          <environmentVariables>
-          </environmentVariables>
-          <systemProperties>
-            <!--<log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>-->
-            <log4j.debug>${log4j.debug}</log4j.debug>
-            <java.awt.headless>true</java.awt.headless>
-            <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
-            <test.build.data>${test.build.data}</test.build.data>
-            <test.build.dir>${test.build.dir}</test.build.dir>
-            <hadoop.tmp.dir>${hadoop.tmp.dir}</hadoop.tmp.dir>
-            <spark.testing>1</spark.testing>
-            <spark.ui.enabled>false</spark.ui.enabled>
-            <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
-            <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
-            <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
-            <cloud.test.committer>${committer}</cloud.test.committer>
-            <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
-          </systemProperties>
-
-        </configuration>
-        <executions>
-          <execution>
-            <id>test</id>
-            <goals>
-              <goal>test</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-failsafe-plugin</artifactId>
-        <version>${maven-surefire-plugin.version}</version>
       </plugin>
 
     </plugins>
