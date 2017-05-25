@@ -96,7 +96,8 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     duration(s"write to $destDir in format $format") {
       saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
     }
-    operations.maybeVerifyCommitter(destDir, None, conf, Some(1))
+    operations.maybeVerifyCommitter(destDir, None, conf, Some(1),
+      s"Saving in format $format:")
   }
 
 

@@ -209,19 +209,27 @@
           </exclusion>
           <exclusion>
             <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>*</artifactId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
           </exclusion>
           <exclusion>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>*</artifactId>
+            <artifactId>jackson-dataformat-cbor</artifactId>
           </exclusion>
           <exclusion>
             <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>*</artifactId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <artifactId>jackson-module-jaxb-annotations</artifactId>
           </exclusion>
           <exclusion>
             <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>*</artifactId>
+            <artifactId>jackson-jaxrs-json-provider</artifactId>
           </exclusion>
           <exclusion>
             <groupId>org.jboss.netty</groupId>
@@ -319,6 +327,14 @@
             <artifactId>jackson-core</artifactId>
           </exclusion>
           <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+          </exclusion>
+          <exclusion>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
           </exclusion>
@@ -337,6 +353,14 @@
           <exclusion>
             <groupId>commons-logging</groupId>
             <artifactId>commons-logging</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>com.fasterxml.jackson.core:jackson-databind</artifactId>
           </exclusion>
           <exclusion>
             <groupId>junit</groupId>

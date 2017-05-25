@@ -18,6 +18,7 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.CloudSuite
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
 import org.apache.spark.SparkConf
@@ -49,15 +50,24 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
   }
 
+  val formats = Seq("orc", "parquet")
+  val s3 = filesystem.asInstanceOf[S3AFileSystem]
+  val destDir = testPath(s3, "dataframe-committer")
 
-  ctest("Dataframe", "Write output via the DataFrame API") {
+  formats.foreach { format =>
+    ctest(s"Dataframe+$format",
+      s"Write a dataframe with the format $format"
+    ) {
+      testOneFormat(destDir, format, None)
+    }
+  }
+
+
+  def testOneFormat(destDir: Path,
+      format: String, commiterName: Option[String]): Unit = {
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
-    val destDir = testPath(s3, "dataframe-committer")
-    val committer = None
-
-    s3.delete(destDir, true)
     val spark = SparkSession
       .builder
       .config(sparkConf)
@@ -68,13 +78,14 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     val conf = sc.hadoopConfiguration
     val numRows = 10
     val sourceData = spark.range(0, numRows).map(i => (i, i.toString))
-    val format = "csv"
-    duration(s"write to $destDir in format $format") {
-      sourceData.write.format(format).save(destDir.toString)
+    val subdir = new Path(destDir, format)
+    s3.delete(subdir, true)
+    duration(s"write to $subdir in format $format") {
+      sourceData.write.format(format).save(subdir.toString)
     }
     val operations = new S3AOperations(s3)
-    operations.maybeVerifyCommitter(destDir, None, conf, Some(1))
+    operations.maybeVerifyCommitter(subdir,
+      commiterName, conf, Some(1), s"$format:")
   }
-
 
 }

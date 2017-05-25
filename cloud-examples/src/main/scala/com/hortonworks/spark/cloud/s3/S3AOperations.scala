@@ -45,11 +45,12 @@ class S3AOperations(sourceFs: FileSystem)
    * @param destDir destination directory of work
    * @param committer commiter name, if known
    * @param fileCount expected number of files
+   * @param text message to include in all assertions
    */
-  def verifyS3Committer(
-      destDir: Path,
+  def verifyS3Committer(destDir: Path,
       committer: Option[String],
-      fileCount: Option[Integer]): SuccessData = {
+      fileCount: Option[Integer],
+      text: String): SuccessData = {
     fs.getFileStatus(destDir)
     val successFile = new Path(destDir, SUCCESS_FILE_NAME)
 
@@ -61,17 +62,21 @@ class S3AOperations(sourceFs: FileSystem)
         throw new FileNotFoundException(
           "No commit success file: " + successFile)
     }
-    assert(status.getLen != 0,
-      s"Not committed with an S3A committer : ${destDir}")
+    if(status.getLen == 0) {
+      fail(s"$text 0-byte $successFile implies that the S3A committer was not used" +
+        s"to commit work to $destDir")
+    }
     val successData = SuccessData.load(fs, successFile)
     logInfo(s"success data at $successFile : ${successData.toString}")
     logInfo(successData.dumpMetrics("  ", " =  ", "\n"))
     committer.foreach(n =>
       assert(n === successData.getCommitter, s"in $successData"))
     val files = successData.getFilenames
-    assert(files != null, s"No 'filenames' in $successData")
+    assert(files != null,
+      s"$text No 'filenames' in $successData")
     fileCount.foreach(expected =>
-      assert(expected === files.size(), s"Not enough files in $successData"))
+      assert(expected === files.size(),
+        s"$text Not enough files in $successData."))
     val fileset = files.asScala
     fileset.map(p => fs.makeQualified(new Path(p))).foreach { p =>
       val st = fs.getFileStatus(p)
@@ -88,15 +93,17 @@ class S3AOperations(sourceFs: FileSystem)
    * @param committer Committer name to look for in data
    * @param conf conf to query
    * @param fileCount expected number of files
+   * @param text message to include in all assertions
    * @return any loaded success data
    */
   def maybeVerifyCommitter(
       destDir: Path,
       committer: Option[String],
       conf: Configuration,
-      fileCount: Option[Integer]): Option[SuccessData] = {
+      fileCount: Option[Integer],
+      text: String = ""): Option[SuccessData] = {
     if (conf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false)) {
-      Some(verifyS3Committer(destDir, None, fileCount))
+      Some(verifyS3Committer(destDir, None, fileCount, text))
     } else {
       None
     }
