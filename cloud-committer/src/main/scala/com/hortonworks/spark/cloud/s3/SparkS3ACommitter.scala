@@ -104,7 +104,7 @@ class SparkS3ACommitter(jobId: String, path: String)
       super.abortJob(jobContext)
     } catch {
       case e: IOException =>
-        logWarning("Abort operation failed", e)
+        logWarning("Abort job failed", e)
     }
   }
 
@@ -120,7 +120,12 @@ class SparkS3ACommitter(jobId: String, path: String)
 
   override def abortTask(taskContext: TaskAttemptContext): Unit = {
     logInfo("Abort task")
-    super.abortTask(taskContext)
+    try {
+      super.abortTask(taskContext)
+    } catch {
+      case e: IOException =>
+        logWarning("Abort task failed", e)
+    }
   }
 
   override def onTaskCommit(msg: TaskCommitMessage): Unit = {

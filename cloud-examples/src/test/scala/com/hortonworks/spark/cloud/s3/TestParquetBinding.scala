@@ -15,38 +15,15 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.common
+package com.hortonworks.spark.cloud.s3
 
-import scala.collection.immutable._
-
-import com.hortonworks.spark.cloud.CloudSuite._
 import com.hortonworks.spark.cloud.utils.CloudLogging
-import org.apache.hadoop.util.VersionInfo
 import org.scalatest.{FunSuite, Matchers}
 
-class HadoopVersionSuite extends FunSuite with CloudLogging with Matchers {
+/**
+ * Look at what Parquet committer binding is up to
+ */
+class TestParquetBinding extends FunSuite with CloudLogging with Matchers {
 
-  test("Check Hadoop version") {
-    val configuration = loadConfiguration()
 
-    overlayConfiguration(
-      configuration,
-      Seq(REQUIRED_HADOOP_VERSION)
-    )
-
-    logInfo( s"""
-       | build = ${VersionInfo.getBuildVersion}
-       | build date = ${VersionInfo.getDate}
-       | built by ${VersionInfo.getUser}
-    """.stripMargin)
-    val v = configuration.get(REQUIRED_HADOOP_VERSION, UNSET_PROPERTY)
-
-    val version = VersionInfo.getVersion()
-    logInfo(s"Hadoop declared version is ${version}")
-    if (v == UNSET_PROPERTY)  {
-      logWarning(s"Unset property ${REQUIRED_HADOOP_VERSION}")
-    } else {
-      assert(v == version)
-    }
-  }
 }
