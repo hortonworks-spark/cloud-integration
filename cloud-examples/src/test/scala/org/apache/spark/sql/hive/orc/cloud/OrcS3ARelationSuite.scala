@@ -25,10 +25,10 @@ import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.catalog.CatalogUtils
 import org.apache.spark.sql.hive.orc.OrcFileFormat
 import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.sources.HadoopFsRelationTest
+import org.apache.spark.sql.sources.HadoopCloudRelationTest
 import org.apache.spark.sql.types._
 
-class OrcS3ARelationSuite extends HadoopFsRelationTest {
+class OrcS3ARelationSuite extends HadoopCloudRelationTest {
 import testImplicits._
 
   override val dataSourceName: String = classOf[OrcFileFormat].getCanonicalName
