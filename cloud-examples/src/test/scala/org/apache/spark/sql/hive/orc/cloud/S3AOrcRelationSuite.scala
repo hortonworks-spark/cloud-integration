@@ -17,8 +17,8 @@
 
 package org.apache.spark.sql.hive.orc.cloud
 
-import java.io.File
 
+import com.hortonworks.spark.cloud.s3.S3ATestSetup
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql.Row
@@ -28,9 +28,19 @@ import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.sources.HadoopCloudRelationTest
 import org.apache.spark.sql.types._
 
-class OrcS3ARelationSuite extends HadoopCloudRelationTest {
+class S3AOrcRelationSuite extends HadoopCloudRelationTest
+  with S3ATestSetup {
 import testImplicits._
 
+  init()
+
+  def init(): Unit = {
+    // propagate S3 credentials
+    if (enabled) {
+      initFS()
+    }
+  }
+  
   override val dataSourceName: String = classOf[OrcFileFormat].getCanonicalName
 
   // ORC does not play well with NullType and UDT.
@@ -41,7 +51,9 @@ import testImplicits._
     case _ => true
   }
 
-  test("save()/load() - partitioned table - simple queries - partition columns in data") {
+  ctest("save()/load()",
+  " - partitioned table - simple queries - partition columns in data",
+    false) {
     withTempDir { file =>
       for (p1 <- 1 to 2; p2 <- Seq("foo", "bar")) {
         val partitionDir = new Path(
@@ -63,7 +75,8 @@ import testImplicits._
     }
   }
 
-  test("SPARK-12218: 'Not' is included in ORC filter pushdown") {
+  ctest("SPARK-12218",
+    "'Not' is included in ORC filter pushdown", false) {
 
     withSQLConf(SQLConf.ORC_FILTER_PUSHDOWN_ENABLED.key -> "true") {
       withTempPath { dir =>

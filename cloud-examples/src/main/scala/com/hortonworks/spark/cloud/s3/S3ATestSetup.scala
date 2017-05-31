@@ -19,14 +19,14 @@ package com.hortonworks.spark.cloud.s3
 
 import java.net.URI
 
-import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.{CloudSuite, CloudSuiteTrait}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
  * Trait for S3A tests.
  */
-trait S3ATestSetup extends CloudSuite with S3AConstants {
+trait S3ATestSetup extends CloudSuiteTrait with S3AConstants {
 
   override def enabled: Boolean = {
     getConf.getBoolean(S3A_TESTS_ENABLED, false) &&

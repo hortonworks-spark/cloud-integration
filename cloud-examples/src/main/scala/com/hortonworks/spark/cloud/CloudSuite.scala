@@ -37,58 +37,7 @@ import org.apache.spark.LocalSparkContext
  */
 abstract class CloudSuite extends FunSuite
     with LocalSparkContext with BeforeAndAfter
-    with Eventually with S3AConstants with CloudTestIntegration {
-
-
-
-  /**
-   * Determine the scale factor for larger tests.
-   */
-  private lazy val scaleSizeFactor = getConf.getInt(SCALE_TEST_SIZE_FACTOR,
-    SCALE_TEST_SIZE_FACTOR_DEFAULT)
-
-  /**
-   * Subclasses may override this for different or configurable test sizes
-   * @return the number of entries in parallelized operations.
-   */
-  protected def testEntryCount: Int = 10 * scaleSizeFactor
-
-  /**
-   * A conditional test which is only executed when the suite is enabled,
-   * and the `extraCondition` predicate holds.
-   * @param name test name
-   * @param detail detailed text for reports
-   * @param extraCondition extra predicate which may be evaluated to decide if a test can run.
-   * @param testFun function to execute
-   */
-  protected def ctest(
-      name: String,
-      detail: String = "",
-      extraCondition: => Boolean = true)
-      (testFun: => Unit): Unit = {
-    if (enabled && extraCondition) {
-      registerTest(name) {
-        logInfo(s"$name\n$detail\n-------------------------------------------")
-        testFun
-      }
-    } else {
-      registerIgnoredTest(name) {
-        testFun
-      }
-    }
-  }
-
-
-
-  /**
-   * Is this test suite enabled?
-   * The base class is enabled if the configuration file loaded; subclasses can extend
-   * this with extra probes, such as for bindings to an object store.
-   *
-   * If this predicate is false, then tests defined in `ctest()` will be ignored
-   * @return true if the test suite is enabled.
-   */
-  protected def enabled: Boolean = true
+    with Eventually with S3AConstants with CloudSuiteTrait {
 
 
 }

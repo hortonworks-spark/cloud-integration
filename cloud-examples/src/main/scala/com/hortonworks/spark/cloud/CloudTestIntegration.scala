@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud
 
-import java.io.File
+import java.io.{File, IOException}
 import java.net.URI
 
 import scala.collection.JavaConverters._
@@ -96,6 +96,28 @@ trait CloudTestIntegration extends ExtraAssertions {
    */
   protected def testPath(fs: FileSystem, testname: String): Path = {
     fs.makeQualified(new Path(TestDir, testname))
+  }
+
+  /**
+   * Create a test path in the test FS
+   * @param testname test name (or other unique prefix)
+   * @return the path
+   */
+  protected def path(testname: String): Path = {
+    testPath(filesystem, testname)
+  }
+
+  /**
+   * Delete quietly: any exception message is printed, but no full stack trace.
+   * @param p path to delete
+   */
+  protected def deleteQuietly(p: Path): Unit = {
+    try {
+      filesystem.delete(p, true)
+    } catch {
+      case e: IOException =>
+        logInfo(s"Deleting $p: ${e.getMessage}")
+    }
   }
 
   /**
