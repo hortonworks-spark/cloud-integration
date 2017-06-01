@@ -17,9 +17,27 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import java.io.IOException
+
+import com.amazonaws.ClientConfiguration
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.services.s3.AmazonS3
+import com.hortonworks.spark.cloud.utils.CloudLogging
+import org.apache.hadoop.fs.s3a.{DefaultS3ClientFactory, InconsistentAmazonS3Client}
+
 /**
- * Test constants
+ * This is here to verify that factory settings make their way down
+ * to queries; can be enabled from build profiles
  */
-class S3ATestConstants {
+class FailingS3ClientFactory extends DefaultS3ClientFactory  with CloudLogging {
+
+  logWarning("Failing S3 Client instantiated")
+
+  override protected def newAmazonS3Client(
+      credentials: AWSCredentialsProvider,
+      awsConf: ClientConfiguration): AmazonS3 = {
+    throw new IOException("failing")
+  }
 
 }
+

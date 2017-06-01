@@ -26,6 +26,8 @@ import org.apache.spark.sql.SparkSession
 
 class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
 
+  import com.hortonworks.spark.cloud.s3.CommitterConstants._
+
   init()
 
   def init(): Unit = {
@@ -48,25 +50,31 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     super.addSuiteConfigurationOptions(sparkConf)
     sparkConf.setAll(COMMITTER_OPTIONS)
     sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
+    addHiveOptions(sparkConf)
   }
 
-  val formats = Seq("orc", "parquet")
+  val formats = Seq("orc"/*, "parquet"*/)
+  val committers = Seq(DEFAULT , DIRECTORY /*, PARTITIONED MAGIC*/)
   val s3 = filesystem.asInstanceOf[S3AFileSystem]
   val destDir = testPath(s3, "dataframe-committer")
 
-  formats.foreach { format =>
-    ctest(s"Dataframe+$format",
-      s"Write a dataframe with the format $format"
+  committers.foreach { commit =>
+    ctest(s"Dataframe+$commit",
+      s"Write a dataframe with the committer $commit"
     ) {
-      testOneFormat(destDir, format, None)
+      testOneFormat(destDir, "orc", Some(commit))
     }
   }
 
-
   def testOneFormat(destDir: Path,
-      format: String, commiterName: Option[String]): Unit = {
+      format: String,
+      committerName: Option[String]): Unit = {
+
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
+    committerName.foreach { n =>
+      hconf(sparkConf, OUTPUTCOMMITTER_FACTORY_CLASS, COMMITTERS_BY_NAME(n))
+    }
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
     val spark = SparkSession
       .builder
@@ -74,18 +82,26 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
       .enableHiveSupport
       .getOrCreate()
     import spark.implicits._
-    val sc = spark.sparkContext
-    val conf = sc.hadoopConfiguration
-    val numRows = 10
-    val sourceData = spark.range(0, numRows).map(i => (i, i.toString))
-    val subdir = new Path(destDir, format)
-    s3.delete(subdir, true)
-    duration(s"write to $subdir in format $format") {
-      sourceData.write.format(format).save(subdir.toString)
+    try {
+      val sc = spark.sparkContext
+      val conf = sc.hadoopConfiguration
+      val numRows = 10
+      val sourceData = spark.range(0, numRows).map(i => (1, i, i.toString))
+      val subdir = new Path(destDir, format)
+      s3.delete(subdir, true)
+      duration(s"write to $subdir in format $format") {
+        sourceData.write.format(format).save(subdir.toString)
+      }
+      val operations = new S3AOperations(s3)
+      operations.maybeVerifyCommitter(subdir,
+        committerName, conf, Some(1), s"$format:")
+      // read back results and verify they match
+      eventuallyGetFileStatus(s3, subdir)
+      validateRowCount(spark, s3, subdir, format, numRows)
+    } finally {
+      spark.close()
     }
-    val operations = new S3AOperations(s3)
-    operations.maybeVerifyCommitter(subdir,
-      commiterName, conf, Some(1), s"$format:")
+
   }
 
 }

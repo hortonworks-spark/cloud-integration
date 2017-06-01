@@ -17,9 +17,23 @@
 
 package com.hortonworks.spark.cloud.s3
 
-/**
- * Test constants
- */
-class S3ATestConstants {
+import java.io.IOException
+
+import com.amazonaws.ClientConfiguration
+import com.amazonaws.auth.AWSCredentialsProvider
+import com.amazonaws.services.s3.AmazonS3
+import com.hortonworks.spark.cloud.utils.CloudLogging
+import org.apache.hadoop.fs.s3a.{DefaultS3ClientFactory, InconsistentAmazonS3Client}
+
+class InconsistentS3ClientFactory extends DefaultS3ClientFactory  with CloudLogging {
+
+  logWarning("Inconsistent S3 Client instantiated: inconsistency will be visible")
+
+  override protected def newAmazonS3Client(
+      credentials: AWSCredentialsProvider,
+      awsConf: ClientConfiguration): AmazonS3 = {
+    new InconsistentAmazonS3Client(credentials, awsConf)
+  }
 
 }
+

@@ -30,8 +30,7 @@ import org.apache.hadoop.fs.FileSystem
 trait AzureTestSetup extends CloudSuite {
 
   override def enabled: Boolean =  {
-    getConf.getBoolean(AZURE_TESTS_ENABLED, false) &&
-        azureFsOnClasspath && super.enabled
+    getConf.getBoolean(AZURE_TESTS_ENABLED, false)
   }
 
   def initFS(): FileSystem = {
@@ -40,8 +39,5 @@ trait AzureTestSetup extends CloudSuite {
     createFilesystem(uri)
   }
 
-  def azureFsOnClasspath: Boolean = {
-    null != CloudSuite.locateResource("org/apache/hadoop/fs/azure/AzureException.class")
-  }
 
 }

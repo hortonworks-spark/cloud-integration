@@ -102,11 +102,12 @@
     <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
     <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
     <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
+    <!-- switch to the inconsistent client -->
+    <fs.s3a.s3.client.factory.impl>unset</fs.s3a.s3.client.factory.impl>
+
+
     <!-- if this flag is set, the code assumes that s3guard is being used and
     then loads _SUCCESS as JSON-->
-    <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
-    <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
-    <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
     <!-- if this flag is set, the code assumes that s3guard is being used and
     then loads _SUCCESS as JSON-->
     <fs.s3a.committer.test.enabled>false</fs.s3a.committer.test.enabled>
@@ -647,8 +648,10 @@
               <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
               <fs.s3a.committer.test.enabled>${fs.s3a.committer.test.enabled}</fs.s3a.committer.test.enabled>
               <fs.s3a.committer.name>${fs.s3a.committer.name}</fs.s3a.committer.name>
-            </systemProperties>
-
+              <fs.s3a.s3.client.factory.impl>${fs.s3a.s3.client.factory.impl}</fs.s3a.s3.client.factory.impl>
+              <fs.s3a.s3guard.test.enabled>${fs.s3a.s3guard.test.enabled}</fs.s3a.s3guard.test.enabled>
+              <fs.s3a.s3guard.test.authoritative>${fs.s3a.s3guard.test.authoritative}</fs.s3a.s3guard.test.authoritative>
+              <fs.s3a.s3guard.test.implementation>${fs.s3a.s3guard.test.implementation}</fs.s3a.s3guard.test.implementation>            </systemProperties>
           </configuration>
           <executions>
             <execution>
@@ -882,7 +885,7 @@
     <!-- Switch s3guard from Authoritative=false to true
      Has no effect unless s3guard is enabled -->
     <profile>
-      <id>non-auth</id>
+      <id>auth</id>
       <activation>
         <property>
           <name>auth</name>
@@ -890,6 +893,33 @@
       </activation>
       <properties>
         <fs.s3a.s3guard.test.authoritative>true</fs.s3a.s3guard.test.authoritative>
+      </properties>
+    </profile>
+
+
+    <!-- inconsistent S3A client -->
+    <profile>
+      <id>inconsistent</id>
+      <activation>
+        <property>
+          <name>inconsistent</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3.client.factory.impl>com.hortonworks.spark.cloud.s3.InconsistentS3ClientFactory</fs.s3a.s3.client.factory.impl>
+      </properties>
+    </profile>
+
+    <!-- failing S3A client -->
+    <profile>
+      <id>failing</id>
+      <activation>
+        <property>
+          <name>failing</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3.client.factory.impl>com.hortonworks.spark.cloud.s3.FailingS3ClientFactory</fs.s3a.s3.client.factory.impl>
       </properties>
     </profile>
 

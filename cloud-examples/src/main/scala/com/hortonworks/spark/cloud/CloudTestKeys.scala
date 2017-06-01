@@ -161,16 +161,6 @@ trait CloudTestKeys {
   val FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED = "mapreduce.fileoutputcommitter.cleanup.skipped"
 
   /**
-   * Indicates that any s3guard tests are enabled
-   */
-  val S3GUARD_TEST_ENABLED = "fs.s3a.s3guard.test.enabled"
-
-  /**
-   * Indicates that any committer tests are enabled
-   */
-  val S3A_COMMITTER_TEST_ENABLED = "fs.s3a.committer.test.enabled"
-
-  /**
    * This is the "Pending" directory of the FileOutputCommitter;
    * data written here is, in that algorithm, renamed into place.
    * Value: {@value }.
@@ -192,5 +182,30 @@ trait CloudTestKeys {
    * Here a special string is used to handle that scenario to make it clearer what's happening.
    */
   val UNSET_PROPERTY = "unset"
+
+  /**
+   * Various s3guard tests.
+   */
+
+  /**
+   * Indicates that any s3guard tests are enabled
+   */
+  val S3GUARD_TEST_ENABLED = "fs.s3a.s3guard.test.enabled"
+
+  /**
+   * Indicates that any committer tests are enabled
+   */
+  val S3A_COMMITTER_TEST_ENABLED = "fs.s3a.committer.test.enabled"
+
+  val S3GUARD_TEST_PREFIX = "fs.s3a.s3guard.test"
+  val S3GUARD_TEST_AUTHORITATIVE = S3GUARD_TEST_PREFIX + ".authoritative"
+  val S3GUARD_IMPLEMENTATION= S3GUARD_TEST_PREFIX + ".implementation"
+  /** fs.s3a.s3guard.test.inconsistent */
+  val S3GUARD_INCONSISTENT = S3GUARD_TEST_PREFIX + ".inconsistent"
+
+  val S3GUARD_IMPLEMENTATION_LOCAL = "local"
+  val S3GUARD_IMPLEMENTATION_DYNAMO = "dynamo"
+  val S3GUARD_IMPLEMENTATION_DYNAMODBLOCAL = "dynamodblocal"
+  val S3GUARD_IMPLEMENTATION_NONE = "none"
 
 }

@@ -19,7 +19,7 @@ package com.hortonworks.spark.cloud.s3
 
 import java.net.URI
 
-import com.hortonworks.spark.cloud.{CloudSuite, CloudSuiteTrait}
+import com.hortonworks.spark.cloud.CloudSuiteTrait
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
@@ -49,9 +49,8 @@ trait S3ATestSetup extends CloudSuiteTrait with S3AConstants {
   }
 
   /**
-   * Overrride point: set up the configuration for the filesystem.
+   * Override point: set up the configuration for the filesystem.
    * The base implementation sets up buffer directory, block size and IO Policy.
- *
    * @param config configuration to set up
    */
   def setupFilesystemConfiguration(config: Configuration): Unit = {
@@ -109,4 +108,5 @@ trait S3ATestSetup extends CloudSuiteTrait with S3AConstants {
     val testEndpoint = config.get(S3A_CSVFILE_ENDPOINT, S3A_CSVFILE_ENDPOINT_DEFAULT)
     generalEndpoint != testEndpoint
   }
+
 }

@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
-class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
+abstract class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
 
   init()
 
@@ -50,7 +50,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
   }
 
   ctest("propagation",  "verify property passdown") {
-    val name = expectSome(CloudSuite.getKnownSysprop(S3A_COMMITTER_NAME),
+    val name = expectSome(getKnownSysprop(S3A_COMMITTER_NAME),
       s"Unset property ${S3A_COMMITTER_NAME}")
     logInfo(s"Committer name is $name")
 

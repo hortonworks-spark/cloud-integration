@@ -17,7 +17,10 @@
 
 package com.hortonworks.spark.cloud
 
+import java.net.URL
+
 import com.hortonworks.spark.cloud.s3.S3AConstants
+import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite, FunSuiteLike}
 
@@ -86,7 +89,57 @@ trait CloudSuiteTrait extends FunSuiteLike
    */
   protected def enabled: Boolean = true
 
+  /**
+   * Overlay a set of system properties to a configuration, unless the key
+   * is "(unset")
+   *
+   * @param conf config to patch
+   * @param keys list of system properties
+   */
+  protected def getTestOption(conf: Configuration, keys: Seq[String]): Unit = {
+    keys.foreach(key => getKnownSysprop(key).foreach(v =>
+      conf.set(key, v, "system property")))
+  }
 
+  /**
+   * Get a known sysprop, return None if it was not there or it matched the
+   * `unset` value
+   *
+   * @param key system property name
+   * @return any set value
+   */
+  protected def getKnownSysprop(key: String): Option[String] = {
+    val v = System.getProperty(key)
+    if (v == null || v.trim().isEmpty ||
+      v.trim == UNSET_PROPERTY) None else Some(v.trim)
+  }
+
+  /**
+   * Locate a class/resource as a resource URL.
+   * This does not attempt to load a class, merely verify that it is present
+   *
+   * @param resource resource or path of class, such as
+   * `org/apache/hadoop/fs/azure/AzureException.class`
+   * @return the URL or null
+   */
+  def locateResource(resource: String): URL = {
+    getClass.getClassLoader.getResource(resource)
+  }
+
+  /**
+   * Overlay a set of system properties to a configuration, unless the key
+   * is "(unset")
+   *
+   * @param conf config to patch
+   * @param keys list of system properties
+   */
+  def overlayConfiguration(conf: Configuration, keys: Seq[String]): Unit = {
+    keys.foreach(key => {
+      getKnownSysprop(key).foreach(v =>
+        conf.set(key, v, "system property")
+      )
+    })
+  }
 }
 
 

@@ -64,7 +64,7 @@ class S3AOperations(sourceFs: FileSystem)
     }
     if(status.getLen == 0) {
       fail(s"$text 0-byte $successFile implies that the S3A committer was not used" +
-        s"to commit work to $destDir")
+        s" to commit work to $destDir")
     }
     val successData = SuccessData.load(fs, successFile)
     logInfo(s"success data at $successFile : ${successData.toString}")

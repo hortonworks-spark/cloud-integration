@@ -17,19 +17,21 @@
 
 package com.hortonworks.spark.cloud
 
-import java.io.EOFException
+import java.io.{EOFException, File}
 import java.net.URL
 
 import scala.reflect.ClassTag
+import scala.concurrent.duration._
+import scala.language.postfixOps
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.hortonworks.spark.cloud.s3.SparkS3ACommitter
 import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
+import org.scalatest.concurrent.Eventually
 
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
@@ -39,7 +41,7 @@ import org.apache.spark.sql._
  * Extra Hadoop operations for object store integration.
  */
 trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
-  TimeOperations{
+  TimeOperations with Eventually {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -252,6 +254,32 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
 
 
+  val HIVE_TEST_SETUP_OPTIONS = Map(
+    "spark.sql.test" -> "",
+    "spark.sql.hive.metastore.barrierPrefixes" -> "org.apache.spark.sql.hive.execution.PairSerDe",
+    "spark.ui.enabled" -> "false"
+  )
+
+  def addHiveOptions(sparkConf: SparkConf): Unit = {
+    sparkConf.setAll(HIVE_TEST_SETUP_OPTIONS)
+    sparkConf.set("spark.sql.warehouse.dir",
+      makeWarehouseDir().toURI.getPath)
+  }
+
+  def makeWarehouseDir(): File = {
+    val warehouseDir = File.createTempFile("warehouse", ".db")
+    warehouseDir.delete()
+    warehouseDir
+  }
+  /*
+          .set("spark.sql.test", "")
+        .set("spark.sql.hive.metastore.barrierPrefixes",
+          "org.apache.spark.sql.hive.execution.PairSerDe")
+        .set("spark.sql.warehouse.dir", TestHiveContext.makeWarehouseDir().toURI.getPath)
+        // SPARK-8910
+        .set("spark.ui.enabled", "false")))
+
+   */
   /**
    * Set a Hadoop option in a spark configuration.
    *
@@ -283,6 +311,41 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
   def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): Unit = {
     settings.foreach(e => hconf(sparkConf, e._1, e._2))
   }
+
+  /**
+   * Try to get the file status, _eventually_.
+   * @param fs filesystem
+   * @param p path
+   * @return the result
+   */
+  def eventuallyGetFileStatus(fs: FileSystem, p: Path): FileStatus = {
+    eventually(timeout(30 seconds),
+      interval(100 milliseconds)) {
+      fs.getFileStatus(p)
+    }
+  }
+
+  // load a DF and verify it has the expected number of rows
+  // return how long it took
+  def validateRowCount(
+      spark: SparkSession,
+      fs: FileSystem,
+      source: Path,
+      srcFormat: String,
+      rowCount: Long): Long = {
+    val status = eventuallyGetFileStatus(fs, source)
+    assert(status.isDirectory || status.getBlockSize > 0,
+      s"Block size 0 in $status")
+    val files = fs.listStatus(source)
+    assert(files.nonEmpty, s"No files in the directory $source")
+    val (loadedCount, loadTime) = duration2(load(spark, source, srcFormat)
+      .count())
+    logInfo(s"Loaded $source in $loadTime nS")
+    require(rowCount == loadedCount,
+      s"Expected $rowCount rows, but got $loadedCount from $source formatted as $srcFormat")
+    loadTime
+  }
+
 }
 
 /**

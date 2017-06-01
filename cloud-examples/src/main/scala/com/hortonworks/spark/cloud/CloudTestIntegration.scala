@@ -22,9 +22,10 @@ import java.net.URI
 
 import scala.collection.JavaConverters._
 
+import com.hortonworks.spark.cloud.s3.CommitterConstants
 import com.hortonworks.spark.cloud.utils.ExtraAssertions
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, Path}
+import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, LocatedFileStatus, Path}
 
 import org.apache.spark.SparkConf
 
@@ -35,22 +36,22 @@ import org.apache.spark.SparkConf
  * Primarily this deals with FS setup and teardown.
  *
  */
-trait CloudTestIntegration extends ExtraAssertions {
+trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
 
-  import CloudSuite._
 
   /**
    * The test directory under `/cloud-integration`; derived from the classname
    * This path does not contain any FS binding.
    */
-  protected val TestDir: Path = {
-    new Path("/cloud-integration/" + this.getClass.getSimpleName)
+  protected val testDir: Path = {
+    new Path("/cloud-integration/" + INCONSISTENT_PATH + "/"
+      + this.getClass.getSimpleName)
   }
 
   /**
    * Accessor to the configuration.
    */
-  private val config = loadConfiguration()
+  private val config = CloudSuite.loadConfiguration()
 
   def getConf: Configuration = {
     config
@@ -95,7 +96,7 @@ trait CloudTestIntegration extends ExtraAssertions {
    * @return a fully qualified path under the filesystem
    */
   protected def testPath(fs: FileSystem, testname: String): Path = {
-    fs.makeQualified(new Path(TestDir, testname))
+    fs.makeQualified(new Path(testDir, testname))
   }
 
   /**
@@ -177,12 +178,12 @@ trait CloudTestIntegration extends ExtraAssertions {
    * Clean up the filesystem if it is defined.
    */
   protected def cleanFilesystem(): Unit = {
-    val target = s"${filesystem.getUri}$TestDir"
+    val target = s"${filesystem.getUri}$testDir"
     if (filesystem.isInstanceOf[LocalFileSystem]) {
       logDebug(s"not touching local FS $filesystem")
     } else {
       logInfo(s"Cleaning $target")
-      if (filesystem.exists(TestDir) && !filesystem.delete(TestDir, true)) {
+      if (filesystem.exists(testDir) && !filesystem.delete(testDir, true)) {
         logWarning(s"Deleting $target returned false")
       }
     }
@@ -323,7 +324,28 @@ trait CloudTestIntegration extends ExtraAssertions {
    */
   def isUsingStagingCommitter(config: Configuration): Boolean = {
     val committer = config.get(OUTPUTCOMMITTER_FACTORY_CLASS, "")
-    committer.startsWith(STAGING)
+    committer.startsWith(CommitterConstants.STAGING_PACKAGE)
   }
 
+  def assertPathExists(p: Path): Unit = {
+    filesystem.getFileStatus(p)
+  }
+
+  def assertDirHasFiles(dir: Path): Unit = {
+    val entries = ls(dir, true)
+    require(entries.exists(!_.isDirectory), s"No files under $dir")
+  }
+
+  /**
+   * List files in the filesystem.
+   *
+   * @param path path to list
+   * @param recursive flag to request recursive listing
+   * @return a sequence of all files (but not directories) underneath the path.
+   */
+  def ls(
+      path: Path,
+      recursive: Boolean): Seq[LocatedFileStatus] = {
+    listFiles(filesystem, path, recursive)
+  }
 }

@@ -30,19 +30,30 @@ import org.apache.spark.sql.internal.SQLConf
 class SparkS3ACommitter(jobId: String, path: String)
   extends HadoopMapReduceCommitProtocol(jobId, path) with Serializable {
 
+  import CommitterConstants._
+
   @transient var committer: PathOutputCommitter = _
 
   logInfo(s"Instantiate committer for job $jobId with path $path")
 
   override protected def setupCommitter(context: TaskAttemptContext): OutputCommitter = {
     logInfo(s"Setting up committer for path $path")
+    val conf = context.getConfiguration
+/*    val factory = conf.get(OUTPUTCOMMITTER_FACTORY_CLASS)
+    if (factory == null) {
+      conf.set(OUTPUTCOMMITTER_FACTORY_CLASS, committerFactoryName)
+    } else {
+      logInfo(s"Hadoop output committer factory already set to $factory")
+    }*/
     var c = super.setupCommitter(context)
-    require(c.isInstanceOf[PathOutputCommitter],
-      s"Committer is wrong type: $c")
+    require(c.isInstanceOf[PathOutputCommitter], s"Committer is wrong type: $c")
     committer = c.asInstanceOf[PathOutputCommitter]
     logInfo(s"Using committer $committer")
     committer
   }
+
+  protected def committerName: String = DIRECTORY
+  protected def committerFactoryName: String = COMMITTERS_BY_NAME(committerName)
 
   override def newTaskTempFile(
       taskContext: TaskAttemptContext,

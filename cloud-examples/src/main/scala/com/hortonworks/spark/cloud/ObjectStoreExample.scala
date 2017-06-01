@@ -18,6 +18,7 @@
 package com.hortonworks.spark.cloud
 
 import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
+import org.scalatest.concurrent.Eventually
 
 import org.apache.spark.SparkConf
 
@@ -27,7 +28,7 @@ import org.apache.spark.SparkConf
  * and some methods to help parse arguments.
  */
 trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
-    with CloudLogging with Serializable {
+    with CloudLogging with Serializable with Eventually {
 
   /**
    * Exit code for a usage error: -2

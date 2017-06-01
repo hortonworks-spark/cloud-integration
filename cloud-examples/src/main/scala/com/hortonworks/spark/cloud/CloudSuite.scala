@@ -18,9 +18,8 @@
 package com.hortonworks.spark.cloud
 
 import java.io.{File, FileNotFoundException}
-import java.net.URL
-import java.util.concurrent.atomic.AtomicBoolean
 
+import com.hortonworks.spark.cloud.s3.CommitterConstants._
 import com.hortonworks.spark.cloud.s3.S3AConstants
 import com.hortonworks.spark.cloud.utils.CloudLogging
 import org.apache.hadoop.conf.Configuration
@@ -38,24 +37,13 @@ import org.apache.spark.LocalSparkContext
 abstract class CloudSuite extends FunSuite
     with LocalSparkContext with BeforeAndAfter
     with Eventually with S3AConstants with CloudSuiteTrait {
-
-
 }
 
-object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
+object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
+  with CloudSuiteTrait {
 
-  private val configLogged = new AtomicBoolean(false)
+  private var configLogged = false
 
-  /**
-   * Locate a class/resource as a resource URL.
-   * This does not attempt to load a class, merely verify that it is present
-   * @param resource resource or path of class, such as
-   *                 `org/apache/hadoop/fs/azure/AzureException.class`
-   * @return the URL or null
-   */
-  def locateResource(resource: String): URL = {
-    getClass.getClassLoader.getResource(resource)
-  }
 
   /**
    * Load the configuration file from the system property `SYSPROP_CLOUD_TEST_CONFIGURATION_FILE`.
@@ -68,7 +56,9 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
       logDebug(s"Configuration property = `$filename`")
       val f = new File(filename)
       if (f.exists()) {
-        if (!configLogged.getAndSet(true)) {
+        // unsynced but its only a log statement
+        if (configLogged) {
+          configLogged = true
           logInfo(s"Loading configuration from $f")
         }
         config.addResource(f.toURI.toURL)
@@ -82,53 +72,19 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants {
       Seq(
         REQUIRED_HADOOP_VERSION,
         S3A_COMMITTER_TEST_ENABLED,
-        S3GUARD_TEST_ENABLED
+        S3GUARD_TEST_ENABLED,
+        S3_CLIENT_FACTORY_IMPL
       )
     )
 
     // setup the committer from any property passed in
     getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
-      val factory = COMMITTERS(committer)
+      val factory = COMMITTERS_BY_NAME(committer.toLowerCase())
       logInfo(s"Using committer factory $factory")
       config.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
     })
     config
   }
 
-  /**
-   * Overlay a set of system properties to a configuration, unless the key
-   * is "(unset")
-   * @param conf config to patch
-   * @param keys list of system properties
-   */
-  def overlayConfiguration(conf: Configuration, keys: Seq[String]): Unit = {
-    keys.foreach(key => {
-      getKnownSysprop(key).foreach( v =>
-        conf.set(key, v, "system property")
-      )
-    })
-  }
-
-  /**
-   * Overlay a set of system properties to a configuration, unless the key
-   * is "(unset")
-   * @param conf config to patch
-   * @param keys list of system properties
-   */
-  def getTestOption(conf: Configuration, keys: Seq[String]): Unit = {
-    keys.foreach(key => getKnownSysprop(key).foreach( v =>
-      conf.set(key, v, "system property")))
-  }
-
-  /**
-   *  Get a known sysprop, return None if it was not there or it matched the
-   *  `unset` value
-   * @param key system property name
-   * @return any set value
-   */
-  def getKnownSysprop(key: String): Option[String] = {
-    val v = System.getProperty(key)
-    if (v == null || v.trim().isEmpty || v.trim == UNSET_PROPERTY) None else Some(v.trim)
-  }
 
 }

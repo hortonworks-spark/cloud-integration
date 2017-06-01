@@ -16,10 +16,14 @@
  */
 
 package com.hortonworks.spark.cloud.operations
+import scala.language.postfixOps
+import scala.concurrent.duration._
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
+
+import org.scalatest.time.{Seconds, Span}
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -66,6 +70,7 @@ class CloudDataFrames extends ObjectStoreExample {
     // Ignore IDE warnings: this import is used
     import spark.implicits._
 
+    implicit val patience = PatienceConfig(Span(30, Seconds))
     val numRows = 1000
 
     try {
@@ -89,13 +94,7 @@ class CloudDataFrames extends ObjectStoreExample {
       // load a DF and verify it has the expected number of rows
       // return how long it took
       def validate(source: Path, srcFormat: String): Long = {
-        val status = fs.getFileStatus(source)
-        assert(status.isDirectory || status.getBlockSize > 0, s"Block size 0 in $status")
-        val (loadedCount, loadTime) = duration2(load(spark, source, srcFormat).count())
-        logInfo(s"Loaded $source in $loadTime nS")
-        require(rowCount == loadedCount,
-          s"Expected $rowCount rows, but got $loadedCount from $source formatted as $srcFormat")
-        loadTime
+        validateRowCount(spark, fs, source, srcFormat, rowCount)
       }
 
       val results: Seq[(String, Path, Long, Long)] = formats.map { format =>
