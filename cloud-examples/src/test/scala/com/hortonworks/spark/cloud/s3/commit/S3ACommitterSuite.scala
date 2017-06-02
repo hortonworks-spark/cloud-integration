@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.s3
+package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.Path
+import com.hortonworks.spark.cloud.s3.{S3AOperations, S3ATestSetup, SparkS3ACommitter}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
-class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
-
-  import com.hortonworks.spark.cloud.s3.CommitterConstants._
+class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
 
   init()
 
@@ -50,58 +48,58 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     super.addSuiteConfigurationOptions(sparkConf)
     sparkConf.setAll(COMMITTER_OPTIONS)
     sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
-    addHiveOptions(sparkConf)
   }
 
-  val formats = Seq("orc"/*, "parquet"*/)
-  val committers = Seq(DEFAULT , DIRECTORY /*, PARTITIONED MAGIC*/)
-  val s3 = filesystem.asInstanceOf[S3AFileSystem]
-  val destDir = testPath(s3, "dataframe-committer")
+  ctest("propagation",  "verify property passdown") {
+    val name = expectSome(getKnownSysprop(S3A_COMMITTER_NAME),
+      s"Unset property ${S3A_COMMITTER_NAME}")
+    logInfo(s"Committer name is $name")
 
-  committers.foreach { commit =>
-    ctest(s"Dataframe+$commit",
-      s"Write a dataframe with the committer $commit"
-    ) {
-      testOneFormat(destDir, "orc", Some(commit))
-    }
+    val conf = getConf
+    assert(getConf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false),
+      "committer setup not passed in")
+    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
+    val cclass = Class.forName(committer)
+    logInfo(s"Committer is $cclass")
   }
 
-  def testOneFormat(destDir: Path,
-      format: String,
-      committerName: Option[String]): Unit = {
+  /**
+   * This is the least complex of the output writers, the original RDD
+   * API.
+   */
+  ctest("saveAsNewAPIHadoopFile",
+    "Write output via the RDD saveAsNewAPIHadoopFile API", true) {
 
-    val local = getLocalFS
-    val sparkConf = newSparkConf("DataFrames", local.getUri)
-    committerName.foreach { n =>
-      hconf(sparkConf, OUTPUTCOMMITTER_FACTORY_CLASS, COMMITTERS_BY_NAME(n))
-    }
+    // store the S3A FS the test is bonded to
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
+
+    // switch to the local FS for staging
+    val local = getLocalFS
+    setLocalFS();
+
+    val sparkConf = newSparkConf("saveAsFile", local.getUri)
+    val destDir = testPath(s3, "saveAsFile")
+    s3.delete(destDir, true)
     val spark = SparkSession
       .builder
       .config(sparkConf)
       .enableHiveSupport
       .getOrCreate()
-    import spark.implicits._
-    try {
-      val sc = spark.sparkContext
-      val conf = sc.hadoopConfiguration
-      val numRows = 10
-      val sourceData = spark.range(0, numRows).map(i => (1, i, i.toString))
-      val subdir = new Path(destDir, format)
-      s3.delete(subdir, true)
-      duration(s"write to $subdir in format $format") {
-        sourceData.write.format(format).save(subdir.toString)
-      }
-      val operations = new S3AOperations(s3)
-      operations.maybeVerifyCommitter(subdir,
-        committerName, conf, Some(1), s"$format:")
-      // read back results and verify they match
-      eventuallyGetFileStatus(s3, subdir)
-      validateRowCount(spark, s3, subdir, format, numRows)
-    } finally {
-      spark.close()
-    }
+    val operations = new S3AOperations(s3)
+    val sc = spark.sparkContext
+    val conf = sc.hadoopConfiguration
+    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
 
+    val numRows = 10
+
+    val sourceData = sc.range(0, numRows).map(i => i)
+    val format = "orc"
+    duration(s"write to $destDir in format $format") {
+      saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
+    }
+    operations.maybeVerifyCommitter(destDir, None, conf, Some(1),
+      s"Saving in format $format:")
   }
+
 
 }

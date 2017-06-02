@@ -29,6 +29,7 @@ import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
+import org.apache.hadoop.hive.ql.metadata.HiveUtils
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 import org.scalatest.concurrent.Eventually
@@ -235,6 +236,13 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     Option(this.getClass.getClassLoader.getResource(resource))
   }
 
+  /**
+   * General spark options
+   */
+  val GENERAL_SPARK_OPTIONS = Map(
+    "spark.ui.enabled" -> "false"
+  )
+
   val ORC_OPTIONS = Map(
     "spark.hadoop.orc.splits.include.file.footer" -> "true",
     "spark.hadoop.orc.cache.stripe.details.size" -> "1000",
@@ -256,30 +264,22 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
 
   val HIVE_TEST_SETUP_OPTIONS = Map(
     "spark.sql.test" -> "",
-    "spark.sql.hive.metastore.barrierPrefixes" -> "org.apache.spark.sql.hive.execution.PairSerDe",
-    "spark.ui.enabled" -> "false"
+    "spark.sql.shuffle.partitions" -> "5",
+    "spark.sql.hive.metastore.barrierPrefixes" -> "org.apache.spark.sql.hive.execution.PairSerDe"
   )
 
-  def addHiveOptions(sparkConf: SparkConf): Unit = {
-    sparkConf.setAll(HIVE_TEST_SETUP_OPTIONS)
-    sparkConf.set("spark.sql.warehouse.dir",
-      makeWarehouseDir().toURI.getPath)
+  def createTmpDir(): File = {
+    val tmp = new File(System.getProperty("java.io.tmpdir"))
+    tmp.mkdirs()
+    tmp
   }
 
   def makeWarehouseDir(): File = {
-    val warehouseDir = File.createTempFile("warehouse", ".db")
+    val warehouseDir = File.createTempFile("warehouse", ".db", createTmpDir())
     warehouseDir.delete()
     warehouseDir
   }
-  /*
-          .set("spark.sql.test", "")
-        .set("spark.sql.hive.metastore.barrierPrefixes",
-          "org.apache.spark.sql.hive.execution.PairSerDe")
-        .set("spark.sql.warehouse.dir", TestHiveContext.makeWarehouseDir().toURI.getPath)
-        // SPARK-8910
-        .set("spark.ui.enabled", "false")))
 
-   */
   /**
    * Set a Hadoop option in a spark configuration.
    *
@@ -333,10 +333,14 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
       source: Path,
       srcFormat: String,
       rowCount: Long): Long = {
-    val status = eventuallyGetFileStatus(fs, source)
+    val success = new Path(source, SUCCESS_FILE_NAME)
+    val status = eventuallyGetFileStatus(fs, success)
     assert(status.isDirectory || status.getBlockSize > 0,
       s"Block size 0 in $status")
-    val files = fs.listStatus(source)
+    val files = fs.listStatus(source).filter{ st =>
+      val name = st.getPath.getName
+      st.isFile && !name.startsWith(".") && !name.startsWith("_")
+    }
     assert(files.nonEmpty, s"No files in the directory $source")
     val (loadedCount, loadTime) = duration2(load(spark, source, srcFormat)
       .count())

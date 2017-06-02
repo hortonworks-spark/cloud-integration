@@ -86,6 +86,11 @@ public class SuccessData extends PersistentCommitData {
   private Map<String, Long> metrics = new HashMap<>();
 
   /**
+   * Diagnostics information.
+   */
+  private Map<String, String> diagnostics = new HashMap<>();
+
+  /**
    * Filenames in the commit.
    */
   private List<String> filenames = new ArrayList<>(0);
@@ -130,17 +135,43 @@ public class SuccessData extends PersistentCommitData {
    * @return the dumped string
    */
   public String dumpMetrics(String prefix, String middle, String suffix) {
-    if (metrics == null) {
+    return joinMap(metrics, prefix, middle, suffix);
+  }
+
+  /**
+   * Dump the metrics (if any) to a string.
+   * The metrics are sorted for ease of viewing.
+   * @param prefix prefix before every entry
+   * @param middle string between key and value
+   * @param suffix suffix to each entry
+   * @return the dumped string
+   */
+  public String dumpDiagnostics(String prefix, String middle, String suffix) {
+    return joinMap(diagnostics, prefix, middle, suffix);
+  }
+
+  /**
+   * Join any map of string to value into a string, sorting the keys first.
+   * @param map map to join
+   * @param prefix prefix before every entry
+   * @param middle string between key and value
+   * @param suffix suffix to each entry
+   * @return a string for reporting.
+   */
+  protected static String joinMap(Map<String, ?> map,
+      String prefix,
+      String middle, String suffix) {
+    if (map == null) {
       return "";
     }
-    List<String> list = new ArrayList<>(metrics.keySet());
+    List<String> list = new ArrayList<>(map.keySet());
     Collections.sort(list);
     StringBuilder sb = new StringBuilder(list.size() * 32);
     for (String k : list) {
       sb.append(prefix)
           .append(k)
           .append(middle)
-          .append(metrics.get(k))
+          .append(map.get(k))
           .append(suffix);
     }
     return sb.toString();
@@ -242,4 +273,22 @@ public class SuccessData extends PersistentCommitData {
   public void setFilenames(List<String> filenames) {
     this.filenames = filenames;
   }
+
+  public Map<String, String> getDiagnostics() {
+    return diagnostics;
+  }
+
+  public void setDiagnostics(Map<String, String> diagnostics) {
+    this.diagnostics = diagnostics;
+  }
+
+  /**
+   * Add a diagnostics entry.
+   * @param name name
+   * @param value value
+   */
+  public void addDiagnostic(String name, String value) {
+    diagnostics.put(name, value);
+  }
+
 }

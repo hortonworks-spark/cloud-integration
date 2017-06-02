@@ -73,13 +73,16 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
         REQUIRED_HADOOP_VERSION,
         S3A_COMMITTER_TEST_ENABLED,
         S3GUARD_TEST_ENABLED,
-        S3_CLIENT_FACTORY_IMPL
+        S3_CLIENT_FACTORY_IMPL,
+        S3GUARD_IMPLEMENTATION,
+        S3_METADATA_STORE_IMPL,
+        METADATASTORE_AUTHORITATIVE
       )
     )
 
     // setup the committer from any property passed in
     getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
-      val factory = COMMITTERS_BY_NAME(committer.toLowerCase())
+      val factory = COMMITTERS_BY_NAME(committer.toLowerCase())._2
       logInfo(s"Using committer factory $factory")
       config.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
     })

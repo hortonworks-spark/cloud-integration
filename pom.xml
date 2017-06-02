@@ -99,6 +99,8 @@
     <!-- Timeout in seconds for scale tests.-->
     <fs.s3a.scale.test.timeout>3600</fs.s3a.scale.test.timeout>
     <!-- are s3guard tests enabled ? -->
+    <fs.s3a.metadatastore.impl>unset</fs.s3a.metadatastore.impl>
+    <fs.s3a.metadatastore.authoritative>false</fs.s3a.metadatastore.authoritative>
     <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
     <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
     <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
@@ -651,7 +653,10 @@
               <fs.s3a.s3.client.factory.impl>${fs.s3a.s3.client.factory.impl}</fs.s3a.s3.client.factory.impl>
               <fs.s3a.s3guard.test.enabled>${fs.s3a.s3guard.test.enabled}</fs.s3a.s3guard.test.enabled>
               <fs.s3a.s3guard.test.authoritative>${fs.s3a.s3guard.test.authoritative}</fs.s3a.s3guard.test.authoritative>
-              <fs.s3a.s3guard.test.implementation>${fs.s3a.s3guard.test.implementation}</fs.s3a.s3guard.test.implementation>            </systemProperties>
+              <fs.s3a.s3guard.test.implementation>${fs.s3a.s3guard.test.implementation}</fs.s3a.s3guard.test.implementation>
+              <fs.s3a.metadatastore.authoritative>${fs.s3a.metadatastore.authoritative}</fs.s3a.metadatastore.authoritative>
+              <fs.s3a.metadatastore.impl>${fs.s3a.metadatastore.impl}</fs.s3a.metadatastore.impl>
+            </systemProperties>
           </configuration>
           <executions>
             <execution>
@@ -793,23 +798,6 @@
       </dependencies>
     </profile>
 
-    <!-- Turn on s3guard tests-->
-    <profile>
-      <id>s3guard</id>
-      <activation>
-        <property>
-          <name>s3guard</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
-        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
-        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
-        <required.hadoop.version>2.11</required.hadoop.version>
-      </properties>
-    </profile>
-
-
     <profile>
       <id>staging</id>
       <properties>
@@ -865,19 +853,23 @@
         </property>
       </activation>
       <properties>
+        <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore</fs.s3a.metadatastore.impl>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.s3guard.test.implementation>dynamo</fs.s3a.s3guard.test.implementation>
       </properties>
     </profile>
 
     <!-- Switch to DynamoDBLocal for s3guard. Has no effect unless s3guard is enabled -->
     <profile>
-      <id>dynamodblocal</id>
+      <id>localdynamo</id>
       <activation>
         <property>
-          <name>dynamodblocal</name>
+          <name>localdynamo</name>
         </property>
       </activation>
       <properties>
+        <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore</fs.s3a.metadatastore.impl>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.s3guard.test.implementation>dynamodblocal</fs.s3a.s3guard.test.implementation>
       </properties>
     </profile>
@@ -885,14 +877,14 @@
     <!-- Switch s3guard from Authoritative=false to true
      Has no effect unless s3guard is enabled -->
     <profile>
-      <id>auth</id>
+      <id>authoritative</id>
       <activation>
         <property>
-          <name>auth</name>
+          <name>authoritative</name>
         </property>
       </activation>
       <properties>
-        <fs.s3a.s3guard.test.authoritative>true</fs.s3a.s3guard.test.authoritative>
+        <fs.s3a.metadatastore.authoritative>true</fs.s3a.metadatastore.authoritative>
       </properties>
     </profile>
 

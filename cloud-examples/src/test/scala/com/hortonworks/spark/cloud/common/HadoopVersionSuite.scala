@@ -17,6 +17,10 @@
 
 package com.hortonworks.spark.cloud.common
 
+import java.util
+import java.util.Collections
+
+import scala.collection.JavaConverters._
 import scala.collection.immutable._
 
 import com.hortonworks.spark.cloud.CloudSuite._
@@ -49,4 +53,27 @@ class HadoopVersionSuite extends FunSuite with CloudLogging with Matchers {
       assert(v == version)
     }
   }
+
+  test("Sysprops") {
+    val props = System.getProperties
+    val list = new util.ArrayList[String](props.stringPropertyNames())
+    Collections.sort(list)
+    val plist = list.asScala
+      .filter(k => (!k.startsWith("java.") && !k.startsWith("sun.")))
+      .map( key => s"$key = ${props.getProperty(key)}" )
+      .mkString("\n")
+    logInfo(s"Properties:\n$plist")
+  }
+
+  test("PropagatedValues") {
+    val mapped = loadConfiguration().asScala
+      .filter{entry =>
+        val k = entry.getKey
+        k.startsWith("fs.s3a") && !k.contains("key")
+      }
+      .map( entry => s"${entry.getKey} = ${entry.getValue}").toList.sorted
+    val list = mapped.mkString("\n")
+    logInfo(s"S3A config options:\n${list}")
+  }
+
 }

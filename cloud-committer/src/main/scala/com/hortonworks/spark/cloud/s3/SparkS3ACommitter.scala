@@ -53,7 +53,7 @@ class SparkS3ACommitter(jobId: String, path: String)
   }
 
   protected def committerName: String = DIRECTORY
-  protected def committerFactoryName: String = COMMITTERS_BY_NAME(committerName)
+  protected def committerFactoryName: String = COMMITTERS_BY_NAME(committerName)._2
 
   override def newTaskTempFile(
       taskContext: TaskAttemptContext,

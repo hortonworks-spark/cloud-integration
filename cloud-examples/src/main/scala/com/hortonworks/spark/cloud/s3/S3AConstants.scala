@@ -17,6 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import org.apache.hadoop.classification.InterfaceStability
+
 /**
  * S3A constants. Different Hadoop versions have an incomplete set of these; keeping them
  * in source here ensures that there are no compile/link problems.
@@ -99,4 +101,33 @@ trait S3AConstants {
   val INCONSISTENT_S3_CLIENT_FACTORY_IMPL = "com.hortonworks.spark.cloud.s3.InconsistentS3ClientFactory"
 
   val INCONSISTENT_PATH = "DELAY_LISTING_ME"
+
+  /** Whether or not to allow MetadataStore to be source of truth. */
+  val METADATASTORE_AUTHORITATIVE = "fs.s3a.metadatastore.authoritative"
+  val DEFAULT_METADATASTORE_AUTHORITATIVE = false
+
+  val S3_METADATA_STORE_IMPL = "fs.s3a.metadatastore.impl"
+  /**
+   * The region of the DynamoDB service.
+   *
+   * This config has no default value. If the user does not set this, the
+   * S3Guard will operate table in the associated S3 bucket region.
+   */
+  val S3GUARD_DDB_REGION_KEY = "fs.s3a.s3guard.ddb.region"
+  val S3GUARD_DDB_TABLE_CAPACITY_READ_KEY = "fs.s3a.s3guard.ddb.table.capacity.read"
+  val S3GUARD_DDB_TABLE_CAPACITY_WRITE_KEY = "fs.s3a.s3guard.ddb.table.capacity.write"
+  val S3GUARD_DDB_MAX_RETRIES = "fs.s3a.s3guard.ddb.max.retries"
+  val S3GUARD_METASTORE_NULL = "org.apache.hadoop.fs.s3a.s3guard.NullMetadataStore"
+
+  /**
+   * Use Local memory for the metadata: {@value }.
+   * This is not coherent across processes and must be used for testing only.
+   */
+  val S3GUARD_METASTORE_LOCAL = "org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore"
+
+  /**
+   * Use DynamoDB for the metadata: {@value }.
+   */
+  val S3GUARD_METASTORE_DYNAMO = "org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore"
+
 }

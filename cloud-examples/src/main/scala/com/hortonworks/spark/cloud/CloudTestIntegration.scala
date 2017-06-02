@@ -228,9 +228,11 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
    * @param sparkConf spark configuration to alter
    */
   protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
+    sparkConf.setAll(GENERAL_SPARK_OPTIONS)
     sparkConf.setAll(MAPREDUCE_OPTIONS)
     sparkConf.setAll(ORC_OPTIONS)
     sparkConf.setAll(PARQUET_OPTIONS)
+    sparkConf.setAll(HIVE_TEST_SETUP_OPTIONS)
     hconf(sparkConf, BLOCK_SIZE, 1 * 1024 * 1024)
     hconf(sparkConf, MULTIPART_SIZE, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, READAHEAD_RANGE, 128 * 1024)
@@ -276,6 +278,7 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
   def newSparkConf(fsuri: URI): SparkConf = {
     val sc = new SparkConf(false)
     addSuiteConfigurationOptions(sc)
+    // patch in the config; this will pull in all of core-site, default
     getConf.asScala.foreach { e =>
       hconf(sc, e.getKey, e.getValue)
     }
