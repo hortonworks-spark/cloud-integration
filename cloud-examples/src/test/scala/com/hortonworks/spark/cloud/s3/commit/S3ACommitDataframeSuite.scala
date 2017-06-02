@@ -60,7 +60,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   }
 
   val formats = Seq("orc"/*, "parquet"*/)
-  val committers = Seq(DEFAULT , DIRECTORY , PARTITIONED, MAGIC)
+  val committers = Seq(/*DEFAULT , DIRECTORY , */ PARTITIONED /*, *MAGIC*/)
   val s3 = filesystem.asInstanceOf[S3AFileSystem]
   val destDir = testPath(s3, "dataframe-committer")
 
@@ -101,6 +101,10 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
         sourceData.write.format(format).save(subdir.toString)
       }
       val operations = new S3AOperations(s3)
+      val stats = operations.getStorageStatistics()
+
+      logInfo(s"Statistics = \n" + stats.mkString("  ", " = ", "\n"))
+
       operations.maybeVerifyCommitter(subdir,
         committerInfo.map(_._1), conf, Some(1), s"$format:")
       // read back results and verify they match

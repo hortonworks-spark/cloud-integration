@@ -25,7 +25,7 @@ import com.hortonworks.spark.cloud.ObjectStoreOperations
 import com.hortonworks.spark.cloud.persist.SuccessData
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.S3AFileSystem
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
 import org.scalatest.Assertions
 
 /**
@@ -38,6 +38,14 @@ class S3AOperations(sourceFs: FileSystem)
    * S3A Filesystem.
    */
   private val fs = sourceFs.asInstanceOf[S3AFileSystem]
+
+  /**
+   * Get a sorted list of the FS statistics.
+   */
+  def getStorageStatistics(): List[StorageStatistics.LongStatistic] = {
+    fs.getStorageStatistics.asScala.toList
+      .sortWith((left, right) => left.getName > right.getName)
+  }
 
   /**
    * Verify that an S3A committer was used
@@ -54,7 +62,6 @@ class S3AOperations(sourceFs: FileSystem)
       text: String,
       requireNonEmpty: Boolean = true): Option[SuccessData] = {
 
-    eventuallyGetFileStatus(fs, destDir)
     val successFile = new Path(destDir, SUCCESS_FILE_NAME)
 
     var status = try {
@@ -84,11 +91,12 @@ class S3AOperations(sourceFs: FileSystem)
     fileCount.foreach(expected =>
       assert(expected === files.size(),
         s"$text Not enough files in $successData."))
-    val fileset = files.asScala
-    fileset.map(p => fs.makeQualified(new Path(p))).foreach { p =>
-      val st = fs.getFileStatus(p)
-      logInfo(s"${st.getPath} size=${st.getLen}")
-    }
+    val listing = files.asScala
+      .map(p => fs.makeQualified(new Path(p)))
+      .map(fs.getFileStatus)
+      .map(st => s"${st.getPath} size=${st.getLen}")
+      .mkString("  ","\n  ", "")
+    logInfo(s"Files:\n$listing")
     Some(successData)
   }
 
@@ -110,11 +118,14 @@ class S3AOperations(sourceFs: FileSystem)
       fileCount: Option[Integer],
       text: String = ""): Option[SuccessData] = {
     committer match {
-      case Some(CommitterConstants.DEFAULT) => None
+      case Some(CommitterConstants.DEFAULT) =>
+        verifyS3Committer(destDir, None, fileCount, text, false)
 
       case Some(c) => verifyS3Committer(destDir, Some(c), fileCount, text, true)
 
-      case None => None
+      case None =>
+        verifyS3Committer(destDir, None, fileCount, text, false)
+
     }
 
   }

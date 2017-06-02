@@ -39,12 +39,12 @@ class SparkS3ACommitter(jobId: String, path: String)
   override protected def setupCommitter(context: TaskAttemptContext): OutputCommitter = {
     logInfo(s"Setting up committer for path $path")
     val conf = context.getConfiguration
-/*    val factory = conf.get(OUTPUTCOMMITTER_FACTORY_CLASS)
+    val factory = conf.get(OUTPUTCOMMITTER_FACTORY_CLASS)
     if (factory == null) {
       conf.set(OUTPUTCOMMITTER_FACTORY_CLASS, committerFactoryName)
     } else {
       logInfo(s"Hadoop output committer factory already set to $factory")
-    }*/
+    }
     var c = super.setupCommitter(context)
     require(c.isInstanceOf[PathOutputCommitter], s"Committer is wrong type: $c")
     committer = c.asInstanceOf[PathOutputCommitter]

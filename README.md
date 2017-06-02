@@ -1,17 +1,17 @@
 # Cloud Integration for Apache Spark
 
-The [cloud-integration](https://github.com/hortonworks-spark/cloud-integration) repository provides modules to
-improve Apache Spark's integration with cloud infrastructures.
+The [cloud-integration](https://github.com/hortonworks-spark/cloud-integration)
+repository provides modules to improve Apache Spark's integration with cloud infrastructures.
 
-These modules
 
-## Modules
 
-### cloud-committer
+## cloud-committer
 
-Support for the s3guard committers in Apache Spark.
+Support for the S3guard committers in Apache Spark.
 
-### cloud-examples
+See [Cloud Committer](cloud-committer/src/main/site/markdown/index.md)
+
+## cloud-examples
 
 This does the packaging/integration tests for Spark and cloud against AWS, Azure and openstack.
 
