@@ -60,15 +60,26 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   }
 
   val formats = Seq("orc"/*, "parquet"*/)
-  val committers = Seq(/*DEFAULT , DIRECTORY , */ PARTITIONED /*, *MAGIC*/)
+  // there's an empty string at the end to aid with commenting out different
+  // committers and not have to worry about any trailing commas
+  val committers = Seq(
+//    DEFAULT,
+    DIRECTORY,
+    PARTITIONED,
+//    MAGIC,
+    ""
+  )
   val s3 = filesystem.asInstanceOf[S3AFileSystem]
   val destDir = testPath(s3, "dataframe-committer")
 
-  committers.foreach { committer =>
+  committers.filter(!_.isEmpty).foreach { committer =>
     ctest(s"Dataframe+$committer",
       s"Write a dataframe with the committer $committer"
     ) {
-      testOneFormat(new Path(destDir, committer), s"orc", Some(committer))
+      testOneFormat(
+        new Path(destDir, s"committer-$committer"),
+        "orc",
+        Some(committer))
     }
   }
 
@@ -93,7 +104,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     try {
       val sc = spark.sparkContext
       val conf = sc.hadoopConfiguration
-      val numRows = 10
+      val numRows = 1000
       val sourceData = spark.range(0, numRows).map(i => (1, i, i.toString))
       val subdir = new Path(destDir, format)
       s3.delete(subdir, true)

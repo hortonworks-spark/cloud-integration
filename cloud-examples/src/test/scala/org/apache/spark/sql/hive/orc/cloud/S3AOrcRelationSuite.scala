@@ -29,6 +29,7 @@ import org.apache.spark.sql.types._
 
 class S3AOrcRelationSuite extends HadoopCloudRelationTest
   with S3ATestSetup {
+
 import testImplicits._
 
   init()

@@ -19,12 +19,8 @@ package com.hortonworks.spark.cloud
 
 import java.net.URL
 
-import com.hortonworks.spark.cloud.s3.S3AConstants
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfter, FunSuite, FunSuiteLike}
-
-import org.apache.spark.LocalSparkContext
+import org.scalatest.FunSuiteLike
 
 /**
  * A cloud suite.

@@ -120,7 +120,6 @@ abstract class BasicIOTests extends CloudSuite {
     }
     // files are either empty or have a block size
     leafFileStatus.foreach(s => assert(s.getLen == 0 || s.getBlockSize > 0))
-
   }
 
   ctest("Blocksize", "verify default block size is a viable number") {

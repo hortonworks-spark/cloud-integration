@@ -32,6 +32,7 @@ import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path, Pa
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 import org.scalatest.concurrent.Eventually
+import org.scalatest.time.Span
 
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
@@ -311,16 +312,34 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     settings.foreach(e => hconf(sparkConf, e._1, e._2))
   }
 
+  protected val retryTimeout: Span = 30 seconds
+
+  protected val retryInterval: Span = 1000 milliseconds
+
   /**
    * Try to get the file status, _eventually_.
+   *
    * @param fs filesystem
    * @param p path
    * @return the result
    */
   def eventuallyGetFileStatus(fs: FileSystem, p: Path): FileStatus = {
-    eventually(timeout(30 seconds),
-      interval(1000 milliseconds)) {
+    eventually(timeout(retryTimeout),
+      interval(retryInterval)) {
       fs.getFileStatus(p)
+    }
+  }
+  /**
+   * Try to get the directory listing, _eventually_.
+   *
+   * @param fs filesystem
+   * @param p path
+   * @return the result
+   */
+  def eventuallyListStatus(fs: FileSystem, p: Path): Array[FileStatus] = {
+    eventually(timeout(retryTimeout),
+      interval(retryInterval)) {
+      fs.listStatus(p)
     }
   }
 
@@ -336,7 +355,7 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     val status = eventuallyGetFileStatus(fs, success)
     assert(status.isDirectory || status.getBlockSize > 0,
       s"Block size 0 in $status")
-    val files = fs.listStatus(source).filter{ st =>
+    val files = eventuallyListStatus(fs, source).filter{ st =>
       val name = st.getPath.getName
       st.isFile && !name.startsWith(".") && !name.startsWith("_")
     }

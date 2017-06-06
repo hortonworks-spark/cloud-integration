@@ -255,7 +255,7 @@ This test can be executed as part of the suite `S3aIOSuite`, by setting the `sui
 of the test suite:
 
 ```bash
-mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=org.apache.spark.cloud.s3.S3aIOSuite
+mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.hortonworks.spark.cloud.s3.S3aIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -291,10 +291,10 @@ scalability.
 
 | job | arguments | test |
 |------|----------|------|
-| `org.apache.spark.cloud.examples.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
-| `org.apache.spark.cloud.examples.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
-| `org.apache.spark.cloud.examples.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
-| `org.apache.spark.cloud.s3.examples.S3LineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
+| `com.hortonworks.spark.cloud.examples.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
+| `com.hortonworks.spark.cloud.examples.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
+| `com.hortonworks.spark.cloud.examples.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
+| `com.hortonworks.spark.cloud.s3.examples.S3LineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
 
 ## Best Practices for Adding a New Test
 
@@ -346,3 +346,99 @@ these files in the relevant id/secret properties of the XML configuration file.
 are not senstitive -for example, they refer to in-house (test) object stores, authentication is
 done via IAM EC2 VM credentials, or the credentials are short-lived AWS STS-issued credentials
 with a lifespan of minutes and access only to transient test buckets.
+
+## Test Profiles
+
+
+### Staging Committer 
+
+```
+-Dstaging
+```
+
+### Directory Staging Committer 
+
+```
+-Ddirectory
+```
+
+### Partitioned Staging Committer 
+
+```
+-Dpartitioned
+```
+
+### Magic Committer 
+
+```
+-Dpartitioned
+```
+
+**Important** Use a dynamodb profile to enable consistent lookups. If you
+enable inconsistent listings with `-Dinconsistent` the reason becomes obvious
+
+### Inconsistent 
+
+```
+-Dinconsistent
+```
+
+
+Switches to inconsisent listing for S3A paths with `DELAY_LISTING_ME` in
+the path name. This is for both adding and deleting files. 
+
+The files themselves have the consistency offered by S3; `HEAD`, `GET`
+and `DELETE` will not be made any *worse*, and, in tests, usually
+appear consistent.
+
+### `localdynamo`: S3guard with a local dynamo DB instance
+
+
+```
+-Dlocaldynamo
+```
+
+This can be used to demonstrate how S3Guard addresses inconsistency in
+listings
+
+
+```
+-Dinconsistent -Dlocaldynamo -Dauthoritative
+```
+
+
+### `dynamo`: S3guard with a real dynamo DB connection
+
+Enables dynamo
+
+```
+-Ddynamo
+```
+
+This can be used to demonstrate how S3Guard addresses inconsistency in
+listings
+
+```
+-Dinconsistent -Ddynamo -Dauthoritative
+```
+
+
+### `authoritative`: Make the s3guard dynamo DB authoritative
+
+This declares that the DynamoDB with S3Guard metadata is the source of
+truth regarding directory listings, so operations do not need to look at
+S3 itself. This is faster, but 
+
+
+```
+-Dauthoritative
+```
+
+
+
+
+### Failing `failing`
+
+This is a fairly useless profile right now, as it injects failures into
+S3A client setup. It exists more to verify property passdown than
+do any useful test coverage.
