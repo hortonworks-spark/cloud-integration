@@ -351,4 +351,12 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
       recursive: Boolean): Seq[LocatedFileStatus] = {
     listFiles(filesystem, path, recursive)
   }
+
+  /**
+   * Log something with newlines above and below, for easier viewing in logs
+   * @param info info to print
+   */
+  def describe(info: => String): Unit = {
+    logInfo("\n\n$info\n")
+  }
 }

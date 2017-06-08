@@ -370,8 +370,12 @@ with a lifespan of minutes and access only to transient test buckets.
 
 ### Magic Committer 
 
+Uses the magic committer. The FS must be configured with support for "magic" 
+paths, recognising paths with the path element `__magic` as redirecting files
+written underneath as uncommitted multipart PUT operations to magic directories.
+
 ```
--Dpartitioned
+-Dmagic
 ```
 
 **Important** Use a dynamodb profile to enable consistent lookups. If you
@@ -442,3 +446,8 @@ S3 itself. This is faster, but
 This is a fairly useless profile right now, as it injects failures into
 S3A client setup. It exists more to verify property passdown than
 do any useful test coverage.
+
+```
+-Dfailing
+```
+

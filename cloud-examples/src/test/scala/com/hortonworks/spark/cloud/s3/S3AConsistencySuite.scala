@@ -59,12 +59,13 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
 
   ctest("create & list", " ") {
     val fs = filesystem
-    val dir = testPath(fs, "create+list")
+    val dir = testPath(fs, "create_and_list")
     val file = new Path(dir, "file.txt")
     val fd = fs.create(file, false)
     fd.writeChars("hello")
     fd.close();
     val files = fs.listStatus(dir)
+//    val files = eventuallyListStatus(fs, dir)
     require(1 == files.length)
     require(file == files(0).getPath)
   }
@@ -73,18 +74,26 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     val fs = filesystem
     val work = testPath(fs, "work")
     val task00 = new Path(work, "task00")
+
     fs.mkdirs(task00)
     val out = fs.create(new Path(task00, "part-00"), false)
     out.writeChars("hello")
     out.close();
-    fs.listStatus(task00).foreach(stat =>
+    val listing = fs.listStatus(task00)
+    describe("Renaming")
+    listing.foreach(stat =>
       fs.rename(stat.getPath, work)
     )
-    val statuses = fs.listStatus(work)
+    describe(s"Filesystem state after rename: $fs")
+    val statuses = fs.listStatus(work).filter(_.isFile)
     require("part-00" == statuses(0).getPath.getName)
   }
 
+  /**
+   * This badly formatted test is here for slides
+   */
   ctest("example-for-slides", " ", false) {
+
 val work = new Path("s3a://stevel-frankfurt/work")
 val fs = work.getFileSystem(new Configuration())
 val task00 = new Path(work, "task00")
@@ -95,8 +104,9 @@ out.close();
 fs.listStatus(task00).foreach(stat =>
   fs.rename(stat.getPath, work)
 )
-val statuses = fs.listStatus(work)
+val statuses = fs.listStatus(work).filter(_.isFile)
 require("part-00" == statuses(0).getPath.getName)
+
   }
 
 }
