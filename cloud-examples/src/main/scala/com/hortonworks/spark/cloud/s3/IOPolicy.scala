@@ -17,12 +17,16 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.operations.CloudFileGenerator
-
 /**
- * Generate a file containing some numbers in the remote repository.
+ * IO Policy to support.
  */
-object S3AFileGenerator extends CloudFileGenerator with S3AExampleSetup
-  with SequentialIO  {
+trait IOPolicy extends S3AConstants {
+
+  /**
+   * What input policy to request
+   *
+   * @return the IO type
+   */
+  def inputPolicy: String
 
 }

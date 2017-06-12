@@ -24,11 +24,9 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 /**
  * Tests reading in the S3A CSV file using sequential and Random IO.
  */
-class S3ASeekReadSuite extends CloudSuite with S3ATestSetup {
+class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
-
-  override def inputPolicy: String = SEQUENTIAL_IO
 
   override protected def useCSVEndpoint: Boolean = true
 

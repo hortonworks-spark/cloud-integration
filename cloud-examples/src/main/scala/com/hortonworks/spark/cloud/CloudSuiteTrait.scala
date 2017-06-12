@@ -44,6 +44,13 @@ trait CloudSuiteTrait extends FunSuiteLike
   protected def testEntryCount: Int = 10 * scaleSizeFactor
 
   /**
+   * Predicate to declare whether or not scale tests are enabled.
+   * Large scale tests MUST use this in their implementation of `enabled`
+   * @return true iff the configuration declares that scale tests are enabled.
+   */
+  protected def isScaleTestEnabled = getConf.getBoolean(SCALE_TEST_ENABLED, false)
+
+  /**
    * A conditional test which is only executed when the suite is enabled,
    * and the `extraCondition` predicate holds.
    * @param name test name

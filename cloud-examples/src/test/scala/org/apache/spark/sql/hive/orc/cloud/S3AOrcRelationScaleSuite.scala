@@ -15,14 +15,26 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.s3
+package org.apache.spark.sql.hive.orc.cloud
 
-import com.hortonworks.spark.cloud.operations.CloudFileGenerator
+import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-/**
- * Generate a file containing some numbers in the remote repository.
- */
-object S3AFileGenerator extends CloudFileGenerator with S3AExampleSetup
-  with SequentialIO  {
+import org.apache.spark.sql.hive.orc.OrcFileFormat
+import org.apache.spark.sql.sources.CloudRelationScaleTest
+
+class S3AOrcRelationScaleSuite extends CloudRelationScaleTest with S3ATestSetup {
+
+  init()
+
+  def init(): Unit = {
+    // propagate S3 credentials
+    if (enabled) {
+      initFS()
+    }
+  }
+
+  override def enabled: Boolean = super.enabled && isScaleTestEnabled
+
+  override val dataSourceName: String = classOf[OrcFileFormat].getCanonicalName
 
 }

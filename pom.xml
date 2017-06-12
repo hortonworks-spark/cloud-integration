@@ -51,7 +51,7 @@
     <spark.version>2.3.0-SNAPSHOT</spark.version>
 
     <!-- needed to pick up the new stuff-->
-    <hadoop.version>3.0.0-alpha3-SNAPSHOT</hadoop.version>
+    <hadoop.version>3.0.0-alpha4-SNAPSHOT</hadoop.version>
 
     <scala.version.tools>${scala.version}</scala.version.tools>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -91,6 +91,8 @@
     <required.hadoop.version>${unset}</required.hadoop.version>
 
     <!-- are scale tests enabled ? -->
+    <scale.test.enabled>unset</scale.test.enabled>
+
     <fs.s3a.scale.test.enabled>unset</fs.s3a.scale.test.enabled>
     <!-- Size in MB of huge files. -->
     <fs.s3a.scale.test.huge.filesize>unset</fs.s3a.scale.test.huge.filesize>
@@ -773,7 +775,7 @@
     <profile>
       <id>hadoop-3.0</id>
       <properties>
-        <!--<required.hadoop.version>3.0.0-alpha3-SNAPSHOT</required.hadoop.version>-->
+        <!--<required.hadoop.version>3.0.0-alpha4-SNAPSHOT</required.hadoop.version>-->
         <required.hadoop.version>2.11</required.hadoop.version>
         <guava.version>21.0</guava.version>
       </properties>
@@ -796,6 +798,13 @@
           <version>4.4.4</version>
         </dependency>
       </dependencies>
+    </profile>
+
+    <profile>
+      <id>scale</id>
+      <properties>
+        <scale.test.enabled>true</scale.test.enabled>
+      </properties>
     </profile>
 
     <profile>

@@ -350,6 +350,15 @@ with a lifespan of minutes and access only to transient test buckets.
 ## Test Profiles
 
 
+### Scale tests
+
+```
+-Dscale
+```
+
+Enables the full test suite including bigger and slower tests. 
+
+
 ### Staging Committer 
 
 ```

@@ -61,6 +61,11 @@ trait CloudTestKeys {
    */
   val SCALE_TEST = "scale.test."
 
+  /**
+   * Option to declare whether or not a scale test is enabled
+   */
+  val SCALE_TEST_ENABLED = SCALE_TEST + "enabled"
+
   val SCALE_TEST_OPERATION_COUNT = SCALE_TEST + "operation.count"
   val SCALE_TEST_OPERATION_COUNT_DEFAULT = 10
 

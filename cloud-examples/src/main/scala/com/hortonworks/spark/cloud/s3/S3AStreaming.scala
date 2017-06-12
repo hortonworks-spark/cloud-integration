@@ -25,7 +25,8 @@ import org.apache.spark.streaming._
 /**
  * An example/test for streaming with a source of S3.
  */
-object S3AStreaming extends CloudStreaming with S3AExampleSetup {
+object S3AStreaming extends CloudStreaming with S3AExampleSetup
+  with SequentialIO {
 
   /**
    * This is never executed; it's just here as the source of the example in the

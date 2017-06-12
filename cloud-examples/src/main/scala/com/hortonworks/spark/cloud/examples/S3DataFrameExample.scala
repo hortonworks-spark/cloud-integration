@@ -104,9 +104,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       val srcFS = srcPath.getFileSystem(config)
       val sourceFileStatus = srcFS.getFileStatus(srcPath)
 
-      // for parquet, turn on random access.
-      // setting this doesn't change the spark defaults, so it only holds
-      // for IO in production.
+      // turn on random access. for the destination FS
       config.set(INPUT_FADVISE, RANDOM_IO)
       val landsatPath = new Path(destPath, "landsat")
       val landsatOrcPath = new Path(landsatPath, "orc")

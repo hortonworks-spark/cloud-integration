@@ -75,7 +75,7 @@ class S3AOperations(sourceFs: FileSystem)
       if (requireNonEmpty) {
         fail(
           s"$text 0-byte $successFile implies that the S3A committer was not used" +
-            s" to commit work to $destDir")
+            s" to commit work to $destDir with committer $committer")
       }
       return None
     }
@@ -105,7 +105,7 @@ class S3AOperations(sourceFs: FileSystem)
    * the success data.
    *
    * @param destDir destination
-   * @param committer Committer name to look for in data
+   * @param committerImplName Committer name to look for in data
    * @param conf conf to query
    * @param fileCount expected number of files
    * @param text message to include in all assertions
@@ -113,15 +113,17 @@ class S3AOperations(sourceFs: FileSystem)
    */
   def maybeVerifyCommitter(
       destDir: Path,
-      committer: Option[String],
+      committerName: Option[String],
+      committerImplName: Option[String],
       conf: Configuration,
       fileCount: Option[Integer],
       text: String = ""): Option[SuccessData] = {
-    committer match {
+    committerName match {
       case Some(CommitterConstants.DEFAULT) =>
         verifyS3Committer(destDir, None, fileCount, text, false)
 
-      case Some(c) => verifyS3Committer(destDir, Some(c), fileCount, text, true)
+      case Some(c) => verifyS3Committer(destDir,
+        committerImplName, fileCount, text, true)
 
       case None =>
         verifyS3Committer(destDir, None, fileCount, text, false)

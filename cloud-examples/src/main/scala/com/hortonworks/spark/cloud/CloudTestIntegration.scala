@@ -357,6 +357,6 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
    * @param info info to print
    */
   def describe(info: => String): Unit = {
-    logInfo("\n\n$info\n")
+    logInfo(s"\n\n$info\n")
   }
 }

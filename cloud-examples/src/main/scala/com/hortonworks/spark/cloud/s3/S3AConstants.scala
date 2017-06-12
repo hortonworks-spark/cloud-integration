@@ -17,8 +17,6 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import org.apache.hadoop.classification.InterfaceStability
-
 /**
  * S3A constants. Different Hadoop versions have an incomplete set of these; keeping them
  * in source here ensures that there are no compile/link problems.

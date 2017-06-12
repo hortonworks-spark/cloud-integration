@@ -32,7 +32,8 @@ import org.apache.spark.sql.types.DataTypes._
 /**
  * Fun with the boris bike dataset
  */
-class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup {
+class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
+  with SequentialIO {
 
   /**
    * List of the command args for the current example.

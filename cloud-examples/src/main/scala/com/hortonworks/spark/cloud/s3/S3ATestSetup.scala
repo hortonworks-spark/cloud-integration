@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.{FileSystem, Path}
 /**
  * Trait for S3A tests.
  */
-trait S3ATestSetup extends CloudSuiteTrait with S3AConstants {
+trait S3ATestSetup extends CloudSuiteTrait with RandomIO {
 
   override def enabled: Boolean = {
     getConf.getBoolean(S3A_TESTS_ENABLED, false) &&
@@ -83,12 +83,6 @@ trait S3ATestSetup extends CloudSuiteTrait with S3AConstants {
    * @return true if the CSV test file is defined.
    */
   protected def hasCSVTestFile: Boolean = CSV_TESTFILE.isDefined
-
-  /**
-   * What input policy to request (Hadoop 2.8+).
-   * @return the IO type
-   */
-  protected def inputPolicy: String = SEQUENTIAL_IO
 
   /**
    * Should the endpoint for the CSV data be used in the configuration?

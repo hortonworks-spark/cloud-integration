@@ -24,11 +24,10 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.hive.orc.OrcFileFormat
 import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.sources.HadoopCloudRelationTest
+import org.apache.spark.sql.sources.{AbstractCloudRelationTest, CloudRelationBasicSuite}
 import org.apache.spark.sql.types._
 
-class S3AOrcRelationSuite extends HadoopCloudRelationTest
-  with S3ATestSetup {
+class S3AOrcRelationSuite extends CloudRelationBasicSuite with S3ATestSetup {
 
 import testImplicits._
 
@@ -41,22 +40,7 @@ import testImplicits._
     }
   }
 
-  /**
-   * Switch to random IO if the s3a implementation supports it.
-   *
-   * @return the IO type
-   */
-  override protected def inputPolicy: String = RANDOM_IO
-
   override val dataSourceName: String = classOf[OrcFileFormat].getCanonicalName
-
-  // ORC does not play well with NullType and UDT.
-  override protected def supportsDataType(dataType: DataType): Boolean = dataType match {
-    case _: NullType => false
-    case _: CalendarIntervalType => false
-    case _: UserDefinedType[_] => false
-    case _ => true
-  }
 
   ctest("save()/load() - partitioned table - simple queries - partition columns in data",
     "",

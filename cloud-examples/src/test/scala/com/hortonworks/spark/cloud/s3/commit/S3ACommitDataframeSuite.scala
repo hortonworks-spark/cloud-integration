@@ -38,7 +38,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     }
   }
 
-  def addTransientDerbySettings(sparkConf: SparkConf) = {
+  def addTransientDerbySettings(sparkConf: SparkConf): Unit = {
     val hiveConfig = SparkScopeWorkarounds.tempHiveConfig()
     hconf(sparkConf, hiveConfig)
   }
@@ -59,18 +59,18 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     addTransientDerbySettings(sparkConf)
   }
 
-  val formats = Seq("orc"/*, "parquet"*/)
+  private val formats = Seq("orc"/*, "parquet"*/)
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
-  val committers = Seq(
-//    DEFAULT,
+  private val committers = Seq(
+    DEFAULT,
     DIRECTORY,
-    PARTITIONED,
+//    PARTITIONED,
 //    MAGIC,
     ""
   )
-  val s3 = filesystem.asInstanceOf[S3AFileSystem]
-  val destDir = testPath(s3, "dataframe-committer")
+  private val s3 = filesystem.asInstanceOf[S3AFileSystem]
+  private val destDir = testPath(s3, "dataframe-committer")
 
   committers.filter(!_.isEmpty).foreach { committer =>
     ctest(s"Dataframe+$committer",
@@ -114,10 +114,14 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
       val operations = new S3AOperations(s3)
       val stats = operations.getStorageStatistics()
 
-      logInfo(s"Statistics = \n" + stats.mkString("  ", " = ", "\n"))
+      logDebug(s"Statistics = \n" + stats.mkString("  ", " = ", "\n"))
 
       operations.maybeVerifyCommitter(subdir,
-        committerInfo.map(_._1), conf, Some(1), s"$format:")
+        committerName,
+        committerInfo.map(_._1),
+        conf,
+        Some(1),
+        s"$format:")
       // read back results and verify they match
       validateRowCount(spark, s3, subdir, format, numRows)
     } finally {

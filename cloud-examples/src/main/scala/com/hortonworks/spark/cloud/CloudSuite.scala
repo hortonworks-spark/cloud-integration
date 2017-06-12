@@ -76,7 +76,9 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
         S3_CLIENT_FACTORY_IMPL,
         S3GUARD_IMPLEMENTATION,
         S3_METADATA_STORE_IMPL,
-        METADATASTORE_AUTHORITATIVE
+        METADATASTORE_AUTHORITATIVE,
+        SCALE_TEST_ENABLED,
+        SCALE_TEST_SIZE_FACTOR
       )
     )
 
