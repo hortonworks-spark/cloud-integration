@@ -113,7 +113,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       val landsat = landsatPath.toUri.toString
       // load this FS instance into memory with random
       val destFS = destPath.getFileSystem(config)
-      destFS.delete(landsatPath, true)
+      rm(destFS, landsatPath)
 
       //  entityId,acquisitionDate,cloudCover,processingLevel,path,row,min_lat,min_lon
       // ,max_lat,max_lon,download_url

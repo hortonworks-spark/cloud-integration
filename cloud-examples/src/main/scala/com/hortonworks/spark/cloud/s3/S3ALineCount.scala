@@ -87,11 +87,11 @@ object S3ALineCount extends S3AExampleSetup with SequentialIO {
       } else {
         // destination provided
         val destUri = new URI(dest.get)
-        val destFs = FileSystem.get(destUri, conf)
+        val destFS = FileSystem.get(destUri, conf)
         val destPath = new Path(destUri)
         duration("setup dest path") {
-          destFs.delete(destPath, true)
-          destFs.mkdirs(destPath.getParent())
+          rm(destFS, destPath)
+          destFS.mkdirs(destPath.getParent())
         }
 
         duration("save") {
@@ -104,7 +104,7 @@ object S3ALineCount extends S3AExampleSetup with SequentialIO {
             classOf[LongWritable],
             classOf[Text])
 */
-          destFsInfo = Some(s"\nFile System $destPath=\n$destFs\n")
+          destFsInfo = Some(s"\nFile System $destPath=\n$destFS\n")
 
         }
       }

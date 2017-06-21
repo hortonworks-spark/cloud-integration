@@ -79,7 +79,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
 
     val sparkConf = newSparkConf("saveAsFile", local.getUri)
     val destDir = testPath(s3, "saveAsFile")
-    s3.delete(destDir, true)
+    rm(s3, destDir)
     val spark = SparkSession
       .builder
       .config(sparkConf)

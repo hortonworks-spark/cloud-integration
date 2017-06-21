@@ -351,6 +351,7 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
       source: Path,
       srcFormat: String,
       rowCount: Long): Long = {
+    waitForConsistency(fs)
     val success = new Path(source, SUCCESS_FILE_NAME)
     val status = eventuallyGetFileStatus(fs, success)
     assert(status.isDirectory || status.getBlockSize > 0,
@@ -368,6 +369,47 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     loadTime
   }
 
+  /**
+   * Any delay for consistency
+   * @return delay in millis; 0 is default.
+   */
+  def consistencyDelay(c: Configuration): Int = 0
+
+  /**
+   * Wait for the FS to be consistent.
+   * If there is no inconsistency, this is a no-op
+   */
+  def waitForConsistency(fs: FileSystem): Unit = {
+    waitForConsistency(fs.getConf)
+  }
+
+  /**
+   * Wait for the FS to be consistent.
+   * If there is no inconsistency, this is a no-op
+   */
+  def waitForConsistency(c: Configuration): Unit = {
+    val delay = consistencyDelay(c)
+    if (delay > 0) {
+      Thread.sleep(delay * 2)
+    }
+  }
+
+  /**
+   * Recursive delete. Special feature: waits for the inconsistency delay
+   * both before and after if the fs property has it set to anything
+   *
+   * @param fs
+   * @param path
+   * @return
+   */
+  protected def rm(
+      fs: FileSystem,
+      path: Path): Boolean = {
+    waitForConsistency(fs)
+    val r = fs.delete(path, true)
+    waitForConsistency(fs)
+    r
+  }
 }
 
 /**

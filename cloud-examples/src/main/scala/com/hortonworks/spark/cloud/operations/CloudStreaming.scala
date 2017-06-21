@@ -63,20 +63,20 @@ class CloudStreaming extends ObjectStoreExample {
     try {
       // Create the FileInputDStream on the directory regexp and use the
       // stream to look for a new file renamed into it
-      val destDir = new Path(args(0))
-      val streamDir = new Path(destDir, "streaming")
+      val destPath = new Path(args(0))
+      val streamDir = new Path(destPath, "streaming")
       val streamGlobPath = new Path(streamDir, "sub*")
-      val generatedDir = new Path(destDir, "generated");
+      val generatedDir = new Path(destPath, "generated");
       val generatedSubDir = new Path(generatedDir, "subdir");
       val renamedSubDir = new Path(streamDir, "subdir");
 
       val sparkContext = ssc.sparkContext
       val hc = sparkContext.hadoopConfiguration
 
-      val fs = FileSystem.get(destDir.toUri, hc)
-      fs.delete(destDir, true)
-      fs.mkdirs(destDir)
-      fs.mkdirs(streamDir)
+      val destFS = FileSystem.get(destPath.toUri, hc)
+      rm(destFS, destPath)
+      destFS.mkdirs(destPath)
+      destFS.mkdirs(streamDir)
       val sightings = sparkContext.longAccumulator("sightings")
 
       logInfo(s"Looking for text files under $streamGlobPath")
@@ -111,17 +111,17 @@ class CloudStreaming extends ObjectStoreExample {
       }
       // rename the actual directory
       duration(s"rename $generatedSubDir to $renamedSubDir") {
-        fs.rename(generatedSubDir, renamedSubDir)
+        destFS.rename(generatedSubDir, renamedSubDir)
       }
       val expected = rowCount / 10
       val failureReporter = {
          s"Expected streaming to find $expected matches, saw ${sightings.value}; " +
-             listFiles(fs, destDir, true)
+             listFiles(destFS, destPath, true)
       }
       await(10000, 500, failureReporter) {
         sightings.value == expected
       }
-      logInfo(s"FileSystem local stats: $fs")
+      logInfo(s"FileSystem local stats: $destFS")
       0
     } finally {
       ssc.stop(true)

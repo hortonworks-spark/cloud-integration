@@ -18,11 +18,10 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 
 /**
- * Basic S3A IO Tests.
+ * Handle consistency with tests which require list consistency
  */
 class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
 
@@ -48,7 +47,7 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     val fd = fs.create(file, false)
     fd.writeChars("hello")
     fd.close();
-    val files = fs.listStatus(dir)
+    val files = eventuallyListStatus(fs, dir)
     require(1 == files.length)
     val in = fs.open(file)
     in.seek(4)
@@ -64,8 +63,7 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     val fd = fs.create(file, false)
     fd.writeChars("hello")
     fd.close();
-    val files = fs.listStatus(dir)
-//    val files = eventuallyListStatus(fs, dir)
+    val files = eventuallyListStatus(fs, dir)
     require(1 == files.length)
     require(file == files(0).getPath)
   }
@@ -79,7 +77,8 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     val out = fs.create(new Path(task00, "part-00"), false)
     out.writeChars("hello")
     out.close();
-    val listing = fs.listStatus(task00)
+    // iterates to success. If this was a simple list this test would fail
+    val listing = eventuallyListStatus(fs, task00)
     describe("Renaming")
     listing.foreach(stat =>
       fs.rename(stat.getPath, work)
@@ -89,24 +88,28 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     require("part-00" == statuses(0).getPath.getName)
   }
 
-  /**
+  /*
    * This badly formatted test is here for slides
    */
+/*
   ctest("example-for-slides", " ", false) {
+import org.apache.hadoop.conf.Configuration
 
-val work = new Path("s3a://stevel-frankfurt/work")
-val fs = work.getFileSystem(new Configuration())
-val task00 = new Path(work, "task00")
-fs.mkdirs(task00)
-val out = fs.create(new Path(task00, "part-00"), false)
-out.writeChars("hello")
-out.close();
-fs.listStatus(task00).foreach(stat =>
-  fs.rename(stat.getPath, work)
-)
-val statuses = fs.listStatus(work).filter(_.isFile)
-require("part-00" == statuses(0).getPath.getName)
+    val work = new Path("s3a://stevel-frankfurt/work")
+    val fs = work.getFileSystem(new Configuration())
+    val task00 = new Path(work, "task00")
+    fs.mkdirs(task00)
+    val out = fs.create(new Path(task00, "part-00"), false)
+    out.writeChars("hello")
+    out.close();
+    waitForConsistency(fs)
 
+    fs.listStatus(task00).foreach(stat =>
+      fs.rename(stat.getPath, work)
+    )
+    val statuses = fs.listStatus(work).filter(_.isFile)
+    require("part-00" == statuses(0).getPath.getName)
   }
+*/
 
 }

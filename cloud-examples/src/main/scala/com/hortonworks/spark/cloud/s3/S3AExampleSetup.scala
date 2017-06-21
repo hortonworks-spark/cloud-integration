@@ -18,6 +18,7 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
+import org.apache.hadoop.conf.Configuration
 
 import org.apache.spark.SparkConf
 
@@ -44,5 +45,22 @@ trait S3AExampleSetup extends ObjectStoreExample with S3AConstants {
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, INPUT_FADVISE, if (randomIO) RANDOM_IO else NORMAL_IO)
     hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, FAST_UPLOAD, "true")
+    // shorter delay than the default, for faster tests
+    hconf(sparkConf, FAIL_INJECT_INCONSISTENCY_MSEC, DEFAULT_DELAY_KEY_MSEC)
   }
+
+  /**
+   * Any delay for consistency.
+   *
+   * @return delay in millis; 0 is default.
+   */
+  override def consistencyDelay(c: Configuration): Int = {
+    if (c.getTrimmed(S3_CLIENT_FACTORY_IMPL, "") != "") {
+      DEFAULT_DELAY_KEY_MSEC
+    } else {
+      0
+    }
+  }
+
 }

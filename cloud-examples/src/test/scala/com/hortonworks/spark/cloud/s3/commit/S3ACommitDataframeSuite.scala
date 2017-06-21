@@ -63,9 +63,9 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   private val committers = Seq(
-    DEFAULT,
+//    DEFAULT_RENAME,
     DIRECTORY,
-//    PARTITIONED,
+    PARTITIONED,
 //    MAGIC,
     ""
   )
@@ -104,10 +104,13 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     try {
       val sc = spark.sparkContext
       val conf = sc.hadoopConfiguration
-      val numRows = 1000
-      val sourceData = spark.range(0, numRows).map(i => (1, i, i.toString))
+      val numRows = 500
+      val numPartitions = 1
+      val sourceData = spark.range(0, numRows)
+        .map(i => (1, i, i.toString))
+        .repartition(numPartitions)
       val subdir = new Path(destDir, format)
-      s3.delete(subdir, true)
+      rm(s3, subdir)
       duration(s"write to $subdir in format $format") {
         sourceData.write.format(format).save(subdir.toString)
       }
@@ -120,7 +123,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
         committerName,
         committerInfo.map(_._1),
         conf,
-        Some(1),
+        Some(numPartitions),
         s"$format:")
       // read back results and verify they match
       validateRowCount(spark, s3, subdir, format, numRows)

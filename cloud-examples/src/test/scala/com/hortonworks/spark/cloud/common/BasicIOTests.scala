@@ -45,7 +45,7 @@ abstract class BasicIOTests extends CloudSuite {
     val files = filesystem.listFiles(path, true)
 
     // delete then verify that it is gone
-    filesystem.delete(path, true)
+    rm(filesystem, path)
     intercept[FileNotFoundException] {
       val st2 = stat(path)
       logError(s"Got status $st2")
@@ -65,7 +65,7 @@ abstract class BasicIOTests extends CloudSuite {
     val output = testPath(filesystem, "FileOutput")
     val path = output.toString
     numbers.saveAsTextFile(path)
-    val st = stat(output)
+    val st = eventuallyGetFileStatus(filesystem, output)
     assert(st.isDirectory, s"Not a dir: $st")
 
     // child entries that aren't just the SUCCESS marker

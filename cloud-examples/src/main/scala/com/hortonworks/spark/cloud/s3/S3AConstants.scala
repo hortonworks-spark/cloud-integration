@@ -96,9 +96,26 @@ trait S3AConstants {
 
   val S3_CLIENT_FACTORY_IMPL = "fs.s3a.s3.client.factory.impl"
   val DEFAULT_S3_CLIENT_FACTORY = "org.apache.hadoop.fs.s3a.DefaultS3ClientFactory"
-  val INCONSISTENT_S3_CLIENT_FACTORY_IMPL = "com.hortonworks.spark.cloud.s3.InconsistentS3ClientFactory"
+  val INCONSISTENT_S3_CLIENT_FACTORY_IMPL =
+    "org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory"
 
+  /**
+   * Inconsistency (visibility delay) injection settings.
+   */
+  val FAIL_INJECT_INCONSISTENCY_KEY = "fs.s3a.failinject.inconsistency.key.substring"
+
+  val FAIL_INJECT_INCONSISTENCY_MSEC = "fs.s3a.failinject.inconsistency.msec"
+
+  val FAIL_INJECT_INCONSISTENCY_PROBABILITY = "fs.s3a.failinject.inconsistency.probability"
+  
   val INCONSISTENT_PATH = "DELAY_LISTING_ME"
+  /**
+   * How many seconds affected keys will be delayed from appearing in listing.
+   * This should probably be a config value.
+   */
+  val DEFAULT_DELAY_KEY_MSEC= 2 * 1000
+
+  val DEFAULT_DELAY_KEY_PROBABILITY = 1.0f
 
   /** Whether or not to allow MetadataStore to be source of truth. */
   val METADATASTORE_AUTHORITATIVE = "fs.s3a.metadatastore.authoritative"

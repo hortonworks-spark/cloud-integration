@@ -60,21 +60,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     def next: T = source.next()
   }
 
-  /**
-   * This doesn't do much, except that it is designed to be pasted straight into
-   * Zeppelin and work
-   */
-  ctest("DirOps", "simple directory ops in spark context process") {
-    val source = CSV_TESTFILE.get
-    sc = new SparkContext("local", "CSVgz", newSparkConf(source))
-    val landsat = "s3a://landsat-pds/scene_list.gz"
-    val landsatPath = new Path(landsat)
-    val fs = FileSystem.get(landsatPath.toUri, sc.hadoopConfiguration)
-    val files = fs.listFiles(landsatPath.getParent, false)
-    val listing = new RemoteOutputIterator(files)
-    listing.foreach(print(_))
-  }
-
+/*
   ctest("Boris", "boris bike stuff") {
     val source = CSV_TESTFILE.get
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
@@ -84,8 +70,8 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     val files = fs.listFiles(dirPath, false)
     val listing = new RemoteOutputIterator(files)
     listing.foreach(print(_))
-
   }
+*/
 
   ctest("CSVToORC", "boris bike stuff") {
     val bucket = "hwdev-steve-datasets-east"
@@ -95,7 +81,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     sc = new SparkContext("local", "CSVgz", newSparkConf(srcPath))
     val destPath = new Path(s"s3a://$bucket/travel/orc/borisbike/")
     val fs = FileSystem.get(srcPath.toUri, sc.hadoopConfiguration)
-    fs.delete(destPath, true)
+    rm(filesystem, destPath)
 
     val sql = SparkSession.builder().enableHiveSupport().getOrCreate()
 
@@ -153,7 +139,6 @@ Rental Id: int, Duration: int,
     cleanedDF.show()
     cleanedDF.orderBy(asc("duration")).show()
     cleanedDF.orderBy(desc("duration")).show()
-
   }
 
 }

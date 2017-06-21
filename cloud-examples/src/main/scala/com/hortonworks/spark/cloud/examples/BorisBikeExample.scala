@@ -145,9 +145,9 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
         destFS.listStatus(destPath)
       } catch {
         case fnfe: FileNotFoundException =>
-          destFS.delete(destPath, true)
+          rm(destFS, destPath)
       }
-      destFS.delete(destPath2, true)
+      rm(destFS, destPath2)
 
       importFromCSV(spark, sc, srcPath, destPath)
       simpleOperations(spark, sc, destPath, destPath2)
@@ -173,7 +173,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
     config.set(INPUT_FADVISE, RANDOM_IO)
     // load this FS instance into memory with random
     val destFS = destPath.getFileSystem(config)
-    destFS.delete(destPath, true)
+    rm(destFS, destPath)
 
     val csvOptions = Map(
       "header" -> "true",

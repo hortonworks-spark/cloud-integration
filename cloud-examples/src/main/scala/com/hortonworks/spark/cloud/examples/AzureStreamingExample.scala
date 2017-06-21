@@ -66,7 +66,7 @@ class AzureStreamingExample extends ObjectStoreExample {
       val hc = sc.hadoopConfiguration
 
       val fs = FileSystem.get(destPath.toUri, hc)
-      fs.delete(destPath, true)
+      rm(fs, destPath)
       fs.mkdirs(destPath)
 
       val sightings = sc.longAccumulator("sightings")

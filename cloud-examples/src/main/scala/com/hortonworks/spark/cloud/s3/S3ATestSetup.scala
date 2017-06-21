@@ -30,8 +30,15 @@ trait S3ATestSetup extends CloudSuiteTrait with RandomIO {
 
   override def enabled: Boolean = {
     getConf.getBoolean(S3A_TESTS_ENABLED, false) &&
-      super.enabled
+      super.enabled &&
+      (!consistentFilesystemOnly || isConsistentFilesystemConfig)
+
   }
+
+  def consistentFilesystemOnly = false
+
+  def isConsistentFilesystemConfig: Boolean =
+    getConf.getTrimmed(S3_CLIENT_FACTORY_IMPL, "") == ""
 
   def initFS(): FileSystem = {
     setupFilesystemConfiguration(getConf)

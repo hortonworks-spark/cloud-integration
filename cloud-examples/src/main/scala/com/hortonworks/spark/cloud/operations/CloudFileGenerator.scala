@@ -76,10 +76,10 @@ class CloudFileGenerator extends ObjectStoreExample {
       }.map(new Path(destPath, _))
       val fileURIs = filepaths.map(_.toUri)
 
-      val destFs = FileSystem.get(destURI, sc.hadoopConfiguration)
+      val destFS = FileSystem.get(destURI, sc.hadoopConfiguration)
       // create the parent directories or fail
-      destFs.delete(destPath, true)
-      destFs.mkdirs(destPath.getParent())
+      rm(destFS, destPath)
+      destFS.mkdirs(destPath.getParent())
       val configSerDeser = new ConfigSerDeser(sc.hadoopConfiguration)
       // RDD to save the text to every path in the files RDD, returning path and
       // the time it took
@@ -106,7 +106,7 @@ class CloudFileGenerator extends ObjectStoreExample {
         (jobDest.toUri, written, crc.getValue, executionTime)
       }).cache()
 
-      logInfo(s"Initial File System state = $destFs")
+      logInfo(s"Initial File System state = $destFS")
 
       // Trigger the evaluations of the RDDs
       val (executionResults, collectionTime) = duration2 {
@@ -119,7 +119,7 @@ class CloudFileGenerator extends ObjectStoreExample {
       val aggregatedExecutionTime = execTimeRDD.sum().toLong
       logInfo(s"Time to generate ${filesRDD.count()} entries ${toHuman(collectionTime)}")
       logInfo(s"Aggregate execution time ${toHuman(aggregatedExecutionTime)}")
-      logInfo(s"File System = $destFs")
+      logInfo(s"File System = $destFS")
 
 
       // verify that the length of a listed file is that expected
@@ -131,7 +131,7 @@ class CloudFileGenerator extends ObjectStoreExample {
       }
 
       // list all files under the path using listFiles; verify size
-      val (listing, listDuration) = duration2(destFs.listFiles(destPath, true))
+      val (listing, listDuration) = duration2(destFS.listFiles(destPath, true))
       logInfo(s"time to list paths under $destPath: $listDuration")
       while (listing.hasNext) {
         val entry = listing.next()

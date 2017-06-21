@@ -81,13 +81,14 @@ class CloudDataFrames extends ObjectStoreExample {
 
       val generatedBase = new Path(dest, "generated")
       val fs = FileSystem.get(generatedBase.toUri, hConf)
-      fs.delete(generatedBase, true)      // formats to generate
+      rm(fs, generatedBase)
+      // formats to generate
       val formats = Seq("orc", "parquet", "json", "csv")
 
       // write a DF; return path and time to save
       def write(format: String): (Path, Long) = {
         val path = new Path(generatedBase, format)
-        fs.delete(path, true)
+        rm(fs, path)
         duration2(save(sourceData, path, format))
       }
 
@@ -119,7 +120,6 @@ class CloudDataFrames extends ObjectStoreExample {
       // log any published filesystem state
       logInfo(s"FS: ${destFS}")
 
-
       extraValidation(spark, hConf, destFS, results)
     } finally {
       spark.stop()
@@ -127,8 +127,10 @@ class CloudDataFrames extends ObjectStoreExample {
     0
   }
 
+
   /**
    * Override point for any extra validation of the output.
+   *
    * @param fs filesystem used
    * @param results the list of results: (format, path, t(write), t(read))
    */

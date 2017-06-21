@@ -907,7 +907,7 @@
         </property>
       </activation>
       <properties>
-        <fs.s3a.s3.client.factory.impl>com.hortonworks.spark.cloud.s3.InconsistentS3ClientFactory</fs.s3a.s3.client.factory.impl>
+        <fs.s3a.s3.client.factory.impl>org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory</fs.s3a.s3.client.factory.impl>
       </properties>
     </profile>
 

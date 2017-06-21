@@ -183,7 +183,7 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
       logDebug(s"not touching local FS $filesystem")
     } else {
       logInfo(s"Cleaning $target")
-      if (filesystem.exists(testDir) && !filesystem.delete(testDir, true)) {
+      if (filesystem.exists(testDir) && !rm(filesystem, testDir)) {
         logWarning(s"Deleting $target returned false")
       }
     }
