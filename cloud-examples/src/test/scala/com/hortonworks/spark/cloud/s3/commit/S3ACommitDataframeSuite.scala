@@ -38,6 +38,10 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     }
   }
 
+  /**
+   * Patch up hive for re-use
+   * @param sparkConf configuration to patch
+   */
   def addTransientDerbySettings(sparkConf: SparkConf): Unit = {
     val hiveConfig = SparkScopeWorkarounds.tempHiveConfig()
     hconf(sparkConf, hiveConfig)
@@ -60,26 +64,33 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   }
 
   private val formats = Seq("orc"/*, "parquet"*/)
+
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   private val committers = Seq(
 //    DEFAULT_RENAME,
     DIRECTORY,
     PARTITIONED,
-//    MAGIC,
+    MAGIC,
     ""
   )
   private val s3 = filesystem.asInstanceOf[S3AFileSystem]
   private val destDir = testPath(s3, "dataframe-committer")
+  private val isConsistentFS = isConsistentFilesystemConfig
 
   committers.filter(!_.isEmpty).foreach { committer =>
-    ctest(s"Dataframe+$committer",
-      s"Write a dataframe with the committer $committer"
-    ) {
-      testOneFormat(
-        new Path(destDir, s"committer-$committer"),
-        "orc",
-        Some(committer))
+    formats.foreach {
+      fmt =>
+        val commitInfo = COMMITTERS_BY_NAME(committer)
+        val compatibleFS = isConsistentFS || !commitInfo._3
+        ctest(s"Dataframe+$committer-$fmt",
+          s"Write a dataframe to $fmt with the committer $committer",
+          compatibleFS) {
+          testOneFormat(
+            new Path(destDir, s"committer-$committer-$fmt"),
+            fmt,
+            Some(committer))
+        }
     }
   }
 
@@ -100,6 +111,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
       .config(sparkConf)
       .enableHiveSupport
       .getOrCreate()
+    // ignore the IDE if it complains: this *is* used.
     import spark.implicits._
     try {
       val sc = spark.sparkContext

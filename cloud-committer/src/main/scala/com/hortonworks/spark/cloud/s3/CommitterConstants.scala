@@ -38,12 +38,15 @@ object CommitterConstants {
   val PARTITIONED = "partitioned"
   val DEFAULT_RENAME = "default"
 
-  val COMMITTERS_BY_NAME: Map[String, (String, String)] = Map(
-    MAGIC -> ("MagicS3GuardCommitter",  MAGIC_COMMITTER_FACTORY),
-    STAGING -> ("StagingCommitter",  STAGING_COMMITTER_FACTORY),
-    DYNAMIC -> ("",  DYNAMIC_COMMITTER_FACTORY),
-    DIRECTORY -> ("DirectoryStagingCommitter",  DIRECTORY_COMMITTER_FACTORY),
-    PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY),
-    DEFAULT_RENAME -> ("",  DEFAULT_COMMITTER_FACTORY)
+  /**
+   * Committer name to: name in _SUCCESS, factory classname, requires consistent FS.
+   */
+  val COMMITTERS_BY_NAME: Map[String, (String, String, Boolean)] = Map(
+    MAGIC -> ("MagicS3GuardCommitter",  MAGIC_COMMITTER_FACTORY, true),
+    STAGING -> ("StagingCommitter",  STAGING_COMMITTER_FACTORY, false),
+    DYNAMIC -> ("",  DYNAMIC_COMMITTER_FACTORY, false),
+    DIRECTORY -> ("DirectoryStagingCommitter",  DIRECTORY_COMMITTER_FACTORY, false),
+    PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY, false),
+    DEFAULT_RENAME -> ("",  DEFAULT_COMMITTER_FACTORY, true)
   )
 }
