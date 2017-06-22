@@ -17,7 +17,6 @@
 
 package com.hortonworks.spark.cloud.operations
 import scala.language.postfixOps
-import scala.concurrent.duration._
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
 import org.apache.hadoop.conf.Configuration
@@ -89,7 +88,9 @@ class CloudDataFrames extends ObjectStoreExample {
       def write(format: String): (Path, Long) = {
         val path = new Path(generatedBase, format)
         rm(fs, path)
-        duration2(save(sourceData, path, format))
+        val d = duration2(save(sourceData, path, format))
+        eventuallyListStatus(fs, path)
+        d
       }
 
       // load a DF and verify it has the expected number of rows
@@ -126,7 +127,6 @@ class CloudDataFrames extends ObjectStoreExample {
     }
     0
   }
-
 
   /**
    * Override point for any extra validation of the output.
