@@ -20,9 +20,8 @@ package com.hortonworks.spark.cloud.s3
 
 import scala.collection.mutable
 
-import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.common.ReadSample
-import org.apache.hadoop.fs.{FSDataInputStream, Path, RemoteIterator}
+import com.hortonworks.spark.cloud.common.{CloudSuiteWithCSVDatasource, ReadSample}
+import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.TextInputFormat
 
@@ -33,26 +32,26 @@ import org.apache.spark.rdd.HadoopRDD
 /**
  * A suite of tests reading in the S3A CSV file.
  */
-class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
+class S3ACSVReadSuite extends CloudSuiteWithCSVDatasource with S3ATestSetup {
 
   /**
-   * Minimum number of lines, from `gunzip` + `wc -l`.
-   * This grows over time.
+   * Minimum number of lines, very pessimistic
    */
-  val ExpectedSceneListLines = 447919
+  val ExpectedSceneListLines = 50000
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
   init()
 
   def init(): Unit = {
+    setupFilesystemConfiguration(getConf)
     if (enabled) {
-      setupFilesystemConfiguration(getConf)
+      initDatasources()
     }
   }
 
   ctest("CSVgz", "Read compressed CSV files through the spark context") {
-    val source = CSV_TESTFILE.get
+    val source = getTestCSVPath()
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
     val fs = getFilesystem(source)
     val sceneInfo = fs.getFileStatus(source)
@@ -87,7 +86,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     // have a default FS of the local filesystem
 
     sc = new SparkContext("local", "test", newSparkConf(new Path("file://")))
-    val source = CSV_TESTFILE.get
+    val source = getTestCSVPath()
     validateCSV(sc, source)
     logInfo(s"Filesystem statistics ${getFilesystem(source)}")
   }
@@ -100,7 +99,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     // have a default FS of the local filesystem
 
     sc = new SparkContext("local", "test", newSparkConf(new Path("file://")))
-    val source = CSV_TESTFILE.get
+    val source = getTestCSVPath()
     val fs = getFilesystem(source)
     val blockLocations = fs.getFileBlockLocations(source, 0, 1)
     assert(1 === blockLocations.length,
@@ -119,7 +118,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
 
   ctest("listFiles",
     "List all files under the CSV parent dir") {
-    val source = CSV_TESTFILE.get
+    val source = getTestCSVPath()
     val fs = getFilesystem(source)
     val parent = source.getParent
     val files = duration("listFiles") {
@@ -139,7 +138,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
   ctest("ReadBytesReturned",
     """Read in blocks and assess their size and duration.
        | This is to identify buffering quirks. """.stripMargin) {
-    val source = CSV_TESTFILE.get
+    val source = getTestCSVPath()
     val fs = getFilesystem(source)
     val blockSize = 8192
     val buffer = new Array[Byte](blockSize)
@@ -213,7 +212,7 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
 
   ctest("getSceneInfo",
     "Get the scene info") {
-    val source = CSV_TESTFILE.get
+    val source = getTestCSVPath()
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
     val fs = getFilesystem(source)
     val sceneInfo = fs.getFileStatus(source)
@@ -222,23 +221,17 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     logInfo(s"Filesystem statistics ${fs}")
   }
 
-  /**
-   * Iterator over remote output.
-   *
-   * @param source source iterator
-   * @tparam T type of response
-   */
-  class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Iterator[T] {
+/*  class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Iterator[T] {
     def hasNext: Boolean = source.hasNext
 
     def next: T = source.next()
-  }
+  }*/
 
   /**
    * This doesn't do much, except that it is designed to be pasted straight into
    * Zeppelin and work
    */
-  ctest("DirOps", "simple directory ops in spark context process") {
+/*  ctest("DirOps", "simple directory ops in spark context process") {
     val source = CSV_TESTFILE.get
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
 
@@ -250,6 +243,6 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
     val listing = new RemoteOutputIterator(files)
     listing.foreach(print(_))
 
-  }
+  }*/
 
 }

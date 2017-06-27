@@ -165,7 +165,20 @@ trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
    * @return the argument value, possibly the default
    */
   protected def arg(args: Array[String], index: Int, defVal: String): String = {
-    arg(args, index).getOrElse(defVal)
+    arg(args, index, Some(defVal)).get
+  }
+
+  /**
+   * Get a specific argument, returning the default value if there
+   * is no such argument.
+   * @param args argument list
+   * @param index index to look up
+   * @param defVal default value
+   * @return the argument value, possibly the default
+   */
+  protected def arg(args: Array[String], index: Int, defVal: Option[String]):
+    Option[String] = {
+    if (args.length > index) Some(args(index)) else defVal
   }
 
   /**
@@ -175,7 +188,7 @@ trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
    * @return the argument value, or None
    */
   protected def arg(args: Array[String], index: Int): Option[String] = {
-    if (args.length > index) Some(args(index)) else None
+    arg(args, index, None)
   }
 
   /**

@@ -29,12 +29,6 @@ import org.apache.spark.sql.SparkSession
  */
 class BorisBikeSuite extends CloudSuite with S3ATestSetup {
 
-  /**
-   * Minimum number of lines, from `gunzip` + `wc -l`.
-   * This grows over time.
-   */
-  val ExpectedSceneListLines = 447919
-
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
   init()

@@ -17,27 +17,39 @@
 
 package com.hortonworks.spark.cloud.azure
 
-import java.net.URI
-
-import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.FileSystem
+import com.hortonworks.spark.cloud.common.CloudSuiteWithCSVDatasource
+import com.hortonworks.spark.cloud.operations.LineCount
 
 /**
- * Trait for Azure tests. Because no Azure-specific API calls are made, this test suite
- * will compile against Hadoop versions which lack the hadoop-azure module. However, all
- * the tests will be skipped.
+ * Test the `S3LineCount` entry point.
  */
-trait AzureTestSetup extends CloudSuite {
+class AzureLineCountSuite extends CloudSuiteWithCSVDatasource with AzureTestSetup {
 
-  override def enabled: Boolean =  {
-    getConf.getBoolean(AZURE_TESTS_ENABLED, false)
+  init()
+
+  /**
+   * set up FS if enabled.
+   */
+  def init(): Unit = {
+    super.initFS()
+    if (enabled) {
+      initDatasources()
+    }
   }
 
-  def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(AZURE_TEST_URI))
-    logDebug(s"Executing Azure tests against $uri")
-    createFilesystem(uri)
+  override def enabled: Boolean = super.enabled && hasCSVTestFile
+
+  after {
+    cleanFilesystemInTeardown()
   }
 
+  ctest("AzureLineCountSuite",
+    "Execute the LineCount example") {
+    val src = getTestCSVPath()
+    val sparkConf = newSparkConf(src)
+    sparkConf.setAppName("AzureLineCountSuite")
+    assert(0 === new LineCount().action(sparkConf,
+      Seq(src.toUri.toString)))
+  }
 
 }

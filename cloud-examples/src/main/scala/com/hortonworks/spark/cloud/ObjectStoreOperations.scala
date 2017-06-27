@@ -29,7 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 import org.scalatest.concurrent.Eventually
@@ -421,6 +421,40 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
       logInfo(s" ${entry.getName} = ${entry.getValue}")
     }
   }
+
+  /**
+   * Copy a file across filesystems, through the local machine.
+   * There's no attempt to optimise the operation if the
+   * src and dest files are on the same FS.
+   * @param src source file
+   * @param dest destination
+   * @param conf config for the FS binding
+   * @param blocksize block size
+   * @param overwrite should the dest be overwritten?
+   */
+  def copyFile(
+      src: Path,
+      dest: Path,
+      conf: Configuration,
+      overwrite: Boolean): Unit = {
+    val srcFS = src.getFileSystem(conf)
+    val sourceStatus = srcFS.getFileStatus(src)
+    require(sourceStatus.isFile, s"Not a file $src")
+    val sizeKB = sourceStatus.getLen / 1024
+    logInfo(s"Copying $src to $dest (${sizeKB} KB)")
+    val (outcome, time) = duration2 {
+      FileUtil.copy(srcFS,
+        sourceStatus,
+        dest.getFileSystem(conf),
+        dest,
+        false, overwrite, conf)
+    }
+    val durationS = time / (1e9)
+    logInfo(s"Copy Duration = $durationS seconds")
+    val bandwidth = time / sizeKB
+    logInfo(s"Effective copy bandwidth = $bandwidth KB/s")
+  }
+
 }
 
 /**

@@ -20,13 +20,15 @@ package com.hortonworks.spark.cloud.s3
 import java.net.URI
 
 import com.hortonworks.spark.cloud.CloudSuiteTrait
+import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
  * Trait for S3A tests.
  */
-trait S3ATestSetup extends CloudSuiteTrait with RandomIO {
+trait S3ATestSetup extends CloudSuiteTrait with RandomIO with
+  CsvDatasourceSupport {
 
   override def enabled: Boolean = {
     getConf.getBoolean(S3A_TESTS_ENABLED, false) &&
@@ -77,6 +79,12 @@ trait S3ATestSetup extends CloudSuiteTrait with RandomIO {
    * Predicate to define whether or not there's a CSV file to work with.
    * @return true if the CSV test file is defined.
    */
-  protected def hasCSVTestFile: Boolean = CSV_TESTFILE.isDefined
+  override def hasCSVTestFile(): Boolean = CSV_TESTFILE.isDefined
 
+  /**
+   * Path to the CSV file's original source
+   *
+   * @return a path
+   */
+  override def sourceCSVFilePath: Option[Path] = CSV_TESTFILE
 }

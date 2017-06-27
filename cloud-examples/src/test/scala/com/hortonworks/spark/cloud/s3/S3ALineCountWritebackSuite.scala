@@ -20,13 +20,13 @@ package com.hortonworks.spark.cloud.s3
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.common.CloudSuiteWithCSVDatasource
 import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 
 /**
  * Test the `S3LineCount` entry point.
  */
-class S3ALineCountWritebackSuite extends CloudSuite with S3ATestSetup {
+class S3ALineCountWritebackSuite extends CloudSuiteWithCSVDatasource with S3ATestSetup {
 
   init()
 
@@ -45,14 +45,14 @@ class S3ALineCountWritebackSuite extends CloudSuite with S3ATestSetup {
     cleanFilesystemInTeardown()
   }
 
-  ctest("S3ALineCountWriteback",
-    "Execute the S3ALineCount example with the results written back to the test filesystem.") {
-    val sourceFile = CSV_TESTFILE.get
+  ctest("LineCountWriteback",
+    "Execute the LineCount example with the results written back to the test filesystem.") {
+    val sourceFile = getTestCSVPath()
     val sourceFS = FileSystem.get(sourceFile.toUri, getConf)
     val sourceInfo = sourceFS.getFileStatus(sourceFile)
     val sparkConf = newSparkConf()
-    sparkConf.setAppName("S3LineCount")
-    val destDir = testPath(filesystem, "s3alinecount")
+    sparkConf.setAppName("LineCount")
+    val destDir = testPath(filesystem, "LineCountWriteback")
     assert(0 === S3ALineCount.action(sparkConf,
       Array(sourceFile.toString, destDir.toString)))
 

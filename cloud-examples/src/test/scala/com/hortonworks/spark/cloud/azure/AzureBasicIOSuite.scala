@@ -27,7 +27,6 @@ class AzureBasicIOSuite extends BasicIOTests with AzureTestSetup {
   init()
 
   def init(): Unit = {
-    // propagate credentials
     if (enabled) {
       initFS()
     }

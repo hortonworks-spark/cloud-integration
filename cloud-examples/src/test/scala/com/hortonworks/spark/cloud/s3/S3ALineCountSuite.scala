@@ -17,12 +17,12 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.common.CloudSuiteWithCSVDatasource
 
 /**
  * Test the `S3LineCount` entry point.
  */
-class S3ALineCountSuite extends CloudSuite with S3ATestSetup {
+class S3ALineCountSuite extends CloudSuiteWithCSVDatasource with S3ATestSetup {
 
   init()
 
@@ -36,7 +36,7 @@ class S3ALineCountSuite extends CloudSuite with S3ATestSetup {
 
   ctest("S3ALineCountReadData",
     "Execute the S3ALineCount example with the default values (i.e. no arguments)") {
-    val sparkConf = newSparkConf(CSV_TESTFILE.get)
+    val sparkConf = newSparkConf(getTestCSVPath())
     sparkConf.setAppName("S3ALineCountDefaults")
     assert(0 === S3ALineCount.action(sparkConf, Seq()))
   }

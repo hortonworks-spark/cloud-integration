@@ -17,39 +17,27 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.common.CloudSuiteWithCSVDatasource
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
  * Tests reading in the S3A CSV file using sequential and Random IO.
  */
-class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
+class S3ASeekReadSuite extends CloudSuiteWithCSVDatasource with S3ATestSetup with SequentialIO {
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
   init()
 
   /**
-   * There's no attempt to set up the filesystem here, as this suite is read-only.
+   * set up FS if enabled.
    */
   def init(): Unit = {
+    setupFilesystemConfiguration(getConf)
     if (enabled) {
-      setupFilesystemConfiguration(getConf)
+      initDatasources()
     }
-  }
-
-  /**
-   * Get the CSV source path and filesystem to read from it.
-   * The filesystem uses the endpoint defined for the CSV file if no
-   * relevant endpoint
-   * @return
-   */
-  def getCSVSourceAndFileSystem(): (Path, FileSystem) = {
-    val source = CSV_TESTFILE.get
-    val config = new Configuration(getConf)
-    val fs = FileSystem.newInstance(source.toUri, config)
-    (source, fs)
   }
 
   ctest("SeekReadFully",
@@ -66,7 +54,8 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
         | like Orc and Parquet.""".stripMargin) {
     val (source, fs) = getCSVSourceAndFileSystem()
     FileSystem.clearStatistics
-    val stats = FileSystem.getStatistics("s3a", fs.getClass)
+    val stats = FileSystem.getStatistics(fs.getScheme,
+      fs.getClass)
     stats.reset()
     val storageStats = fs.getStorageStatistics
     storageStats.reset()
