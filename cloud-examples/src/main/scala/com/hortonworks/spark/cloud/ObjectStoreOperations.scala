@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud
 
-import java.io.{EOFException, File}
+import java.io.{EOFException, File, IOException}
 import java.net.URL
 
 import scala.collection.JavaConversions.asScalaIterator
@@ -406,9 +406,14 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
       fs: FileSystem,
       path: Path): Boolean = {
     waitForConsistency(fs)
-    val r = fs.delete(path, true)
-    waitForConsistency(fs)
-    r
+    try {
+      val r = fs.delete(path, true)
+      waitForConsistency(fs)
+      r
+    } catch {
+      case e: IOException =>
+        throw new IOException(s"Failed to delete $path on $fs $e", e )
+    }
   }
 
   /**
