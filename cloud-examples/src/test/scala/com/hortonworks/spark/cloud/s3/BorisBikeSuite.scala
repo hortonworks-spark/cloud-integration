@@ -58,7 +58,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     sc = new SparkContext("local", "CSVgz", newSparkConf(source))
     val dir = "s3a://hwdev-steve-datasets-east/travel/borisbike/"
     val dirPath = new Path(dir)
-    val fs = FileSystem.get(dirPath.toUri, sc.hadoopConfiguration)
+    val fs = dirPath.getFileSystem(sc.hadoopConfiguration)
     val files = fs.listFiles(dirPath, false)
     val listing = new RemoteOutputIterator(files)
     listing.foreach(print(_))
@@ -72,7 +72,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
 
     sc = new SparkContext("local", "CSVgz", newSparkConf(srcPath))
     val destPath = new Path(s"s3a://$bucket/travel/orc/borisbike/")
-    val fs = FileSystem.get(srcPath.toUri, sc.hadoopConfiguration)
+    val fs = srcPath.getFileSystem(sc.hadoopConfiguration)
     rm(filesystem, destPath)
 
     val sql = SparkSession.builder().enableHiveSupport().getOrCreate()

@@ -22,7 +22,7 @@ import java.net.URI
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
 import com.hortonworks.spark.cloud.utils.ConfigSerDeser
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.util.PureJavaCrc32
 
 import org.apache.spark.{SparkConf, SparkContext}
@@ -76,7 +76,7 @@ class CloudFileGenerator extends ObjectStoreExample {
       }.map(new Path(destPath, _))
       val fileURIs = filepaths.map(_.toUri)
 
-      val destFS = FileSystem.get(destURI, sc.hadoopConfiguration)
+      val destFS = destPath.getFileSystem(sc.hadoopConfiguration)
       // create the parent directories or fail
       rm(destFS, destPath)
       destFS.mkdirs(destPath.getParent())
@@ -87,7 +87,7 @@ class CloudFileGenerator extends ObjectStoreExample {
       val putDataRDD = filesRDD.map(uri => {
         val jobDest = new Path(uri)
         val hc = configSerDeser.get()
-        val fs = FileSystem.get(uri, hc)
+        val fs = jobDest.getFileSystem(hc)
         var written = 0
         val crc = new PureJavaCrc32
         val executionTime = time {

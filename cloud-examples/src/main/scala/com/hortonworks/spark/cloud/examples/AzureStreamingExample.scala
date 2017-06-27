@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.examples
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 
 import org.apache.spark.SparkConf
 import org.apache.spark.streaming.{Seconds, StreamingContext}
@@ -65,7 +65,7 @@ class AzureStreamingExample extends ObjectStoreExample {
       val sc = streaming.sparkContext
       val hc = sc.hadoopConfiguration
 
-      val fs = FileSystem.get(destPath.toUri, hc)
+      val fs = destPath.getFileSystem(hc)
       rm(fs, destPath)
       fs.mkdirs(destPath)
 

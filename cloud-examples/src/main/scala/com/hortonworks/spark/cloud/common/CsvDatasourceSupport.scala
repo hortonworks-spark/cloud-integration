@@ -17,8 +17,7 @@
 
 package com.hortonworks.spark.cloud.common
 
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 
 trait CsvDatasourceSupport {
 

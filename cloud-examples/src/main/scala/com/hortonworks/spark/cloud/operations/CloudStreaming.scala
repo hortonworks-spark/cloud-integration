@@ -20,7 +20,7 @@ package com.hortonworks.spark.cloud.operations
 import scala.collection.mutable.StringBuilder
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -73,7 +73,7 @@ class CloudStreaming extends ObjectStoreExample {
       val sparkContext = ssc.sparkContext
       val hc = sparkContext.hadoopConfiguration
 
-      val destFS = FileSystem.get(destPath.toUri, hc)
+      val destFS = destPath.getFileSystem(hc)
       rm(destFS, destPath)
       destFS.mkdirs(destPath)
       destFS.mkdirs(streamDir)

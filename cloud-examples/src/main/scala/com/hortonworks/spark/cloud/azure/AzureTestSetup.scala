@@ -19,12 +19,10 @@ package com.hortonworks.spark.cloud.azure
 
 import java.io.{EOFException, FileNotFoundException}
 import java.net.URI
-import java.nio.ByteBuffer
 
 import com.hortonworks.spark.cloud.CloudSuite
 import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
 import org.apache.hadoop.fs.{FileSystem, Path}
-import org.apache.hadoop.io.IOUtils
 
 /**
  * Trait for Azure tests.
@@ -84,6 +82,7 @@ trait AzureTestSetup extends CloudSuite with CsvDatasourceSupport {
    */
   override def prepareTestCSVFile(): Unit = {
     require(hasCSVTestFile(), "No CSV file")
+    require(isFilesystemDefined, "Test FS is not defined; call initFS() first")
     // here the CSV file is copied over
     val source = sourceCSVFilePath.get
     if (source.toUri.getScheme == "wasb") {

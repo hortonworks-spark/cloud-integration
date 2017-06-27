@@ -21,7 +21,7 @@ import scala.concurrent.duration._
 import scala.language.postfixOps
 
 import com.hortonworks.spark.cloud.common.CloudSuiteWithCSVDatasource
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import org.apache.hadoop.fs.{FileStatus, Path}
 
 /**
  * Test the `S3LineCount` entry point.
@@ -48,7 +48,7 @@ class S3ALineCountWritebackSuite extends CloudSuiteWithCSVDatasource with S3ATes
   ctest("LineCountWriteback",
     "Execute the LineCount example with the results written back to the test filesystem.") {
     val sourceFile = getTestCSVPath()
-    val sourceFS = FileSystem.get(sourceFile.toUri, getConf)
+    val sourceFS = sourceFile.getFileSystem(getConf)
     val sourceInfo = sourceFS.getFileStatus(sourceFile)
     val sparkConf = newSparkConf()
     sparkConf.setAppName("LineCount")

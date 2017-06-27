@@ -30,7 +30,7 @@ trait TimeOperations extends CloudLogging {
    * @return a string describing the time
    */
   def toHuman(durationNanos: Long): String = {
-    String.format(Locale.ENGLISH, "%,d ns", durationNanos.asInstanceOf[Object])
+    String.format(Locale.ENGLISH, "%,d nS", durationNanos.asInstanceOf[Object])
   }
 
   /**
@@ -67,7 +67,7 @@ trait TimeOperations extends CloudLogging {
       case ex: Exception =>
         val end = nanos()
         val d = end - start
-        logError(s"After ${toHuman(d)} ns: $ex", ex)
+        logError(s"After ${toHuman(d)}: $ex", ex)
         throw ex
     }
   }
@@ -88,7 +88,7 @@ trait TimeOperations extends CloudLogging {
       case ex: Exception =>
         val end = nanos()
         val d = end - start
-        logError(s"After ${toHuman(d)} ns: $ex", ex)
+        logError(s"After ${toHuman(d)}: $ex", ex)
         throw ex
     }
   }

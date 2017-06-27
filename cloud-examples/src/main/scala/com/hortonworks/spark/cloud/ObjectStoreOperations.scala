@@ -129,8 +129,7 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
    * @param body string body
    */
   def put(path: Path, conf: Configuration, body: String): Unit = {
-    val fs = FileSystem.get(path.toUri, conf)
-    put(fs, path, body)
+    put(path.getFileSystem(conf), path, body)
   }
 
   /**

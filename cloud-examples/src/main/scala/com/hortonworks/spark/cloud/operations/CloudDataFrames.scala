@@ -21,7 +21,6 @@ import scala.language.postfixOps
 import com.hortonworks.spark.cloud.ObjectStoreExample
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
-
 import org.scalatest.time.{Seconds, Span}
 
 import org.apache.spark.SparkConf
@@ -79,7 +78,7 @@ class CloudDataFrames extends ObjectStoreExample {
       val sourceData = spark.range(0, numRows).select($"id".as("l"), $"id".cast(StringType).as("s"))
 
       val generatedBase = new Path(dest, "generated")
-      val fs = FileSystem.get(generatedBase.toUri, hConf)
+      val fs = generatedBase.getFileSystem(hConf)
       rm(fs, generatedBase)
       // formats to generate
       val formats = Seq("orc", "parquet", "json", "csv")
@@ -109,7 +108,7 @@ class CloudDataFrames extends ObjectStoreExample {
         logInfo(s"${result._1} : ${toHuman(result._3)} at ${result._2}")
       }
 
-      val destFS = FileSystem.get(dest.toUri, hConf)
+      val destFS = dest.getFileSystem(hConf)
 
       // now there are some files in the generated directory tree. Enumerate them
       logInfo("scanning binary files")

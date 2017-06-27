@@ -90,8 +90,8 @@ class LineCount extends ObjectStoreExample with SequentialIO {
       } else {
         // destination provided
         val destUri = new URI(dest.get)
-        val destFS = FileSystem.get(destUri, conf)
         val destPath = new Path(destUri)
+        val destFS = destPath.getFileSystem(conf)
         duration("setup dest path") {
           rm(destFS, destPath)
           destFS.mkdirs(destPath.getParent())
