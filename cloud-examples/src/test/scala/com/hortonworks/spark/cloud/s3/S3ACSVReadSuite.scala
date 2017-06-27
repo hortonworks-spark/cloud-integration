@@ -43,8 +43,6 @@ class S3ACSVReadSuite extends CloudSuite with S3ATestSetup {
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
-  override def useCSVEndpoint: Boolean = true
-
   init()
 
   def init(): Unit = {

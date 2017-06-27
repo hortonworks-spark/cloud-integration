@@ -868,7 +868,7 @@
       </properties>
     </profile>
 
-    <!-- Switch to DynamoDBLocal for s3guard. Has no effect unless s3guard is enabled -->
+    <!-- Enable S3guard against a DynamoDBLocal datastore -->
     <profile>
       <id>localdynamo</id>
       <activation>

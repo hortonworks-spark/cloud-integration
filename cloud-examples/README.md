@@ -177,40 +177,13 @@ defined, such as endpoints and timeouts.
 
 ### S3A Options
 
-<table class="table">
-  <tr><th style="width:21%">Option</th><th>Meaning</th><th>Default</th></tr>
-  <tr>
-    <td><code>s3a.tests.enabled</code></td>
-    <td>
-    Execute tests using the S3A filesystem.
-    </td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>s3a.test.uri</code></td>
-    <td>
-    URI for S3A tests. Required if S3A tests are enabled.
-    </td>
-    <td><code></code></td>
-  </tr>
-  <tr>
-    <td><code>s3a.test.csvfile.path</code></td>
-    <td>
-    Path to a (possibly encrypted) CSV file used in linecount tests.
-    </td>
-    <td><code></code>s3a://landsat-pds/scene_list.gz</td>
-  </tr>
-  <tr>
-    <td><code>s3a.test.csvfile.endpoint</code></td>
-    <td>
-    Endpoint URI for CSV test file. This allows a different S3 instance
-    to be set for tests reading or writing data than against public CSV
-    source files.
-    Example: <code>s3.amazonaws.com</code>
-    </td>
-    <td><code>s3.amazonaws.com</code></td>
-  </tr>
-</table>
+
+| Option | Meaning | Default |
+|--------|---------|---------|
+| `s3a.tests.enabled` | Execute tests using the S3A filesystem | `false`|
+| `s3a.test.csvfile.path` | Path to a read only CSV file used in performance tests. | `s3a://landsat-pds/scene_list.gz`|
+
+
 
 When testing against Amazon S3, their [public datasets](https://aws.amazon.com/public-data-sets/)
 are used.
@@ -242,15 +215,11 @@ S3 endpoint
     <value>s3server.example.org</value>
   </property>
 
-  <property>
-    <name>s3a.test.csvfile.endpoint</name>
-    <value>${fs.s3a.endpoint}</value>
-  </property>
 
 ```
 
 When testing against an S3 instance which only supports the AWS V4 Authentication
-API, such as Frankfurt and Seoul, the `fs.s3a.endpoint` property must be set to that of
+API, such as Frankfurt and Seoul, the `fs.s3a.bucket.landsat-pds.endpoint` property must be set to that of
 the specific location. Because the public landsat dataset is hosted in AWS US-East, it must retain
 the original S3 endpoint. This is done by default, though it can also be set explicitly:
 
@@ -262,7 +231,7 @@ the original S3 endpoint. This is done by default, though it can also be set exp
 </property>
 
 <property>
-  <name>s3a.test.csvfile.endpoint</name>
+  <name>fs.s3a.bucket.landsat-pds.endpoint</name>
   <value>s3.amazonaws.com</value>
 </property>
 ```
@@ -278,25 +247,10 @@ Finally, the CSV file tests can be skipped entirely by declaring the URL to be "
 ```
 ### Azure Test Options
 
-
-<table class="table">
-  <tr><th style="width:21%">Option</th><th>Meaning</th><th>Default</th></tr>
-  <tr>
-    <td><code>azure.tests.enabled</code></td>
-    <td>
-    Execute tests using the Azure WASB filesystem
-    </td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>azure.test.uri</code></td>
-    <td>
-    URI for Azure WASB tests. Required if Azure tests are enabled.
-    </td>
-    <td></td>
-  </tr>
-</table>
-
+| Option | Meaning | Default |
+|--------|---------|---------|
+| `azure.tests.enabled` |Execute tests using the Azure WASB filesystem| `false`|
+| `azure.test.uri` | URI for Azure WASB tests. Required if Azure tests are enabled.| |
 
 ## Running a Single Test Case
 

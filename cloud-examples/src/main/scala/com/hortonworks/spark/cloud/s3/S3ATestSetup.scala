@@ -66,9 +66,6 @@ trait S3ATestSetup extends CloudSuiteTrait with RandomIO {
     config.set(BLOCK_SIZE, (1024 * 1024).toString)
     // the input policy
     config.set(INPUT_FADVISE, inputPolicy)
-    if (useCSVEndpoint) {
-      enableCSVEndpoint(config)
-    }
   }
 
   lazy val CSV_TESTFILE: Option[Path] = {
@@ -77,37 +74,9 @@ trait S3ATestSetup extends CloudSuiteTrait with RandomIO {
   }
 
   /**
-   * Set up a configuration so that created filesystems will use the endpoint for the CSV file.
-   * @param config configuration to patch.
-   */
-  def enableCSVEndpoint(config: Configuration): Unit = {
-    config.set(ENDPOINT,
-      config.get(S3A_CSVFILE_ENDPOINT, S3A_CSVFILE_ENDPOINT_DEFAULT))
-  }
-
-  /**
    * Predicate to define whether or not there's a CSV file to work with.
    * @return true if the CSV test file is defined.
    */
   protected def hasCSVTestFile: Boolean = CSV_TESTFILE.isDefined
-
-  /**
-   * Should the endpoint for the CSV data be used in the configuration?
-   * @return false
-   */
-  protected def useCSVEndpoint: Boolean = false
-
-  /**
-   * Predicate which declares that the test and CSV endpoints are different.
-   * Tests which want to read the CSV file and then write to their own FS are not
-   * going to work -the spark context only has a single endpoint option.
-   * @param config configuration to probe
-   * @return true if the endpoints are different
-   */
-  protected def testAndCSVEndpointsDifferent(config: Configuration): Boolean = {
-    val generalEndpoint = config.get(ENDPOINT, S3A_CSVFILE_ENDPOINT_DEFAULT)
-    val testEndpoint = config.get(S3A_CSVFILE_ENDPOINT, S3A_CSVFILE_ENDPOINT_DEFAULT)
-    generalEndpoint != testEndpoint
-  }
 
 }

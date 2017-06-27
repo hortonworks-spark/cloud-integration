@@ -26,8 +26,6 @@ class S3ALineCountSuite extends CloudSuite with S3ATestSetup {
 
   init()
 
-  override def useCSVEndpoint: Boolean = true
-
   def init(): Unit = {
     if (enabled) {
       setupFilesystemConfiguration(getConf)

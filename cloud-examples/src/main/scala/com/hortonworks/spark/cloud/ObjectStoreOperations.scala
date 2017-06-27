@@ -20,6 +20,7 @@ package com.hortonworks.spark.cloud
 import java.io.{EOFException, File}
 import java.net.URL
 
+import scala.collection.JavaConversions.asScalaIterator
 import scala.concurrent.duration._
 import scala.language.postfixOps
 import scala.reflect.ClassTag
@@ -28,7 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 import org.scalatest.concurrent.Eventually
@@ -409,6 +410,16 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     val r = fs.delete(path, true)
     waitForConsistency(fs)
     r
+  }
+
+  /**
+   * Dump the storage stats; logs nothing if there are none
+   * @param stats statistics instance
+   */
+  def dumpFileSystemStatistics(stats: StorageStatistics) : Unit = {
+    for (entry <- stats.getLongStatistics) {
+      logInfo(s" ${entry.getName} = ${entry.getValue}")
+    }
   }
 }
 

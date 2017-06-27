@@ -126,16 +126,6 @@ defined, such as endpoints and timeouts.
     </td>
     <td><code></code>s3a://landsat-pds/scene_list.gz</td>
   </tr>
-  <tr>
-    <td><code>s3a.test.csvfile.endpoint</code></td>
-    <td>
-    Endpoint URI for CSV test file. This allows a different S3 instance
-    to be set for tests reading or writing data than against public CSV
-    source files.
-    Example: <code>s3.amazonaws.com</code>
-    </td>
-    <td><code>s3.amazonaws.com</code></td>
-  </tr>
 </table>
 
 When testing against Amazon S3, their [public datasets](https://aws.amazon.com/public-data-sets/)
@@ -154,7 +144,7 @@ curl -I -X HEAD http://landsat-pds.s3.amazonaws.com/scene_list.gz
 
 When testing against non-AWS infrastructure, an alternate file may be specified
 in the option `s3a.test.csvfile.path`; with its endpoint set to that of the
-S3 endpoint
+S3 endpoint using the S3a per-bucket configuration mechanism.
 
 
 ```xml
@@ -169,7 +159,7 @@ S3 endpoint
   </property>
 
   <property>
-    <name>s3a.test.csvfile.endpoint</name>
+    <name>fs.s3a.bucket.testdata.endpoint</name>
     <value>${fs.s3a.endpoint}</value>
   </property>
 
@@ -188,7 +178,7 @@ the original S3 endpoint. This is done by default, though it can also be set exp
 </property>
 
 <property>
-  <name>s3a.test.csvfile.endpoint</name>
+  <name>fs.s3a.bucket.landsat-pds.endpoint</name>
   <value>s3.amazonaws.com</value>
 </property>
 ```
@@ -205,6 +195,28 @@ Finally, the CSV file tests can be skipped entirely by declaring the URL to be "
   <value/>
 </property>
 ```
+
+### Testing S3Guard consistency and committers
+
+
+| Profile | Meaning | 
+|--------|---------|
+| `inconsistent` |  use the inconsisent S3 client | 
+| `localdynamo` | S3Guard with a local database |
+| `dynamo` | S3Guard with a remote database |
+| `authoritative` | declare that the dynamo DB is considered authoritative |
+
+
+The `inconsistent` profile enables the inconsistent listing AWS client. Any failing test implies the code being tested (or the test probes) do not work with an inconsistent FS.
+As the test probes are meant to be resilient here, these failures are *probably* in the production codde.
+
+
+```bash
+mvn test  -Dcloud.test.configuration.file=../cloud-test-configs/s3a.xml   -DwildcardSuites=com.hortonworks.spark.cloud.s3 -Dinconsistent
+```
+
+Enable S3guard against a DynamoDBLocal datastore.
+
 ## Azure Test Options
 
 

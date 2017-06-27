@@ -28,8 +28,6 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
-  override protected def useCSVEndpoint: Boolean = true
-
   init()
 
   /**
@@ -50,7 +48,6 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
   def getCSVSourceAndFileSystem(): (Path, FileSystem) = {
     val source = CSV_TESTFILE.get
     val config = new Configuration(getConf)
-    enableCSVEndpoint(config)
     val fs = FileSystem.newInstance(source.toUri, config)
     (source, fs)
   }
@@ -71,6 +68,8 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
     FileSystem.clearStatistics
     val stats = FileSystem.getStatistics("s3a", fs.getClass)
     stats.reset()
+    val storageStats = fs.getStorageStatistics
+    storageStats.reset()
     val st = duration("stat") {
       fs.getFileStatus(source)
     }
@@ -84,6 +83,8 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
       r
     }
 
+    val eof = st.getLen
+
     time("read()") {
       assert(-1 !== in.read())
     }
@@ -94,7 +95,7 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
       in.seek(256)
     }
     time("seek(EOF-2)") {
-      in.seek(st.getLen - 2)
+      in.seek(eof - 2)
     }
     time("read()") {
       assert(-1 !== in.read())
@@ -108,6 +109,7 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
     }
     readFully(1L, 1)
     readFully(1L, 256)
+    readFully(eof - 350, 300)
     readFully(260L, 256)
     readFully(1024L, 256)
     readFully(1536L, 256)
@@ -124,6 +126,8 @@ class S3ASeekReadSuite extends CloudSuite with S3ATestSetup with SequentialIO {
       in.close
     }
     logInfo(s"Statistics $stats")
+    dumpFileSystemStatistics(storageStats)
+
   }
 
 }
