@@ -22,12 +22,12 @@
   <parent>
     <groupId>com.hortonworks.spark</groupId>
     <version>1.0-SNAPSHOT</version>
-    <artifactId>cloud-integration</artifactId>
+    <artifactId>hortonworks-cloud-integration</artifactId>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>cloud-committer</artifactId>
-  <name>cloud-committer</name>
+  <artifactId>hortonworks-cloud-committer</artifactId>
+  <name>hortonworks-cloud-committer</name>
   <packaging>jar</packaging>
 
   <description>

@@ -22,12 +22,12 @@
   <parent>
     <groupId>com.hortonworks.spark</groupId>
     <version>1.0-SNAPSHOT</version>
-    <artifactId>cloud-integration</artifactId>
+    <artifactId>hortonworks-cloud-integration</artifactId>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>cloud-examples</artifactId>
-  <name>cloud-examples</name>
+  <artifactId>hortonworks-cloud-examples</artifactId>
+  <name>hortonworks-cloud-examples</name>
   <packaging>jar</packaging>
 
   <description>
@@ -45,7 +45,7 @@
 
     <dependency>
       <groupId>com.hortonworks.spark</groupId>
-      <artifactId>cloud-committer</artifactId>
+      <artifactId>hortonworks-cloud-committer</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

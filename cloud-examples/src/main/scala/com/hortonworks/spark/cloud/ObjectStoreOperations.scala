@@ -433,7 +433,6 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
    * @param src source file
    * @param dest destination
    * @param conf config for the FS binding
-   * @param blocksize block size
    * @param overwrite should the dest be overwritten?
    */
   def copyFile(

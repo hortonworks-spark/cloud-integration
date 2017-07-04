@@ -120,6 +120,11 @@ abstract class BasicIOTests extends CloudSuite {
     }
     // files are either empty or have a block size
     leafFileStatus.foreach(s => assert(s.getLen == 0 || s.getBlockSize > 0))
+
+    // and run binary files over it to see if SPARK-6527 is real or not.
+    sc.binaryFiles(destFile.toUri.toString, 1).map {
+      _ => 1
+    }.count()
   }
 
   ctest("Blocksize", "verify default block size is a viable number") {

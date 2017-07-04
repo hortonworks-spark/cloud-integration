@@ -20,9 +20,9 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.hortonworks.spark</groupId>
-  <name>cloud-integration</name>
+  <name>hortonworks-cloud-integration</name>
   <version>1.0-SNAPSHOT</version>
-  <artifactId>cloud-integration</artifactId>
+  <artifactId>hortonworks-cloud-integration</artifactId>
   <packaging>pom</packaging>
 
   <description>
@@ -51,7 +51,7 @@
     <spark.version>2.3.0-SNAPSHOT</spark.version>
 
     <!-- needed to pick up the new stuff-->
-    <hadoop.version>3.0.0-alpha4-SNAPSHOT</hadoop.version>
+    <hadoop.version>3.0.0-beta1-SNAPSHOT</hadoop.version>
 
     <scala.version.tools>${scala.version}</scala.version.tools>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

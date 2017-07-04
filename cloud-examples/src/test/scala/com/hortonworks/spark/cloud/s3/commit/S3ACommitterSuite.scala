@@ -50,7 +50,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
   }
 
-  ctest("propagation",  "verify property passdown") {
+  ctest("propagation",  "verify property passdown", false) {
     val name = expectSome(getKnownSysprop(S3A_COMMITTER_NAME),
       s"Unset property ${S3A_COMMITTER_NAME}")
     logInfo(s"Committer name is $name")
@@ -68,7 +68,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
    * API.
    */
   ctest("saveAsNewAPIHadoopFile",
-    "Write output via the RDD saveAsNewAPIHadoopFile API", true) {
+    "Write output via the RDD saveAsNewAPIHadoopFile API", false) {
 
     // store the S3A FS the test is bonded to
     val s3 = filesystem.asInstanceOf[S3AFileSystem]

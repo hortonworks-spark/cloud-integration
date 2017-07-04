@@ -39,7 +39,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   }
 
   /**
-   * Patch up hive for re-use
+   * Patch up hive for re-use.
    * @param sparkConf configuration to patch
    */
   def addTransientDerbySettings(sparkConf: SparkConf): Unit = {

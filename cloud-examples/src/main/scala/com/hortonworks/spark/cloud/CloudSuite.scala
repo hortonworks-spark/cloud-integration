@@ -91,5 +91,4 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
     config
   }
 
-
 }

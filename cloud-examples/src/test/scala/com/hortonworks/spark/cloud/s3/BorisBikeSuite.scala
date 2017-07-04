@@ -73,7 +73,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     sc = new SparkContext("local", "CSVgz", newSparkConf(srcPath))
     val destPath = new Path(s"s3a://$bucket/travel/orc/borisbike/")
     val fs = srcPath.getFileSystem(sc.hadoopConfiguration)
-    rm(filesystem, destPath)
+    rm(fs, destPath)
 
     val sql = SparkSession.builder().enableHiveSupport().getOrCreate()
 

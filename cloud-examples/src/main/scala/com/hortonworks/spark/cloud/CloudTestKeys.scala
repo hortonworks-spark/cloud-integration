@@ -187,7 +187,7 @@ trait CloudTestKeys {
 
   val S3GUARD_TEST_PREFIX = "fs.s3a.s3guard.test"
   val S3GUARD_TEST_AUTHORITATIVE = S3GUARD_TEST_PREFIX + ".authoritative"
-  val S3GUARD_IMPLEMENTATION= S3GUARD_TEST_PREFIX + ".implementation"
+  val S3GUARD_IMPLEMENTATION = S3GUARD_TEST_PREFIX + ".implementation"
   /** fs.s3a.s3guard.test.inconsistent */
   val S3GUARD_INCONSISTENT = S3GUARD_TEST_PREFIX + ".inconsistent"
 
