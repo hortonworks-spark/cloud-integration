@@ -17,9 +17,11 @@
 
 package com.hortonworks.spark.cloud.s3
 
-object CommitterConstants {
+import com.hortonworks.spark.cloud.PathOutputCommitProtocol
 
-  val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class"
+object S3ACommitterConstants {
+
+  val OUTPUTCOMMITTER_FACTORY_CLASS = PathOutputCommitProtocol.OUTPUTCOMMITTER_FACTORY_CLASS;
 
   val DEFAULT_COMMITTER_FACTORY =
     "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory"

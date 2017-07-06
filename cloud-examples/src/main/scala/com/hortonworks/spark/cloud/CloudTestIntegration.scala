@@ -22,7 +22,7 @@ import java.net.URI
 
 import scala.collection.JavaConverters._
 
-import com.hortonworks.spark.cloud.s3.CommitterConstants
+import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import com.hortonworks.spark.cloud.utils.ExtraAssertions
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, LocatedFileStatus, Path}
@@ -327,7 +327,7 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
    */
   def isUsingStagingCommitter(config: Configuration): Boolean = {
     val committer = config.get(OUTPUTCOMMITTER_FACTORY_CLASS, "")
-    committer.startsWith(CommitterConstants.STAGING_PACKAGE)
+    committer.startsWith(S3ACommitterConstants.STAGING_PACKAGE)
   }
 
   def assertPathExists(p: Path): Unit = {

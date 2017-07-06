@@ -27,7 +27,7 @@ import org.apache.spark.sql.SparkSession
 
 class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
 
-  import com.hortonworks.spark.cloud.s3.CommitterConstants._
+  import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 
   init()
 
@@ -63,7 +63,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     addTransientDerbySettings(sparkConf)
   }
 
-  private val formats = Seq("orc"/*, "parquet"*/)
+  private val formats = Seq(/*"orc",*/ "parquet")
 
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas

@@ -38,6 +38,7 @@ import org.scalatest.time.Span
 import org.apache.spark.SparkConf
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.apache.spark.sql._
+import org.apache.spark.sql.internal.SQLConf
 
 /**
  * Extra Hadoop operations for object store integration.
@@ -250,17 +251,26 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
 
   val PARQUET_OPTIONS = Map(
     "spark.sql.parquet.mergeSchema" -> "false",
-    "spark.sql.parquet.filterPushdown" -> "true")
+    "spark.sql.parquet.filterPushdown" -> "true"
+  )
 
   val MAPREDUCE_OPTIONS = Map(
     "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
     "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
 
-  // set the commit algorithm to 3 to force failures
+  /**
+   * Options for committer setup.
+   * 1. Set the commit algorithm to 3 to force failures if the classic
+   * committer was ever somehow picked up.
+   * 2. Switch parquet to the parquet committer subclass which will
+   * then bind to the factory committer.
+   */
   val COMMITTER_OPTIONS = Map(
     "spark.hadoop." + MR_ALGORITHM_VERSION -> "3",
-    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
-
+    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true",
+    SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
+      CommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
+  )
 
   val HIVE_TEST_SETUP_OPTIONS = Map(
     "spark.sql.test" -> "",

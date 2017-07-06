@@ -119,7 +119,7 @@ class S3AOperations(sourceFs: FileSystem)
       fileCount: Option[Integer],
       text: String = ""): Option[SuccessData] = {
     committerName match {
-      case Some(CommitterConstants.DEFAULT_RENAME) =>
+      case Some(S3ACommitterConstants.DEFAULT_RENAME) =>
         verifyS3Committer(destDir, None, fileCount, text, false)
 
       case Some(c) => verifyS3Committer(destDir,
