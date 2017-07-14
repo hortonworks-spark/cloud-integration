@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.s3.{S3AOperations, S3ATestSetup, SparkS3ACommitter}
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitter}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
 import org.apache.spark.SparkConf
@@ -58,7 +58,8 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     val conf = getConf
     assert(getConf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false),
       "committer setup not passed in")
-    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
+    val committer = expectOptionSet(conf,
+      S3ACommitterConstants.S3A_COMMITTER_KEY)
     val cclass = Class.forName(committer)
     logInfo(s"Committer is $cclass")
   }
@@ -88,7 +89,8 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     val operations = new S3AOperations(s3)
     val sc = spark.sparkContext
     val conf = sc.hadoopConfiguration
-    val committer = expectOptionSet(conf, OUTPUTCOMMITTER_FACTORY_CLASS)
+    val committer = expectOptionSet(conf,
+      S3ACommitterConstants.S3A_COMMITTER_KEY)
 
     val numRows = 10
 

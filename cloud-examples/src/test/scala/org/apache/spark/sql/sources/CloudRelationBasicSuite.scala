@@ -17,7 +17,6 @@
 
 package org.apache.spark.sql.sources
 
-import com.hortonworks.spark.cloud.s3.S3ATestSetup
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
@@ -26,7 +25,10 @@ import org.apache.spark.sql.execution.datasources._
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 
-abstract class CloudRelationBasicSuite extends AbstractCloudRelationTest with S3ATestSetup {
+/**
+ * Basic suite of cloud relations; speed over coverage.
+ */
+abstract class CloudRelationBasicSuite extends AbstractCloudRelationTest {
 
 import testImplicits._
 

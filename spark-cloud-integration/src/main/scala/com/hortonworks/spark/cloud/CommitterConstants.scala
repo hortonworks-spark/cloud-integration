@@ -22,8 +22,26 @@ package com.hortonworks.spark.cloud
  */
 object CommitterConstants {
 
-  val OUTPUTCOMMITTER_FACTORY_CLASS = PathOutputCommitProtocol
-    .OUTPUTCOMMITTER_FACTORY_CLASS;
+  /**
+   * Scheme prefix for per-filesystem scheme committers.
+   */
+  val OUTPUTCOMMITTER_FACTORY_SCHEME = "mapreduce.pathoutputcommitter.factory.scheme"
+
+  /**
+   * String format pattern for per-filesystem scheme committers.
+   */
+  val OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN: String =
+    OUTPUTCOMMITTER_FACTORY_SCHEME + ".%s"
+
+  /**
+   * Name of the configuration option used to configure the
+   * output committer factory to use unless there is a specific
+   * one for a schema
+   */
+  val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class"
+
+  val DEFAULT_COMMITTER_FACTORY =
+    "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory"
 
   val BINDING_PATH_OUTPUT_COMMITTER_CLASS =
     "com.hortonworks.spark.cloud.BindingPathOutputCommitter"

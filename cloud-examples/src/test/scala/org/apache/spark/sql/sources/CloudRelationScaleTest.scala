@@ -26,13 +26,12 @@ import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 
 /**
- * All the tests from the orginal spark suite
+ * All the tests from the orginal spark suite reworked to take a Hadoop path
+ * rather than a local FS path.
  */
-abstract class CloudRelationScaleTest extends AbstractCloudRelationTest{
+abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
 
   import testImplicits._
-
-
 
   ctest("save()/load() - non-partitioned table - Append",
     "", true) {

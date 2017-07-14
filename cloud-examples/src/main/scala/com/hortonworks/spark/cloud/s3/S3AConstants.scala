@@ -17,6 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import com.hortonworks.spark.cloud.CommitterConstants
+
 /**
  * S3A constants. Different Hadoop versions have an incomplete set of these; keeping them
  * in source here ensures that there are no compile/link problems.
@@ -88,11 +90,6 @@ trait S3AConstants {
   val FAST_UPLOAD_BYTEBUFFER = "bytebuffer"
 
   val S3A_COMMITTER_NAME = "fs.s3a.committer.name"
-
-  val OUTPUTCOMMITTER_FACTORY_CLASS = S3ACommitterConstants.OUTPUTCOMMITTER_FACTORY_CLASS
-
-  val OUTPUTCOMMITTER_FACTORY_DEFAULT = S3ACommitterConstants.DEFAULT_COMMITTER_FACTORY
-
 
   val S3_CLIENT_FACTORY_IMPL = "fs.s3a.s3.client.factory.impl"
   val DEFAULT_S3_CLIENT_FACTORY = "org.apache.hadoop.fs.s3a.DefaultS3ClientFactory"

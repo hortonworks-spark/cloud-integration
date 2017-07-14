@@ -20,7 +20,7 @@ package com.hortonworks.spark.cloud
 import java.io.{File, FileNotFoundException}
 
 import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
-import com.hortonworks.spark.cloud.s3.S3AConstants
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AConstants}
 import com.hortonworks.spark.cloud.utils.CloudLogging
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
@@ -86,7 +86,7 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
     getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
       val factory = COMMITTERS_BY_NAME(committer.toLowerCase())._2
       logInfo(s"Using committer factory $factory")
-      config.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
+      config.set(S3ACommitterConstants.S3A_COMMITTER_KEY, factory)
     })
     config
   }

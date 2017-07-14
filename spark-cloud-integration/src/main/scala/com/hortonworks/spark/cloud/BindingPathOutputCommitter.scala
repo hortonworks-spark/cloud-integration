@@ -25,10 +25,12 @@ import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
  * This is a special committer which creates the factory for the committer and
  * runs off that. Why does it exist? So that you can explicily instantiate
  * a committer by classname and yet still have the actual implementation
- * driven dynamically by the factory options. This makes integration with
- * `ParquetFileFormat` and the like simpler.
+ * driven dynamically by the factory options. This simplifies integration.
+ * There's no factory for this, as that would lead to a loop.
  */
-class BindingPathOutputCommitter extends PathOutputCommitter {
+class BindingPathOutputCommitter(
+    path: Path,
+    jobContext: JobContext) extends PathOutputCommitter(path, jobContext) {
 
   var factory: Option[PathOutputCommitterFactory] = None
   var committer: Option[PathOutputCommitter] = None
@@ -42,7 +44,8 @@ class BindingPathOutputCommitter extends PathOutputCommitter {
     synchronized {
       if (factory.isEmpty) {
         factory = Some(PathOutputCommitterFactory
-          .getOutputCommitterFactory(jobContext.getConfiguration))
+          .getOutputCommitterFactory(getOutputPath(jobContext),
+            jobContext.getConfiguration))
       }
       factory.get
     }

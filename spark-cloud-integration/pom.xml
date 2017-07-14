@@ -26,14 +26,15 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hortonworks-cloud-committer</artifactId>
-  <name>hortonworks-cloud-committer</name>
+  <artifactId>hortonworks-spark-cloud-integration</artifactId>
+  <name>Spark Cloud Integration</name>
   <packaging>jar</packaging>
 
   <description>
-    Cloud committer.
-    Uses unstable internal APIs from Hadoop 3.x, and so must be kep in tight syc
-    with the hadoop version with which it was built.
+    Cloud integration.
+
+    Uses unstable internal APIs from Hadoop 3.x, and so must be kept in tight
+    sync with the hadoop version with which it was built.
     Uses the cloud-examples modules for testing.
 
     This committer does not export any of its dependencies; applications

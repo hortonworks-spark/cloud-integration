@@ -39,7 +39,7 @@
 
   <modules>
     <module>cloud-examples</module>
-    <module>cloud-committer</module>
+    <module>spark-cloud-integration</module>
   </modules>
 
   <properties>

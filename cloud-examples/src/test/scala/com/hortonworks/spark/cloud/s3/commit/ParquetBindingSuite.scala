@@ -17,21 +17,58 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.s3.S3ATestSetup
+import java.io.IOException
 
-class ParquetBindingSuite extends CloudSuite with S3ATestSetup {
+import com.hortonworks.spark.cloud.BindingParquetOutputCommitter
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.s3a.commit.CommitConstants.CREATE_SUCCESSFUL_JOB_OUTPUT_DIR_MARKER
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat
+import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
+import org.apache.hadoop.mapreduce.{Job, JobStatus, MRJobConfig, TaskAttemptID}
+import org.scalatest.FunSuite
 
-  init()
+class ParquetBindingSuite extends FunSuite {
 
-  def init(): Unit = {
-    if (enabled) {
-      setupFilesystemConfiguration(getConf)
-    }
+
+  val jobId = "2007071202143_0101"
+  val attempt0 = "attempt_" + jobId + "_m_000000_0"
+  val taskAttempt0 = TaskAttemptID.forName(attempt0)
+  val attempt1 = "attempt_" + jobId + "_m_000001_0"
+  val taskAttempt1 = TaskAttemptID.forName(attempt1)
+
+  test("instantiate") {
+    val path = new Path("http://example/data")
+    val job = newJob(path)
+    val conf = job.getConfiguration
+    conf.set(MRJobConfig.TASK_ATTEMPT_ID, attempt0)
+    conf.setInt(MRJobConfig.APPLICATION_ATTEMPT_ID, 1)
+
+    StubPathOutputCommitterFactory.bind(conf, "http")
+    val tContext = new TaskAttemptContextImpl(conf, taskAttempt0)
+    val parquet = new BindingParquetOutputCommitter(path, tContext)
+    val inner = parquet.boundCommitter().asInstanceOf[StubPathOutputCommitter];
+    parquet.setupJob(tContext)
+    assert(inner.setup, s"$inner not setup")
+    parquet.commitJob(tContext)
+    assert(inner.committed, s"$inner not committed")
+    parquet.abortJob(tContext, JobStatus.State.RUNNING)
+    assert(inner.aborted, s"$inner not aborted")
   }
 
-  ctest("instantiate", "instantiate a binding committer") {
-
+  /**
+   * Create a a new job. Sets the task attempt ID.
+   *
+   * @return the new job
+   * @throws IOException failure
+   */
+  @throws[IOException]
+  def newJob(outDir: Path): Job = {
+    val job = Job.getInstance(new Configuration())
+    val conf = job.getConfiguration
+    conf.set(MRJobConfig.TASK_ATTEMPT_ID, attempt0)
+    conf.setBoolean(CREATE_SUCCESSFUL_JOB_OUTPUT_DIR_MARKER, true)
+    FileOutputFormat.setOutputPath(job, outDir)
+    job
   }
-
 }

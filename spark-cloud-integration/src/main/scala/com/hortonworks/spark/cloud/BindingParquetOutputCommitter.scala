@@ -35,16 +35,18 @@ class BindingParquetOutputCommitter(
     context: TaskAttemptContext)
   extends ParquetOutputCommitter(path, context) with Logging {
 
-  logInfo(s"${this.getClass.getName} binding to configured PathOutputCommitter").
-  val committer = new BindingPathOutputCommitter()
+  logInfo(s"${this.getClass.getName} binding to configured PathOutputCommitter")
+
+  val committer = new BindingPathOutputCommitter(path, context)
   committer.bind(path, context)
 
   /**
-   * Get the inner committer.
-   * @return the committer
+   * This is the committer ultimately bound to
+   * @return the committer instantiated by the factory.
    */
-  def getCommitter(): PathOutputCommitter = committer
-
+  def boundCommitter(): PathOutputCommitter = {
+    committer.getCommitter()
+  }
   override def getWorkPath: Path = {
     committer.getWorkPath()
   }
@@ -98,7 +100,5 @@ class BindingParquetOutputCommitter(
   override def isRecoverySupported(jobContext: JobContext): Boolean = {
     committer.isRecoverySupported(jobContext)
   }
-  
-
 
 }

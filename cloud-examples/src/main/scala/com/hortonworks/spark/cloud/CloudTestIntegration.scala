@@ -326,7 +326,7 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
    * @return true if this is staging. Not checked: does Hadoop support staging.
    */
   def isUsingStagingCommitter(config: Configuration): Boolean = {
-    val committer = config.get(OUTPUTCOMMITTER_FACTORY_CLASS, "")
+    val committer = config.get(S3ACommitterConstants.S3A_COMMITTER_KEY, "")
     committer.startsWith(S3ACommitterConstants.STAGING_PACKAGE)
   }
 

@@ -18,12 +18,12 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.s3.{S3AOperations, S3ATestSetup, SparkS3ACommitter}
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitter}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
-import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
 class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
 
@@ -63,14 +63,18 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     addTransientDerbySettings(sparkConf)
   }
 
-  private val formats = Seq(/*"orc",*/ "parquet")
+  private val formats = Seq(
+    "orc"
+//    ,
+//    "parquet"
+  )
 
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   private val committers = Seq(
 //    DEFAULT_RENAME,
-    DIRECTORY,
-    PARTITIONED,
+//    DIRECTORY,
+//    PARTITIONED,
     MAGIC,
     ""
   )
@@ -103,7 +107,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     val committerInfo = committerName.map(COMMITTERS_BY_NAME(_))
 
     committerInfo.foreach { info =>
-      hconf(sparkConf, OUTPUTCOMMITTER_FACTORY_CLASS, info._2)
+      hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_KEY, info._2)
     }
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
     val spark = SparkSession
@@ -116,7 +120,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     try {
       val sc = spark.sparkContext
       val conf = sc.hadoopConfiguration
-      val numRows = 500
+      val numRows = 1000
       val numPartitions = 1
       val sourceData = spark.range(0, numRows)
         .map(i => (1, i, i.toString))

@@ -17,15 +17,13 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.PathOutputCommitProtocol
+import com.hortonworks.spark.cloud.{CommitterConstants, PathOutputCommitProtocol}
 
 object S3ACommitterConstants {
 
-  val OUTPUTCOMMITTER_FACTORY_CLASS = PathOutputCommitProtocol.OUTPUTCOMMITTER_FACTORY_CLASS;
-
-  val DEFAULT_COMMITTER_FACTORY =
-    "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory"
-
+  val S3A_COMMITTER_KEY = String.format(
+    CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
+    "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
   val DIRECTORY_COMMITTER_FACTORY = STAGING_PACKAGE + "DirectoryStagingCommitterFactory"
   val PARTITIONED_COMMITTER_FACTORY = STAGING_PACKAGE + "PartitonedStagingCommitterFactory"
@@ -49,6 +47,6 @@ object S3ACommitterConstants {
     DYNAMIC -> ("",  DYNAMIC_COMMITTER_FACTORY, false),
     DIRECTORY -> ("DirectoryStagingCommitter",  DIRECTORY_COMMITTER_FACTORY, false),
     PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY, false),
-    DEFAULT_RENAME -> ("",  DEFAULT_COMMITTER_FACTORY, true)
+    DEFAULT_RENAME -> ("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
   )
 }

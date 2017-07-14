@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>hortonworks-cloud-examples</artifactId>
-  <name>hortonworks-cloud-examples</name>
+  <name>Hortonworks Spark Cloud Examples</name>
   <packaging>jar</packaging>
 
   <description>
@@ -45,7 +45,7 @@
 
     <dependency>
       <groupId>com.hortonworks.spark</groupId>
-      <artifactId>hortonworks-cloud-committer</artifactId>
+      <artifactId>hortonworks-spark-cloud-integration</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

@@ -108,7 +108,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
 
-    hconf(sparkConf, OUTPUTCOMMITTER_FACTORY_CLASS,
+    hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_KEY,
       S3ACommitterConstants.PARTITIONED_COMMITTER_FACTORY)
 
     val spark = SparkSession
