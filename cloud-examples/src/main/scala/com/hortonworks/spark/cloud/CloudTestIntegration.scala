@@ -213,9 +213,20 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
    * @return the trimmed string value.
    */
   protected def requiredOption(key: String): String = {
-    val v = getConf.getTrimmed(key)
-    require(v != null && !v.isEmpty, s"Unset/empty configuration option $key")
-    v
+    val c = getConf
+    require(hasConf(c, key), s"Unset/empty configuration option $key")
+    c.getTrimmed(key)
+  }
+
+  /**
+   * Does a config have an option
+   * @param config configuration
+   * @param key key to look up
+   * @return true if it is found/not empty
+   */
+  def hasConf(config: Configuration, key: String): Boolean = {
+    val v = config.getTrimmed(key)
+    v != null && !v.isEmpty
   }
 
   /**
@@ -249,8 +260,15 @@ trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
    * @return the configuration
    */
   def newSparkConf(): SparkConf = {
-    require(isFilesystemDefined, "Not bonded to a test filesystem")
+    requireFileSystem()
     newSparkConf(filesystemURI)
+  }
+
+  /**
+   * Require a valid filesystem
+   */
+  protected def requireFileSystem(): Unit = {
+    require(isFilesystemDefined, "Not bonded to a test filesystem")
   }
 
   /**

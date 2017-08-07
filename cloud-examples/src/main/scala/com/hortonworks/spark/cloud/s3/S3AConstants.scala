@@ -57,6 +57,17 @@ trait S3AConstants {
   val PURGE_EXISTING_MULTIPART_AGE = "fs.s3a.multipart.purge.age"
   val SERVER_SIDE_ENCRYPTION_ALGORITHM = "fs.s3a.server-side-encryption-algorithm"
   val SERVER_SIDE_ENCRYPTION_AES256 = "AES256"
+  /**
+   * Used to specify which AWS KMS key to use if
+   * {@link #SERVER_SIDE_ENCRYPTION_ALGORITHM} is
+   * {@code SSE-KMS} (will default to aws/s3
+   * master key if left blank).
+   * With with {@code SSE_C}, the base-64 encoded AES 256 key.
+   * May be set within a JCEKS file.
+   * Value: "{@value }".
+   */
+  val SERVER_SIDE_ENCRYPTION_KEY = "fs.s3a.server-side-encryption.key"
+
   val SIGNING_ALGORITHM = "fs.s3a.signing-algorithm"
   val BLOCK_SIZE = "fs.s3a.block.size"
   val FS_S3A = "s3a"
@@ -141,5 +152,9 @@ trait S3AConstants {
    * Use DynamoDB for the metadata: {@value }.
    */
   val S3GUARD_METASTORE_DYNAMO = "org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore"
+
+  val SSE_S3 = "SSE-S3"
+  val SSE_KMS = "SSE-KMS"
+  val SSE_C = "SSE-C"
 
 }

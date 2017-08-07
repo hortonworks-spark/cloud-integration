@@ -113,8 +113,11 @@ trait CloudSuiteTrait extends FunSuiteLike
    */
   protected def getKnownSysprop(key: String): Option[String] = {
     val v = System.getProperty(key)
-    if (v == null || v.trim().isEmpty ||
-      v.trim == UNSET_PROPERTY) None else Some(v.trim)
+    if (v == null || v.trim().isEmpty || v.trim == UNSET_PROPERTY) {
+      None
+    } else {
+      Some(v.trim)
+    }
   }
 
   /**

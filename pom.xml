@@ -93,19 +93,20 @@
     <!-- are scale tests enabled ? -->
     <scale.test.enabled>unset</scale.test.enabled>
 
-    <fs.s3a.scale.test.enabled>unset</fs.s3a.scale.test.enabled>
     <!-- Size in MB of huge files. -->
-    <fs.s3a.scale.test.huge.filesize>unset</fs.s3a.scale.test.huge.filesize>
+    <s3a.scale.test.huge.filesize>unset</s3a.scale.test.huge.filesize>
     <!-- Size in MB of the partion size in huge file uploads. -->
-    <fs.s3a.scale.test.huge.partitionsize>unset</fs.s3a.scale.test.huge.partitionsize>
+    <s3a.scale.test.huge.partitionsize>unset</s3a.scale.test.huge.partitionsize>
     <!-- Timeout in seconds for scale tests.-->
-    <fs.s3a.scale.test.timeout>3600</fs.s3a.scale.test.timeout>
+    <s3a.scale.test.timeout>3600</s3a.scale.test.timeout>
     <!-- are s3guard tests enabled ? -->
     <fs.s3a.metadatastore.impl>unset</fs.s3a.metadatastore.impl>
     <fs.s3a.metadatastore.authoritative>false</fs.s3a.metadatastore.authoritative>
-    <fs.s3a.s3guard.test.enabled>false</fs.s3a.s3guard.test.enabled>
-    <fs.s3a.s3guard.test.authoritative>false</fs.s3a.s3guard.test.authoritative>
-    <fs.s3a.s3guard.test.implementation>local</fs.s3a.s3guard.test.implementation>
+
+    <s3a.s3guard.test.enabled>false</s3a.s3guard.test.enabled>
+    <s3a.s3guard.test.authoritative>false</s3a.s3guard.test.authoritative>
+
+    <s3a.s3guard.test.implementation>local</s3a.s3guard.test.implementation>
     <!-- switch to the inconsistent client -->
     <fs.s3a.s3.client.factory.impl>unset</fs.s3a.s3.client.factory.impl>
 
@@ -114,7 +115,8 @@
     then loads _SUCCESS as JSON-->
     <!-- if this flag is set, the code assumes that s3guard is being used and
     then loads _SUCCESS as JSON-->
-    <fs.s3a.committer.test.enabled>false</fs.s3a.committer.test.enabled>
+    <s3a.committer.test.enabled>false</s3a.committer.test.enabled>
+
     <fs.s3a.committer.name>unset</fs.s3a.committer.name>
 
 
@@ -650,12 +652,16 @@
               <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
               <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
               <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
-              <fs.s3a.committer.test.enabled>${fs.s3a.committer.test.enabled}</fs.s3a.committer.test.enabled>
+
+              <s3a.committer.test.enabled>${s3a.committer.test.enabled}</s3a.committer.test.enabled>
               <fs.s3a.committer.name>${fs.s3a.committer.name}</fs.s3a.committer.name>
+
               <fs.s3a.s3.client.factory.impl>${fs.s3a.s3.client.factory.impl}</fs.s3a.s3.client.factory.impl>
-              <fs.s3a.s3guard.test.enabled>${fs.s3a.s3guard.test.enabled}</fs.s3a.s3guard.test.enabled>
-              <fs.s3a.s3guard.test.authoritative>${fs.s3a.s3guard.test.authoritative}</fs.s3a.s3guard.test.authoritative>
-              <fs.s3a.s3guard.test.implementation>${fs.s3a.s3guard.test.implementation}</fs.s3a.s3guard.test.implementation>
+
+              <s3a.s3guard.test.enabled>${s3a.s3guard.test.enabled}</s3a.s3guard.test.enabled>
+              <s3a.s3guard.test.authoritative>${s3a.s3guard.test.authoritative}</s3a.s3guard.test.authoritative>
+              <s3a.s3guard.test.implementation>${s3a.s3guard.test.implementation}</s3a.s3guard.test.implementation>
+
               <fs.s3a.metadatastore.authoritative>${fs.s3a.metadatastore.authoritative}</fs.s3a.metadatastore.authoritative>
               <fs.s3a.metadatastore.impl>${fs.s3a.metadatastore.impl}</fs.s3a.metadatastore.impl>
             </systemProperties>
@@ -813,8 +819,9 @@
         <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
-        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <fs.s3a.committer.name>staging</fs.s3a.committer.name>
+
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
       </properties>
     </profile>
 
@@ -846,7 +853,8 @@
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
-        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
+
+        <s3a.committer.test.enabled>true</s3a.committer.test.enabled>
         <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.committer.name>magic</fs.s3a.committer.name>
       </properties>
@@ -863,8 +871,8 @@
       </activation>
       <properties>
         <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore</fs.s3a.metadatastore.impl>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
-        <fs.s3a.s3guard.test.implementation>dynamo</fs.s3a.s3guard.test.implementation>
+        <s3a.s3guard.test.enabled>true</s3a.s3guard.test.enabled>
+        <s3a.s3guard.test.implementation>dynamo</s3a.s3guard.test.implementation>
       </properties>
     </profile>
 
@@ -878,8 +886,8 @@
       </activation>
       <properties>
         <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore</fs.s3a.metadatastore.impl>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
-        <fs.s3a.s3guard.test.implementation>dynamodblocal</fs.s3a.s3guard.test.implementation>
+        <s3a.s3guard.test.enabled>true</s3a.s3guard.test.enabled>
+        <s3a.s3guard.test.implementation>dynamodblocal</s3a.s3guard.test.implementation>
       </properties>
     </profile>
 

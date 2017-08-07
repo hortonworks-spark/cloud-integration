@@ -116,6 +116,16 @@ trait CloudTestKeys {
   val S3A_CSV_PATH_DEFAULT = "s3a://landsat-pds/scene_list.gz"
 
   /**
+   * Encryption key.
+   */
+  val S3A_ENCRYPTION_KEY_1 = "s3a.test.encryption.key.1"
+
+  /**
+   * Another encryption key.
+   */
+  val S3A_ENCRYPTION_KEY_2 = "s3a.test.encryption.key.2"
+
+  /**
    * Key defining the Are AWS tests enabled? If set, the user
    * must have AWS login credentials, defined via the environment
    * or in the XML test configuration file.
@@ -175,17 +185,19 @@ trait CloudTestKeys {
    * Various s3guard tests.
    */
 
-  /**
-   * Indicates that any s3guard tests are enabled
-   */
-  val S3GUARD_TEST_ENABLED = "fs.s3a.s3guard.test.enabled"
 
   /**
    * Indicates that any committer tests are enabled
    */
-  val S3A_COMMITTER_TEST_ENABLED = "fs.s3a.committer.test.enabled"
+  val S3A_COMMITTER_TEST_ENABLED = "s3a.committer.test.enabled"
 
-  val S3GUARD_TEST_PREFIX = "fs.s3a.s3guard.test"
+  val S3GUARD_TEST_PREFIX = "s3a.s3guard.test"
+
+  /**
+   * Indicates that any s3guard tests are enabled
+   */
+  val S3GUARD_TEST_ENABLED = S3GUARD_TEST_PREFIX + ".enabled"
+
   val S3GUARD_TEST_AUTHORITATIVE = S3GUARD_TEST_PREFIX + ".authoritative"
   val S3GUARD_IMPLEMENTATION = S3GUARD_TEST_PREFIX + ".implementation"
   /** fs.s3a.s3guard.test.inconsistent */
@@ -195,5 +207,6 @@ trait CloudTestKeys {
   val S3GUARD_IMPLEMENTATION_DYNAMO = "dynamo"
   val S3GUARD_IMPLEMENTATION_DYNAMODBLOCAL = "dynamodblocal"
   val S3GUARD_IMPLEMENTATION_NONE = "none"
+
 
 }

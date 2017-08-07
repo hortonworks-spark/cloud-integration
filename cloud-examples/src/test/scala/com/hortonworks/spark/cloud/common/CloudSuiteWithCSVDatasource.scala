@@ -39,15 +39,12 @@ class CloudSuiteWithCSVDatasource extends CloudSuite with CsvDatasourceSupport {
 
   /**
    * Get the CSV source path and filesystem to read from it.
-   * The filesystem uses the endpoint defined for the CSV file if no
-   * relevant endpoint
+   * The filesystem uses the endpoint defined for the CSV file.
    *
-   * @return
+   * @return Patn and FS of a CSV source file.
    */
   def getCSVSourceAndFileSystem(): (Path, FileSystem) = {
     val source = getTestCSVPath()
-    val config = new Configuration(getConf)
-    val fs = FileSystem.newInstance(source.toUri, config)
-    (source, fs)
+    (source, FileSystem.newInstance(source.toUri, new Configuration(getConf)))
   }
 }

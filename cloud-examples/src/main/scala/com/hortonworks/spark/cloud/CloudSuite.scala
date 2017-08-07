@@ -78,7 +78,9 @@ object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
         S3_METADATA_STORE_IMPL,
         METADATASTORE_AUTHORITATIVE,
         SCALE_TEST_ENABLED,
-        SCALE_TEST_SIZE_FACTOR
+        SCALE_TEST_SIZE_FACTOR,
+        S3A_ENCRYPTION_KEY_1,
+        S3A_ENCRYPTION_KEY_2
       )
     )
 

@@ -72,8 +72,8 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   private val committers = Seq(
-//    DEFAULT_RENAME,
-//    DIRECTORY,
+    DEFAULT_RENAME,
+    DIRECTORY,
 //    PARTITIONED,
     MAGIC,
     ""

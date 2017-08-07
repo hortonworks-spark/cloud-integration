@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud
 
 import java.io.{EOFException, File, IOException}
 import java.net.URL
+import java.nio.charset.Charset
 
 import scala.collection.JavaConversions.asScalaIterator
 import scala.concurrent.duration._
@@ -468,6 +469,36 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     logInfo(s"Effective copy bandwidth = $bandwidth KB/s")
   }
 
+  /**
+   * Write text to a file
+   * @param fs filesystem
+   * @param p path
+   * @param t text, if "" writes an empty file
+   */
+  def write(fs: FileSystem, p: Path, t: String): Unit = {
+    val out = fs.create(p, true)
+    try {
+      if (!t.isEmpty) {
+        out.write(t.getBytes())
+      }
+    } finally {
+      out.close()
+    }
+  }
+
+  /**
+   * Read from the FS up to the length; there is no retry after the first read
+   * @param fs filesystem
+   * @param p path
+   * @param maxLen max buffer size
+   * @return the data read
+   */
+  def read(fs: FileSystem, p: Path, maxLen: Int = 1024): String = {
+    val in = fs.open(p)
+    val buffer = new Array[Byte](maxLen)
+    val len = in.read(buffer)
+    new String(buffer, 0, len)
+  }
 }
 
 /**
