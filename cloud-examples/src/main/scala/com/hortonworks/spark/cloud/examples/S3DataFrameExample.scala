@@ -99,7 +99,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       val config = new Configuration(sc.hadoopConfiguration)
 
       // for the source CSV file random IO means too many
-      // small riles,
+      // small files,
       config.set(INPUT_FADVISE, NORMAL_IO)
       val srcFS = srcPath.getFileSystem(config)
       val sourceFileStatus = srcFS.getFileStatus(srcPath)

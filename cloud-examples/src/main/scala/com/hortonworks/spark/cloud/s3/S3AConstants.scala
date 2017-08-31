@@ -158,3 +158,10 @@ trait S3AConstants {
   val SSE_C = "SSE-C"
 
 }
+
+/**
+ * All the constants in an object rather than a trait
+ */
+object S3AConstantsAndKeys extends S3AConstants {
+
+}

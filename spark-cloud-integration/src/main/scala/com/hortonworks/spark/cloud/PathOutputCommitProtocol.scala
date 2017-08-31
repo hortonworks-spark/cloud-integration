@@ -18,9 +18,9 @@
 package com.hortonworks.spark.cloud
 
 import java.io.IOException
+import java.lang.reflect.Method
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter
 import org.apache.hadoop.mapreduce.{JobContext, OutputCommitter, TaskAttemptContext}
 
 import org.apache.spark.internal.io.FileCommitProtocol.TaskCommitMessage
@@ -33,13 +33,17 @@ import org.apache.spark.internal.io.{FileCommitProtocol, HadoopMapReduceCommitPr
  * use the same interface; doing it here avoids needing any changes to Spark.
  * All implementations *must* be serializable.
  *
+ * To support building against other versions of Hadoop. this class uses
+ * introspection to check for the existence of the relevant method...it
+ * (currently) doesn't actually cast to the relevant operation
  * @param jobId job
  * @param destination destination
  */
 class PathOutputCommitProtocol(jobId: String, destination: String)
   extends HadoopMapReduceCommitProtocol(jobId, destination) with Serializable {
 
-  @transient var committer: PathOutputCommitter = _
+  @transient var committer: OutputCommitter = _
+  @transient var workPathMethod: Method = _
 
   logInfo(s"Instantiate committer for job $jobId with path $destination")
 
@@ -53,9 +57,11 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
       throw new IllegalArgumentException("No committer factory defined")
     }
     conf.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
-    var c = super.setupCommitter(context)
-    require(c.isInstanceOf[PathOutputCommitter], s"Committer is wrong type: $c")
-    committer = c.asInstanceOf[PathOutputCommitter]
+    committer = super.setupCommitter(context)
+    workPathMethod = resolveWorkPathMethod(committer).getOrElse {
+      throw new IllegalArgumentException(s"Committer $committer of type" +
+        s" ${committer.getClass} does not support getWorkingDir()")
+    }
     logInfo(s"Using committer $committer")
     committer
   }
@@ -71,6 +77,16 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
     context.getConfiguration.getTrimmed(OUTPUTCOMMITTER_FACTORY_CLASS, "")
   }
 
+  private def resolveWorkPathMethod(c: OutputCommitter): Option[Method] = {
+    try {
+      Some(c.getClass.getDeclaredMethod("getWorkPath"))
+    } catch {
+      case e: NoSuchMethodException =>
+        // no method
+        None
+    }
+  }
+
   /**
    * Create a temporary file for a task.
    * @param taskContext task context
@@ -82,7 +98,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
       taskContext: TaskAttemptContext,
       dir: Option[String],
       ext: String): String = {
-    val stagingDir: Path = Option(committer.getWorkPath)
+    val stagingDir = Option(workPathMethod.invoke(committer).asInstanceOf[Path])
       .getOrElse(new Path(destination))
     val parent = dir.map(d => new Path(stagingDir, d))
       .getOrElse(stagingDir)

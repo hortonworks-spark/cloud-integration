@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.{CloudSuite, RemoteOutputIterator}
+import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 

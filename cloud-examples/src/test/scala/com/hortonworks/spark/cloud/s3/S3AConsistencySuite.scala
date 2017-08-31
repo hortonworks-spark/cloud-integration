@@ -38,7 +38,8 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     cleanFilesystemInTeardown()
   }
 
-  ctest("mkdir, mkfile", " ") {
+  ctest("mkdir, mkfile",
+    "Create a dir, a file, read the file", false) {
     val fs = filesystem
     val dir = testPath(fs, "mkfile")
     fs.mkdirs(dir)
@@ -56,7 +57,8 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     in.close()
   }
 
-  ctest("create & list", " ") {
+  ctest("create & list",
+    "create a file, list it", false) {
     val fs = filesystem
     val dir = testPath(fs, "create_and_list")
     val file = new Path(dir, "file.txt")
@@ -64,32 +66,35 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     fd.writeChars("hello")
     fd.close();
     val files = eventuallyListStatus(fs, dir)
-    require(1 == files.length)
-    require(file == files(0).getPath)
+    require(1 === files.length)
+    require(file === files(0).getPath)
   }
 
-  ctest("commit", " ") {
+  ctest("commit",
+    "Test the commit algorithm ") {
     val fs = filesystem
     val work = testPath(fs, "work")
+    fs.delete(work, true)
     val task00 = new Path(work, "task00")
 
     fs.mkdirs(task00)
-    val out = fs.create(new Path(task00, "part-00"), false)
+    val out = fs.create(new Path(task00, "part-00"), true)
     out.writeChars("hello")
-    out.close();
+    out.close()
     // iterates to success. If this was a simple list this test would fail
-    val listing = eventuallyListStatus(fs, task00)
+    //val listing = eventuallyListStatus(fs, task00)
+    val listing = fs.listStatus(task00)
     describe("Renaming")
     listing.foreach(stat =>
       fs.rename(stat.getPath, work)
     )
     describe(s"Filesystem state after rename: $fs")
     val statuses = fs.listStatus(work).filter(_.isFile)
-    require("part-00" == statuses(0).getPath.getName)
+    require("part-00" === statuses(0).getPath.getName)
   }
 
   /*
-   * This badly formatted test is here for slides
+   * This test is here for slides
    */
 /*
   ctest("example-for-slides", " ", false) {
