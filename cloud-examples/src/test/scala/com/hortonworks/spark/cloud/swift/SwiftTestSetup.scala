@@ -20,6 +20,7 @@ package com.hortonworks.spark.cloud.swift
 import java.net.URI
 
 import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.hadoop.fs.FileSystem
 
 /**

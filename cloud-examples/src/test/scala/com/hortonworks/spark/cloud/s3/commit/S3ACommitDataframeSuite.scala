@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitter}
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
@@ -59,7 +59,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     super.addSuiteConfigurationOptions(sparkConf)
     sparkConf.setAll(COMMITTER_OPTIONS)
-    sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
+    sparkConf.setAll(SparkS3ACommitProtocol.BINDING_OPTIONS)
     addTransientDerbySettings(sparkConf)
   }
 
@@ -127,7 +127,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
         .repartition(numPartitions)
       val subdir = new Path(destDir, format)
       rm(s3, subdir)
-      duration(s"write to $subdir in format $format") {
+      logDuration(s"write to $subdir in format $format") {
         sourceData.write.format(format).save(subdir.toString)
       }
       val operations = new S3AOperations(s3)

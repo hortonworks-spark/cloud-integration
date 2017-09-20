@@ -28,7 +28,7 @@ import org.apache.hadoop.fs.s3a.RenameFailedException
  *
  * If it does not load, the version of Spark it is running against is out of date.
  *
- * Currently: requires Hadoo 2.8+
+ * Currently: requires Hadoop 2.8+
  */
 class ForceRecentHadoopVersion {
 

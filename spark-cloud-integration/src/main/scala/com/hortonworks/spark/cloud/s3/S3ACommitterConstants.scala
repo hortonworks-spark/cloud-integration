@@ -17,19 +17,26 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.{CommitterConstants, PathOutputCommitProtocol}
+import com.hortonworks.spark.cloud.commit.CommitterConstants
+import org.apache.hadoop.fs.s3a.commit.CommitConstants
 
+/**
+ * Constants related to the S3A committers.
+ * Originally a copy & paste of the java values, it's now just a reference,
+ * though retained to reserve the option of moving back to copied values.
+ */
 object S3ACommitterConstants {
 
   val S3A_COMMITTER_KEY = String.format(
     CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
     "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
-  val DIRECTORY_COMMITTER_FACTORY = STAGING_PACKAGE + "DirectoryStagingCommitterFactory"
-  val PARTITIONED_COMMITTER_FACTORY = STAGING_PACKAGE + "PartitonedStagingCommitterFactory"
-  val STAGING_COMMITTER_FACTORY = STAGING_PACKAGE + "StagingCommitterFactory"
-  val MAGIC_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory"
-  val DYNAMIC_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory"
+  val DIRECTORY_COMMITTER_FACTORY = CommitConstants.DIRECTORY_COMMITTER_FACTORY
+    STAGING_PACKAGE + "DirectoryStagingCommitterFactory"
+  val PARTITIONED_COMMITTER_FACTORY = CommitConstants.PARTITION_COMMITTER_FACTORY
+  val STAGING_COMMITTER_FACTORY = CommitConstants.STAGING_COMMITTER_FACTORY
+  val MAGIC_COMMITTER_FACTORY = CommitConstants.MAGIC_COMMITTER_FACTORY
+  val DYNAMIC_COMMITTER_FACTORY = CommitConstants.DYNAMIC_COMMITTER_FACTORY
 
   val MAGIC = "magic"
   val STAGING = "staging"
@@ -40,6 +47,9 @@ object S3ACommitterConstants {
 
   /**
    * Committer name to: name in _SUCCESS, factory classname, requires consistent FS.
+   *
+   * If the first field is "", it means "this committer doesn't put its name into
+   * the success file (or that it isn't actually created).
    */
   val COMMITTERS_BY_NAME: Map[String, (String, String, Boolean)] = Map(
     MAGIC -> ("MagicS3GuardCommitter",  MAGIC_COMMITTER_FACTORY, true),

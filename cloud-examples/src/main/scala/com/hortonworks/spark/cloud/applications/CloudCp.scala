@@ -17,8 +17,6 @@
 
 package com.hortonworks.spark.cloud.applications
 
-import java.net.URI
-
 import com.hortonworks.spark.cloud._
 import com.hortonworks.spark.cloud.s3.S3AConstantsAndKeys
 import com.hortonworks.spark.cloud.utils.ConfigSerDeser
@@ -84,7 +82,7 @@ class CloudCp extends ObjectStoreExample {
       return usage()
     }
 
-    val source = S3A_CSV_PATH_DEFAULT
+    val source = CloudTestKeys.S3A_CSV_PATH_DEFAULT
     val srcPath = new Path(args(0))
     val destPath = new Path(args(1))
 
@@ -140,7 +138,7 @@ class CloudCp extends ObjectStoreExample {
         uploadOneFile(operation, marshalledSrcConfig)
       }
 
-      val (copyResults, duration) = duration2(copyOperation.collect())
+      val (copyResults, duration) = durationOf(copyOperation.collect())
       logInfo(s"Copied $copyResults objects in $duration")
       val totalLen = copyResults.foldLeft(0L)( (c, r) => (c + r.len))
       val bandwithBytesNano: Double = if (duration > 0) (totalLen / duration) else 0
@@ -168,7 +166,7 @@ class CloudCp extends ObjectStoreExample {
     val workerDest = operation.destPath
     val workerDestFS = workerDest.getFileSystem(workerConf)
     // do the copy
-    val (_, d) = duration2 {
+    val (_, d) = durationOf {
       FileUtil.copy(
         workerSrcFS, workerSrc,
         workerDestFS, workerDest,
@@ -193,7 +191,7 @@ case class CopySource(src: String, dest: String, len: Long,
 
   def this(status: LocatedFileStatus, dest: Path) = {
     this(status.getPath.toUri.toString, dest.toUri.toString, status.getLen,
-      Some(status.getBlockLocations))
+      status.getBlockLocations.toList)
   }
 
   override def toString: String = s"CopySource from $src to $dest (len $len)"

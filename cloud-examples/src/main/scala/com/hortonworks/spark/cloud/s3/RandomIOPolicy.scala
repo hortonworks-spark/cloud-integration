@@ -15,35 +15,18 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.utils
-
-import org.apache.hadoop.conf.Configuration
+package com.hortonworks.spark.cloud.s3
 
 /**
- * Class to make Hadoop configurations serializable; uses the
- * `Writeable` operations to do this.
- * Note: this only serializes the explicitly set values, not any set
- * in site/default or other XML resources.
- * @param conf
+ * Switch to Random S3A IO,
  */
-class ConfigSerDeser(var conf: Configuration) extends Serializable {
+trait RandomIOPolicy extends IOPolicy {
 
-  def this() {
-    this(new Configuration())
-  }
+  /**
+   * Use Random IO for high performance ORC
+   *
+   * @return the IO type
+   */
+  override def inputPolicy: String = RANDOM_IO
 
-  def get(): Configuration = conf
-
-  private def writeObject (out: java.io.ObjectOutputStream): Unit = {
-    conf.write(out)
-  }
-
-  private def readObject (in: java.io.ObjectInputStream): Unit = {
-    conf = new Configuration()
-    conf.readFields(in)
-  }
-
-  private def readObjectNoData(): Unit = {
-    conf = new Configuration()
-  }
 }

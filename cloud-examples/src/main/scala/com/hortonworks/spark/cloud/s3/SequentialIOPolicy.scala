@@ -17,9 +17,13 @@
 
 package com.hortonworks.spark.cloud.s3
 
-/**
- * Test constants
- */
-class S3ATestConstants {
+trait SequentialIOPolicy extends IOPolicy {
+
+  /**
+   * Use original seqential IO
+   *
+   * @return the IO type
+   */
+  override def inputPolicy: String = SEQUENTIAL_IO
 
 }

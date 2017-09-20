@@ -17,22 +17,25 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.CommitterConstants
+import com.hortonworks.spark.cloud.commit.CommitterConstants
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.output.{PathOutputCommitter, PathOutputCommitterFactory}
 import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
 
 class StubPathOutputCommitter(
-    path: Path,
-    jobContext: JobContext) extends PathOutputCommitter(path, jobContext) {
+    outputPath: Path,
+    workPath: Path,
+    jobContext: JobContext) extends PathOutputCommitter(workPath, jobContext) {
 
   var setup: Boolean = false;
   var committed: Boolean = false;
   var aborted: Boolean = false;
 
+  override def getOutputPath: Path = outputPath
+
   override def getWorkPath: Path = {
-    path
+    workPath
   }
 
   override def setupTask(taskAttemptContext: TaskAttemptContext): Unit = {
@@ -77,14 +80,16 @@ class StubPathOutputCommitterFactory extends PathOutputCommitterFactory {
   override def createOutputCommitter(
       outputPath: Path,
       context: TaskAttemptContext): PathOutputCommitter = {
-    new StubPathOutputCommitter(outputPath, context)
+    new StubPathOutputCommitter(outputPath, workPath(outputPath), context)
   }
 
   override def createOutputCommitter(
       outputPath: Path,
       context: JobContext): PathOutputCommitter = {
-    new StubPathOutputCommitter(outputPath, context)
+    new StubPathOutputCommitter(outputPath, workPath(outputPath), context)
   }
+
+  private def workPath(out: Path): Path = new Path(out, CommitterConstants.TEMP_DIR_NAME)
 }
 
 object StubPathOutputCommitterFactory {

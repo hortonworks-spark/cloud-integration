@@ -16,9 +16,10 @@
  */
 
 package com.hortonworks.spark.cloud.operations
+
 import scala.language.postfixOps
 
-import com.hortonworks.spark.cloud.ObjectStoreExample
+import com.hortonworks.spark.cloud.{ ObjectStoreExample, StoreTestOperations}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.scalatest.time.{Seconds, Span}
@@ -33,7 +34,7 @@ import org.apache.spark.sql.types.StringType
  *
  * It doesn't verify timings, though some information is printed.
  */
-class CloudDataFrames extends ObjectStoreExample {
+class CloudDataFrames extends ObjectStoreExample with StoreTestOperations {
 
   /**
    * List of the command args for the current example.
@@ -87,7 +88,7 @@ class CloudDataFrames extends ObjectStoreExample {
       def write(format: String): (Path, Long) = {
         val path = new Path(generatedBase, format)
         rm(fs, path)
-        val d = duration2(save(sourceData, path, format))
+        val d = durationOf(saveDF(sourceData, path, format))
         eventuallyListStatus(fs, path)
         d
       }

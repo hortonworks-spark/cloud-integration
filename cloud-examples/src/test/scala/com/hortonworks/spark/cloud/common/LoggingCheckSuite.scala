@@ -17,15 +17,16 @@
 
 package com.hortonworks.spark.cloud.common
 
-import com.hortonworks.spark.cloud.utils.CloudLogging
 import org.scalatest.{FunSuite, Matchers}
 import org.slf4j.LoggerFactory
 import org.slf4j.impl.StaticLoggerBinder
 
+import org.apache.spark.internal.Logging
+
 /**
  * Some diagnostics related to logging.
  */
-class LoggingCheckSuite extends FunSuite with CloudLogging with Matchers {
+class LoggingCheckSuite extends FunSuite with Logging with Matchers {
   val LogLevels = "com.hortonworks.spark.test.loglevels"
   val Log4JBinding = ""
 

@@ -15,11 +15,11 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.commit
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
 import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter
+import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
 import org.apache.parquet.hadoop.ParquetOutputCommitter
 
 import org.apache.spark.internal.Logging

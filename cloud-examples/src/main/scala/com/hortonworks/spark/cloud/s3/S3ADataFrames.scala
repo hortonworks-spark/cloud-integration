@@ -17,6 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import com.hortonworks.spark.cloud.operations.CloudDataFrames
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
@@ -40,7 +41,7 @@ object S3ADataFrames extends CloudDataFrames with S3AExampleSetup {
     val operations = new S3AOperations(fs)
     if (conf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false)) {
       results.foreach((tuple: (String, Path, Long, Long)) => {
-         operations.verifyS3Committer(tuple._2, None, None, "")
+        operations.verifyS3Committer(tuple._2, None, None, "")
       })
     }
 

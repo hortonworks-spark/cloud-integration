@@ -17,13 +17,14 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.utils.CloudLogging
 import org.scalatest.{FunSuite, Matchers}
+
+import org.apache.spark.internal.Logging
 
 /**
  * Look at what Parquet committer binding is up to
  */
-class TestParquetBinding extends FunSuite with CloudLogging with Matchers {
+class TestParquetBinding extends FunSuite with Logging with Matchers {
 
 
 }

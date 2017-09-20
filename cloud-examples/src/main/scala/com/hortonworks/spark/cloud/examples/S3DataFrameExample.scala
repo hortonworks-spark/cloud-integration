@@ -22,7 +22,8 @@ import java.net.URI
 import com.hortonworks.spark.cloud._
 import com.hortonworks.spark.cloud.s3._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.fs.Path
+import com.hortonworks.spark.cloud.CloudTestKeys._
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession

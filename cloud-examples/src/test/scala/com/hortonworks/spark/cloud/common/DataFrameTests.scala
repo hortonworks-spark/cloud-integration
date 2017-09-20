@@ -46,13 +46,13 @@ abstract class DataFrameTests extends CloudSuite {
       s" action($args) failed against $instance")
 
     // do a recursive listFiles
-    val listing = duration("listFiles(recursive)") {
+    val listing = logDuration("listFiles(recursive)") {
       listFiles(filesystem, destDir, true)
     }
 
     var recursivelyListedFilesDataset = 0L
     var recursivelyListedFiles = 0
-    duration("scan result list") {
+    logDuration("scan result list") {
       listing.foreach{status =>
         recursivelyListedFiles += 1
         recursivelyListedFilesDataset += status.getLen

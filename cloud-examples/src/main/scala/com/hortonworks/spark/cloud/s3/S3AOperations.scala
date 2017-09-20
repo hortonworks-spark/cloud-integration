@@ -21,18 +21,18 @@ import java.io.FileNotFoundException
 
 import scala.collection.JavaConverters._
 
-import com.hortonworks.spark.cloud.ObjectStoreOperations
+import com.hortonworks.spark.cloud.StoreTestOperations
+import com.hortonworks.spark.cloud.commit.CommitterConstants
 import com.hortonworks.spark.cloud.persist.SuccessData
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
-import org.scalatest.Assertions
 
 /**
  * General S3A operations against a filesystem.
  */
 class S3AOperations(sourceFs: FileSystem)
-  extends ObjectStoreOperations with Assertions {
+  extends StoreTestOperations {
 
   /**
    * S3A Filesystem.
@@ -43,8 +43,7 @@ class S3AOperations(sourceFs: FileSystem)
    * Get a sorted list of the FS statistics.
    */
   def getStorageStatistics(): List[StorageStatistics.LongStatistic] = {
-    fs.getStorageStatistics.asScala.toList
-      .sortWith((left, right) => left.getName > right.getName)
+    getStorageStatistics(fs)
   }
 
   /**
@@ -62,7 +61,7 @@ class S3AOperations(sourceFs: FileSystem)
       text: String,
       requireNonEmpty: Boolean = true): Option[SuccessData] = {
 
-    val successFile = new Path(destDir, SUCCESS_FILE_NAME)
+    val successFile = new Path(destDir, CommitterConstants.SUCCESS_FILE_NAME)
 
     var status = try {
       eventuallyGetFileStatus(fs, successFile)

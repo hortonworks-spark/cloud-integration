@@ -21,12 +21,13 @@ import java.io.{File, FileNotFoundException}
 
 import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AConstants}
-import com.hortonworks.spark.cloud.utils.CloudLogging
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
 import org.apache.spark.LocalSparkContext
+import org.apache.spark.internal.Logging
 
 /**
  * A cloud suite.
@@ -39,7 +40,7 @@ abstract class CloudSuite extends FunSuite
     with Eventually with S3AConstants with CloudSuiteTrait {
 }
 
-object CloudSuite extends CloudLogging with CloudTestKeys with S3AConstants
+object CloudSuite extends Logging with S3AConstants
   with CloudSuiteTrait {
 
   private var configLogged = false

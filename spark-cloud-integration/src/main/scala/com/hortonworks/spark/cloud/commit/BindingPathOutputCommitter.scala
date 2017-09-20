@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.commit
 
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.mapreduce.lib.output.{FileOutputFormat, PathOutputCommitter, PathOutputCommitterFactory}
@@ -29,8 +29,8 @@ import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
  * There's no factory for this, as that would lead to a loop.
  */
 class BindingPathOutputCommitter(
-    path: Path,
-    jobContext: JobContext) extends PathOutputCommitter(path, jobContext) {
+    outputPath: Path,
+    jobContext: JobContext) extends PathOutputCommitter(outputPath, jobContext) {
 
   var factory: Option[PathOutputCommitterFactory] = None
   var committer: Option[PathOutputCommitter] = None
@@ -43,8 +43,9 @@ class BindingPathOutputCommitter(
   private def getFactory(jobContext: JobContext): PathOutputCommitterFactory = {
     synchronized {
       if (factory.isEmpty) {
-        factory = Some(PathOutputCommitterFactory
-          .getOutputCommitterFactory(getOutputPath(jobContext),
+        factory = Some(
+          PathOutputCommitterFactory.getCommitterFactory(
+            getOutputPath(jobContext),
             jobContext.getConfiguration))
       }
       factory.get
@@ -81,6 +82,10 @@ class BindingPathOutputCommitter(
     committer.getOrElse {
       throw new IllegalStateException("Committer is not yet initialized")
     }
+  }
+
+  override def getOutputPath: Path = {
+    getCommitter().getOutputPath
   }
 
   override def getWorkPath: Path = {

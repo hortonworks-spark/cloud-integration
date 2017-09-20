@@ -19,10 +19,12 @@ package com.hortonworks.spark.cloud.utils
 
 import java.util.Locale
 
+import org.apache.spark.internal.Logging
+
 /**
  * Trait to add timing to operations.
  */
-trait TimeOperations extends CloudLogging {
+trait TimeOperations extends Logging {
 
   /**
    * Convert a time in nanoseconds into a human-readable form for logging.
@@ -39,7 +41,7 @@ trait TimeOperations extends CloudLogging {
    * @param testFun function to execute
    * @return the result
    */
-  def duration[T](operation: String)(testFun: => T): T = {
+  def logDuration[T](operation: String)(testFun: => T): T = {
     val start = nanos
     logInfo(s"Starting $operation")
     try {
@@ -56,7 +58,7 @@ trait TimeOperations extends CloudLogging {
    * @param testFun function to execute
    * @return the result and the operation duration in nanos
    */
-  def duration2[T](testFun: => T): (T, Long) = {
+  def durationOf[T](testFun: => T): (T, Long) = {
     val start = nanos()
     try {
       var r = testFun
@@ -99,7 +101,7 @@ trait TimeOperations extends CloudLogging {
    * @return how long the operation took
    */
   def time(testFun: => Any): Long = {
-    val (_, dur) = duration2(testFun)
+    val (_, dur) = durationOf(testFun)
     dur
   }
 

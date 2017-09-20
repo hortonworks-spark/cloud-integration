@@ -106,11 +106,11 @@ class CloudStreaming extends ObjectStoreExample {
       Thread.sleep(2500)
       // put a file into the generated directory
       val textPath = new Path(generatedSubDir, "body1.txt")
-      duration(s"upload $textPath") {
+      logDuration(s"upload $textPath") {
         put(textPath, hc, body)
       }
       // rename the actual directory
-      duration(s"rename $generatedSubDir to $renamedSubDir") {
+      logDuration(s"rename $generatedSubDir to $renamedSubDir") {
         destFS.rename(generatedSubDir, renamedSubDir)
       }
       val expected = rowCount / 10

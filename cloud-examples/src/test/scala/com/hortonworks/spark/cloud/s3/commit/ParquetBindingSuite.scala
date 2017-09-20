@@ -19,7 +19,7 @@ package com.hortonworks.spark.cloud.s3.commit
 
 import java.io.IOException
 
-import com.hortonworks.spark.cloud.BindingParquetOutputCommitter
+import com.hortonworks.spark.cloud.commit.BindingParquetOutputCommitter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.commit.CommitConstants.CREATE_SUCCESSFUL_JOB_OUTPUT_DIR_MARKER

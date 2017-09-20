@@ -24,6 +24,7 @@ import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import com.hortonworks.spark.cloud.utils.ExtraAssertions
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, LocatedFileStatus, Path}
 
@@ -36,8 +37,7 @@ import org.apache.spark.SparkConf
  * Primarily this deals with FS setup and teardown.
  *
  */
-trait CloudTestIntegration extends ExtraAssertions with ObjectStoreOperations {
-
+trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
 
   /**
    * The test directory under `/cloud-integration`; derived from the classname

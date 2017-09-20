@@ -60,7 +60,7 @@ class CSVReadSuite extends CloudSuiteWithCSVDatasource  {
    */
   def validateCSV(ctx: SparkContext, source: Path, lines: Long = ExpectedSceneListLines): Long = {
     val input = ctx.textFile(source.toString)
-    val (count, time) = duration2 {
+    val (count, time) = durationOf {
       input.count()
     }
     logInfo(s" size of $source = $count rows read in ${toHuman(time)}")
@@ -110,14 +110,14 @@ class CSVReadSuite extends CloudSuiteWithCSVDatasource  {
     val source = getTestCSVPath()
     val fs = getFilesystem(source)
     val parent = source.getParent
-    val files = duration("listFiles") {
+    val files = logDuration("listFiles") {
       listFiles(fs, parent, true)
     }
-    val slice = duration("slice") {
+    val slice = logDuration("slice") {
       files.slice(0, 1000)
     }
 
-    val (len, size) = duration("slice.length") {
+    val (len, size) = logDuration("slice.length") {
       slice.map(fs => (1, fs.getLen)).reduce((l, r) => (l._1 + r._1, l._2 + r._2))
     }
     logInfo(s"Length of slice $len, size = $size")

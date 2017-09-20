@@ -20,17 +20,13 @@ package com.hortonworks.spark.cloud.s3
 import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
-
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.SparkSession
+import com.hortonworks.spark.cloud.CloudTestKeys._
 
 /**
  * A suite of tests working with encryption.
  * Needs multiple encryption keys to work with
  */
 class S3AEncryptionSuite extends CloudSuite with S3ATestSetup {
-
-
 
   override def enabled: Boolean =  {
     val conf = getConf

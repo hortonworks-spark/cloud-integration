@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.PathOutputCommitProtocol
+import com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
 import org.apache.hadoop.mapreduce.TaskAttemptContext
 
 import org.apache.spark.SparkConf
@@ -29,7 +29,7 @@ import org.apache.spark.sql.internal.SQLConf
  * @param jobId job
  * @param path destination path
  */
-class SparkS3ACommitter(jobId: String, path: String)
+class SparkS3ACommitProtocol(jobId: String, path: String)
   extends PathOutputCommitProtocol(jobId, path) with Serializable {
 
   import S3ACommitterConstants._
@@ -56,12 +56,12 @@ class SparkS3ACommitter(jobId: String, path: String)
   }
 }
 
-object SparkS3ACommitter {
+object SparkS3ACommitProtocol {
   val NAME = "com.hortonworks.spark.cloud.s3.SparkS3ACommitter"
 
   val BINDING_OPTIONS = Map(
     SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key ->
-      classOf[SparkS3ACommitter].getCanonicalName
+      classOf[SparkS3ACommitProtocol].getCanonicalName
   )
 
   /**

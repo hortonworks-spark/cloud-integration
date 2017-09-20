@@ -17,9 +17,6 @@
 
 package com.hortonworks.spark.cloud
 
-import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
-import org.scalatest.concurrent.Eventually
-
 import org.apache.spark.SparkConf
 
 /**
@@ -27,8 +24,7 @@ import org.apache.spark.SparkConf
  * Offers: entry point, some operations to add configuration parameters to spark contexts,
  * and some methods to help parse arguments.
  */
-trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
-    with CloudLogging with Serializable with Eventually {
+trait ObjectStoreExample extends ObjectStoreOperations with Serializable {
 
   /**
    * Exit code for a usage error: -2
@@ -191,21 +187,4 @@ trait ObjectStoreExample extends TimeOperations with ObjectStoreOperations
     arg(args, index, None)
   }
 
-  /**
-   * Set the base spark/Hadoop/ORC/parquet options to be used in examples.
-   * Also patches spark.master to local, unless already set.
-   * @param sparkConf spark configuration to patch
-   * @param randomIO is the IO expected to be random access?
-   */
-  protected def applyObjectStoreConfigurationOptions(
-      sparkConf: SparkConf,
-      randomIO: Boolean): Unit = {
-    // commit with v2 algorithm
-    sparkConf.setAll(MAPREDUCE_OPTIONS)
-    sparkConf.setAll(ORC_OPTIONS)
-    sparkConf.setAll(PARQUET_OPTIONS)
-    if (!sparkConf.contains("spark.master")) {
-      sparkConf.set("spark.master", "local")
-    }
-  }
 }

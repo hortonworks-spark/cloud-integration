@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.common.SeekReadTests
 /**
  * Tests reading in the S3A CSV file using sequential and Random IO.
  */
-class S3ASeekReadSuite extends SeekReadTests with S3ATestSetup with SequentialIO {
+class S3ASeekReadSuite extends SeekReadTests with S3ATestSetup with SequentialIOPolicy {
 
   init()
 

@@ -18,6 +18,7 @@
 package com.hortonworks.spark.cloud
 
 import java.net.URL
+import com.hortonworks.spark.cloud.CloudTestKeys._
 
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.FunSuiteLike

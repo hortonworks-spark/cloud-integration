@@ -19,24 +19,24 @@ package com.hortonworks.spark.cloud
 
 import java.io.{EOFException, File, IOException}
 import java.net.URL
-import java.nio.charset.Charset
 
-import scala.collection.JavaConversions.asScalaIterator
-import scala.concurrent.duration._
+import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.hortonworks.spark.cloud.utils.{CloudLogging, TimeOperations}
+import com.hortonworks.spark.cloud.commit.CommitterConstants
+import com.hortonworks.spark.cloud.utils.TimeOperations
+import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
+import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
-import org.scalatest.concurrent.Eventually
-import org.scalatest.time.Span
 
 import org.apache.spark.SparkConf
+import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.apache.spark.sql._
 import org.apache.spark.sql.internal.SQLConf
@@ -44,8 +44,8 @@ import org.apache.spark.sql.internal.SQLConf
 /**
  * Extra Hadoop operations for object store integration.
  */
-trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
-  TimeOperations with Eventually {
+trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
+  TimeOperations {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -195,8 +195,8 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
    * @param format format
    * @return the path the DF was saved to
    */
-  def save(df: DataFrame, dest: Path, format: String): Path = {
-    duration(s"write to $dest in format $format") {
+  def saveDF(df: DataFrame, dest: Path, format: String): Path = {
+    logDuration(s"write to $dest in format $format") {
       df.write.format(format).save(dest.toString)
     }
     dest
@@ -209,7 +209,7 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
    * @param srcFormat format
    * @return the loaded dataframe
    */
-  def load(spark: SparkSession, source: Path, srcFormat: String,
+  def loadDF(spark: SparkSession, source: Path, srcFormat: String,
            opts: Map[String, String] = Map()): DataFrame = {
     val reader = spark.read
     reader.options(opts)
@@ -323,109 +323,15 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     settings.foreach(e => hconf(sparkConf, e._1, e._2))
   }
 
-  protected val retryTimeout: Span = 30 seconds
-
-  protected val retryInterval: Span = 1000 milliseconds
-
   /**
-   * Try to get the file status, _eventually_.
-   *
-   * @param fs filesystem
-   * @param p path
-   * @return the result
+   * Get a sorted list of the FS statistics.
    */
-  def eventuallyGetFileStatus(fs: FileSystem, p: Path): FileStatus = {
-    eventually(timeout(retryTimeout),
-      interval(retryInterval)) {
-      fs.getFileStatus(p)
-    }
-  }
-  /**
-   * Try to get the directory listing, _eventually_.
-   *
-   * @param fs filesystem
-   * @param p path
-   * @return the result
-   */
-  def eventuallyListStatus(fs: FileSystem, p: Path): Array[FileStatus] = {
-    eventually(timeout(retryTimeout),
-      interval(retryInterval)) {
-      fs.listStatus(p)
-    }
+  def getStorageStatistics(fs: FileSystem): List[StorageStatistics.LongStatistic] = {
+    fs.getStorageStatistics.getLongStatistics.asScala.toList
+      .sortWith((left, right) => left.getName > right.getName)
   }
 
-  // load a DF and verify it has the expected number of rows
-  // return how long it took
-  def validateRowCount(
-      spark: SparkSession,
-      fs: FileSystem,
-      source: Path,
-      srcFormat: String,
-      rowCount: Long): Long = {
-    waitForConsistency(fs)
-    val success = new Path(source, SUCCESS_FILE_NAME)
-    val status = eventuallyGetFileStatus(fs, success)
-    assert(status.isDirectory || status.getBlockSize > 0,
-      s"Block size 0 in $status")
-    val files = eventuallyListStatus(fs, source).filter{ st =>
-      val name = st.getPath.getName
-      st.isFile && !name.startsWith(".") && !name.startsWith("_")
-    }
-    assert(files.nonEmpty, s"No files in the directory $source")
-    val (loadedCount, loadTime) = duration2(load(spark, source, srcFormat)
-      .count())
-    logInfo(s"Loaded $source in $loadTime nS")
-    require(rowCount == loadedCount,
-      s"Expected $rowCount rows, but got $loadedCount from $source formatted as $srcFormat")
-    loadTime
-  }
 
-  /**
-   * Any delay for consistency
-   * @return delay in millis; 0 is default.
-   */
-  def consistencyDelay(c: Configuration): Int = 0
-
-  /**
-   * Wait for the FS to be consistent.
-   * If there is no inconsistency, this is a no-op
-   */
-  def waitForConsistency(fs: FileSystem): Unit = {
-    waitForConsistency(fs.getConf)
-  }
-
-  /**
-   * Wait for the FS to be consistent.
-   * If there is no inconsistency, this is a no-op
-   */
-  def waitForConsistency(c: Configuration): Unit = {
-    val delay = consistencyDelay(c)
-    if (delay > 0) {
-      Thread.sleep(delay * 2)
-    }
-  }
-
-  /**
-   * Recursive delete. Special feature: waits for the inconsistency delay
-   * both before and after if the fs property has it set to anything
-   *
-   * @param fs
-   * @param path
-   * @return
-   */
-  protected def rm(
-      fs: FileSystem,
-      path: Path): Boolean = {
-    waitForConsistency(fs)
-    try {
-      val r = fs.delete(path, true)
-      waitForConsistency(fs)
-      r
-    } catch {
-      case e: IOException =>
-        throw new IOException(s"Failed to delete $path on $fs $e", e )
-    }
-  }
 
   /**
    * Dump the storage stats; logs nothing if there are none
@@ -456,7 +362,7 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     require(sourceStatus.isFile, s"Not a file $src")
     val sizeKB = sourceStatus.getLen / 1024
     logInfo(s"Copying $src to $dest (${sizeKB} KB)")
-    val (outcome, time) = duration2 {
+    val (outcome, time) = durationOf {
       FileUtil.copy(srcFS,
         sourceStatus,
         dest.getFileSystem(conf),
@@ -498,6 +404,45 @@ trait ObjectStoreOperations extends CloudLogging with CloudTestKeys with
     val buffer = new Array[Byte](maxLen)
     val len = in.read(buffer)
     new String(buffer, 0, len)
+  }
+
+  /**
+   * Recursive delete. Special feature: waits for the inconsistency delay
+   * both before and after if the fs property has it set to anything
+   *
+   * @param fs
+   * @param path
+   * @return
+   */
+  protected def rm(
+      fs: FileSystem,
+      path: Path): Boolean = {
+    try {
+      val r = fs.delete(path, true)
+      r
+    } catch {
+      case e: IOException =>
+        throw new IOException(s"Failed to delete $path on $fs $e", e)
+    }
+  }
+
+  /**
+   * Set the base spark/Hadoop/ORC/parquet options to be used in examples.
+   * Also patches spark.master to local, unless already set.
+   *
+   * @param sparkConf spark configuration to patch
+   * @param randomIO is the IO expected to be random access?
+   */
+  protected def applyObjectStoreConfigurationOptions(
+      sparkConf: SparkConf,
+      randomIO: Boolean): Unit = {
+    // commit with v2 algorithm
+    sparkConf.setAll(MAPREDUCE_OPTIONS)
+    sparkConf.setAll(ORC_OPTIONS)
+    sparkConf.setAll(PARQUET_OPTIONS)
+    if (!sparkConf.contains("spark.master")) {
+      sparkConf.set("spark.master", "local")
+    }
   }
 }
 

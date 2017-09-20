@@ -17,16 +17,10 @@
 
 package com.hortonworks.spark.cloud.utils
 
-import com.hortonworks.spark.cloud.s3.S3AConstants
-import com.hortonworks.spark.cloud.{CloudTestKeys, ObjectStoreOperations}
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.Matchers
-import org.scalatest.concurrent.Eventually
+import org.scalatest.Assertions
 
-
-trait ExtraAssertions extends CloudLogging with CloudTestKeys
-  with Matchers with TimeOperations
-  with ObjectStoreOperations with Eventually with S3AConstants {
+trait ExtraAssertions extends Assertions {
 
   /**
    * Expect a specific value; raise an assertion if it is not there
@@ -43,6 +37,7 @@ trait ExtraAssertions extends CloudLogging with CloudTestKeys
   /**
    * Expect a value to be non-null; return it. It will
    * implicitly be non-null in further use.
+   *
    * @param v value to check
    * @param msg message for any assertion
    * @tparam T type of value
@@ -54,6 +49,7 @@ trait ExtraAssertions extends CloudLogging with CloudTestKeys
 
   /**
    * Expect a configuration option to be set
+   *
    * @param c config
    * @param key kjey to look for
    * @return the set value

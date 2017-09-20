@@ -23,6 +23,6 @@ import com.hortonworks.spark.cloud.operations.CloudFileGenerator
  * Generate a file containing some numbers in the remote repository.
  */
 object S3AFileGenerator extends CloudFileGenerator with S3AExampleSetup
-  with SequentialIO  {
+  with SequentialIOPolicy  {
 
 }

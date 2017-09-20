@@ -17,8 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitter}
+import com.hortonworks.spark.cloud.{CloudSuite, CloudTestKeys}
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
 import org.apache.spark.SparkConf
@@ -47,7 +47,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
   override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     super.addSuiteConfigurationOptions(sparkConf)
     sparkConf.setAll(COMMITTER_OPTIONS)
-    sparkConf.setAll(SparkS3ACommitter.BINDING_OPTIONS)
+    sparkConf.setAll(SparkS3ACommitProtocol.BINDING_OPTIONS)
   }
 
   ctest("propagation",  "verify property passdown", false) {
@@ -56,7 +56,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     logInfo(s"Committer name is $name")
 
     val conf = getConf
-    assert(getConf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false),
+    assert(getConf.getBoolean(CloudTestKeys.S3A_COMMITTER_TEST_ENABLED, false),
       "committer setup not passed in")
     val committer = expectOptionSet(conf,
       S3ACommitterConstants.S3A_COMMITTER_KEY)
@@ -96,7 +96,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
 
     val sourceData = sc.range(0, numRows).map(i => i)
     val format = "orc"
-    duration(s"write to $destDir in format $format") {
+    logDuration(s"write to $destDir in format $format") {
       saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
     }
     operations.maybeVerifyCommitter(destDir,

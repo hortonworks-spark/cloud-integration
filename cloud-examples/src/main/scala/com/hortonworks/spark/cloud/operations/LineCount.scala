@@ -20,7 +20,9 @@ package com.hortonworks.spark.cloud.operations
 import java.net.URI
 
 import com.hortonworks.spark.cloud.ObjectStoreExample
-import com.hortonworks.spark.cloud.s3.SequentialIO
+import com.hortonworks.spark.cloud.s3.SequentialIOPolicy
+import com.hortonworks.spark.cloud.CloudTestKeys._
+
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.{SparkConf, SparkContext}
@@ -28,7 +30,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 /**
  * A line count operation
  */
-class LineCount extends ObjectStoreExample with SequentialIO {
+class LineCount extends ObjectStoreExample with SequentialIOPolicy {
 
   /**
    * List of the command args for the current example.
@@ -83,7 +85,7 @@ class LineCount extends ObjectStoreExample with SequentialIO {
       val input = sc.textFile(source.get)
       if (dest.isEmpty) {
         // no destination: just do a count
-        val count = duration(s" count $srcPath") {
+        val count = logDuration(s" count $srcPath") {
           input.count()
         }
         logInfo(s"line count = $count")
@@ -92,12 +94,12 @@ class LineCount extends ObjectStoreExample with SequentialIO {
         val destUri = new URI(dest.get)
         val destPath = new Path(destUri)
         val destFS = destPath.getFileSystem(conf)
-        duration("setup dest path") {
+        logDuration("setup dest path") {
           rm(destFS, destPath)
           destFS.mkdirs(destPath.getParent())
         }
 
-        duration("save") {
+        logDuration("save") {
           // generate less output than in, so that writes and commits are not as slow as they
           // would otherwise be, but still have some realistic workload
           val lineLen = input.map(line => Integer.toHexString(line.length))

@@ -112,10 +112,10 @@ abstract class BasicIOTests extends CloudSuite {
     val basePathStatus = filesystem.getFileStatus(destFile)
     // check blocksize in file status
     val hadoopUtils = new SparkHadoopUtil
-    duration("listLeafDir") {
+    logDuration("listLeafDir") {
       hadoopUtils.listLeafDirStatuses(filesystem, basePathStatus)
     }
-    val (leafFileStatus, _) = duration2 {
+    val (leafFileStatus, _) = durationOf {
       hadoopUtils.listLeafStatuses(filesystem, basePathStatus)
     }
     // files are either empty or have a block size

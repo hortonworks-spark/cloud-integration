@@ -24,11 +24,13 @@ import scala.collection.JavaConverters._
 import scala.collection.immutable._
 
 import com.hortonworks.spark.cloud.CloudSuite._
-import com.hortonworks.spark.cloud.utils.CloudLogging
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.hadoop.util.VersionInfo
 import org.scalatest.{FunSuite, Matchers}
 
-class HadoopVersionSuite extends FunSuite with CloudLogging with Matchers {
+import org.apache.spark.internal.Logging
+
+class HadoopVersionSuite extends FunSuite with Logging with Matchers {
 
   test("Check Hadoop version") {
     val configuration = loadConfiguration()

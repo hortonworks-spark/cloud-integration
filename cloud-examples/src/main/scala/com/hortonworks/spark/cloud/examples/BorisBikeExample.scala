@@ -33,7 +33,7 @@ import org.apache.spark.sql.types.DataTypes._
  * Fun with the boris bike dataset
  */
 class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
-  with SequentialIO {
+  with SequentialIOPolicy {
 
   /**
    * List of the command args for the current example.
@@ -217,7 +217,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
     csvDF.show()
 
     logInfo(s"Saving as ORC To $destPath")
-    save(csvDF, destPath, "orc")
+    saveDF(csvDF, destPath, "orc")
 
     logInfo(s"Reading ORC from $destPath")
 
@@ -243,7 +243,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
 //    orcDF.show()
     val coreDF = orcDF
       .select(_bike, _time, _startstation_name, _endstation_name)
-    coreDF.cache();
+    coreDF.cache()
     coreDF.createGlobalTempView("boris")
 
     spark.sql("SELECT * FROM global_temp.boris").show()
@@ -252,7 +252,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
 
     coreDF.sort($"time".desc).show()
 
-    duration(s"write to $outPath") {
+    logDuration(s"write to $outPath") {
       coreDF.write.format("orc").save(outPath.toString)
     }
 

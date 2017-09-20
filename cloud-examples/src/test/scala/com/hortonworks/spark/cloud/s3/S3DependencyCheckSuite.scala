@@ -17,16 +17,17 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.utils.CloudLogging
 import org.jets3t.service.S3ServiceException
 import org.scalatest.{FunSuite, Matchers}
+
+import org.apache.spark.internal.Logging
 
 /**
  * Force load in hadoop s3n/s3a classes and some dependencies.
  * Dependency problems should be picked up at compile time; runtime may
  * identify problems with any other transitive library
  */
-class S3DependencyCheckSuite extends FunSuite with CloudLogging with Matchers {
+class S3DependencyCheckSuite extends FunSuite with Logging with Matchers {
 
   test("Create S3A FS Instance") {
     instantiate("org.apache.hadoop.fs.s3a.S3AFileSystem")

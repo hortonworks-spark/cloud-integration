@@ -22,14 +22,15 @@ import java.io.IOException
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.s3.AmazonS3
-import com.hortonworks.spark.cloud.utils.CloudLogging
 import org.apache.hadoop.fs.s3a.{DefaultS3ClientFactory, InconsistentAmazonS3Client}
+
+import org.apache.spark.internal.Logging
 
 /**
  * This is here to verify that factory settings make their way down
  * to queries; can be enabled from build profiles
  */
-class FailingS3ClientFactory extends DefaultS3ClientFactory  with CloudLogging {
+class FailingS3ClientFactory extends DefaultS3ClientFactory  with Logging {
 
   logWarning("Failing S3 Client instantiated")
 

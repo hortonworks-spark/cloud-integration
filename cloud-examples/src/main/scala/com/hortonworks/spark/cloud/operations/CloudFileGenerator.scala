@@ -109,7 +109,7 @@ class CloudFileGenerator extends ObjectStoreExample {
       logInfo(s"Initial File System state = $destFS")
 
       // Trigger the evaluations of the RDDs
-      val (executionResults, collectionTime) = duration2 {
+      val (executionResults, collectionTime) = durationOf {
         putDataRDD.collect()
       }
       // use the length of the first file as the length of all of them
@@ -131,7 +131,7 @@ class CloudFileGenerator extends ObjectStoreExample {
       }
 
       // list all files under the path using listFiles; verify size
-      val (listing, listDuration) = duration2(destFS.listFiles(destPath, true))
+      val (listing, listDuration) = durationOf(destFS.listFiles(destPath, true))
       logInfo(s"time to list paths under $destPath: $listDuration")
       while (listing.hasNext) {
         val entry = listing.next()
@@ -150,7 +150,7 @@ class CloudFileGenerator extends ObjectStoreExample {
         actual
       })
 
-      duration("Verify the length of all the files")(fileSizeRdd.count())
+      logDuration("Verify the length of all the files")(fileSizeRdd.count())
 
     } finally {
       logInfo("Stopping Spark Context")

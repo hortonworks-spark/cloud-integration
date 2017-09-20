@@ -46,15 +46,15 @@ class SeekReadTests extends CloudSuiteWithCSVDatasource  {
     stats.reset()
     val storageStats = fs.getStorageStatistics
     storageStats.reset()
-    val st = duration("stat") {
+    val st = logDuration("stat") {
       fs.getFileStatus(source)
     }
-    val in = duration("open") {
+    val in = logDuration("open") {
       fs.open(source)
     }
     def time[T](operation: String)(testFun: => T): T = {
       logInfo(s"")
-      var r = duration(operation + s" [pos = ${in.getPos}]")(testFun)
+      var r = logDuration(operation + s" [pos = ${in.getPos}]")(testFun)
       logInfo(s"  ${in.getWrappedStream}")
       r
     }
@@ -98,7 +98,7 @@ class SeekReadTests extends CloudSuiteWithCSVDatasource  {
     time("read()") {
       assert(-1 !== in.read())
     }
-    duration("close()") {
+    logDuration("close()") {
       in.close
     }
     logInfo(s"Statistics $stats")

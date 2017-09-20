@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.commit
 
 /**
  * Constants general to all the committers.
@@ -48,4 +48,25 @@ object CommitterConstants {
 
   val BINDING_PARQUET_OUTPUT_COMMITTER_CLASS =
     "com.hortonworks.spark.cloud.BindingParquetOutputCommitter"
+
+  val MR_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
+  val MR_COMMITTER_CLEANUPFAILURES_IGNORED = "mapreduce.fileoutputcommitter.cleanup-failures.ignored"
+
+  val SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
+  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
+  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION_DEFAULT = 2
+  // Skip cleanup _temporary folders under job's output directory
+  val FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED = "mapreduce.fileoutputcommitter.cleanup.skipped"
+
+  /**
+   * This is the "Pending" directory of the FileOutputCommitter;
+   * data written here is, in that algorithm, renamed into place.
+   * Value: {@value }.
+   */
+  val TEMP_DIR_NAME = "_temporary"
+  /**
+   * Marker file to create on success.
+   */
+  val SUCCESS_FILE_NAME = "_SUCCESS"
+
 }

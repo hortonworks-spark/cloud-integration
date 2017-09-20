@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.commit
 
 import java.io.IOException
 import java.lang.reflect.Method
@@ -119,7 +119,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
       absoluteDir: String,
       ext: String): String = {
     val file = super.newTaskTempFileAbsPath(taskContext, absoluteDir, ext)
-    logDebug(s"Temp file with absolute path for dir $absoluteDir with ext $ext is $file")
+    logInfo(s"Temp file with absolute path for dir $absoluteDir with ext $ext is $file")
     file
   }
 
