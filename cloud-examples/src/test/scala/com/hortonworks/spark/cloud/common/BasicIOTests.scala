@@ -31,6 +31,7 @@ import org.apache.spark.rdd.HadoopRDD
 /**
  * Basic IO Tests. The test path is cleaned up afterwards.
  */
+//noinspection ScalaDeprecation
 abstract class BasicIOTests extends CloudSuite {
 
   after {
@@ -42,7 +43,7 @@ abstract class BasicIOTests extends CloudSuite {
     filesystem.mkdirs(path)
     val st = stat(path)
     logInfo(s"Created filesystem entry $path: $st")
-    val files = filesystem.listFiles(path, true)
+    filesystem.listFiles(path, true)
 
     // delete then verify that it is gone
     rm(filesystem, path)

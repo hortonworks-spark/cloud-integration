@@ -23,6 +23,7 @@ import scala.util.Random
 
 import com.hortonworks.spark.cloud.CloudSuiteTrait
 import org.apache.hadoop.fs.Path
+import org.scalatest.BeforeAndAfterAll
 
 import org.apache.spark.sql.hive.test.TestHiveSingleton
 import org.apache.spark.sql.test.SQLTestUtils
@@ -30,17 +31,31 @@ import org.apache.spark.sql.types._
 import org.apache.spark.sql.{RandomDataGenerator, _}
 import org.apache.spark.util.Utils
 
+
 /**
  * Minimal base class for cloud relation tests.
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
-  with TestHiveSingleton with CloudSuiteTrait {
+  with TestHiveSingleton with CloudSuiteTrait with BeforeAndAfterAll {
+
   import spark.implicits._
 
   val dataSourceName: String
 
+  protected override def afterAll(): Unit = {
+    try {
+      super.afterAll()
+    } finally {
+      if (spark != null) {
+        logInfo("Closing spark context")
+        spark.stop()
+      }
+    }
+  }
+
   /**
    * Datatype mapping is for ORC; other formats may override this.
+ *
    * @param dataType
    * @return
    */
@@ -57,7 +72,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
         StructField("a", IntegerType, nullable = false),
         StructField("b", StringType, nullable = false)))
 
-  lazy val testDF = (1 to 3).map(i => (i, s"val_$i")).toDF("a", "b")
+  lazy val testDF = spark.range(1, 3).map(i => (i, s"val_$i")).toDF("a", "b")
 
   lazy val partitionedTestDF1 = (for {
     i <- 1 to 3
@@ -153,6 +168,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
       for (i <- 2 to 3; _ <- Seq("foo", "bar")) yield {
         Row(s"val_$i", 1)
       })
+
 
     // Project many copies of columns with different types (reproduction for SPARK-7858)
     checkAnswer(

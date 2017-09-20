@@ -242,7 +242,8 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * General spark options
    */
   val GENERAL_SPARK_OPTIONS = Map(
-    "spark.ui.enabled" -> "false"
+    "spark.ui.enabled" -> "false",
+    "spark.driver.allowMultipleContexts" -> "true"
   )
 
   val ORC_OPTIONS = Map(

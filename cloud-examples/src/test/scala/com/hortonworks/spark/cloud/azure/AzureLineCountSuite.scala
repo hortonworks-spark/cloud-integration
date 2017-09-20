@@ -31,8 +31,8 @@ class AzureLineCountSuite extends CloudSuiteWithCSVDatasource with AzureTestSetu
    * set up FS if enabled.
    */
   def init(): Unit = {
-    super.initFS()
     if (enabled) {
+      initFS()
       initDatasources()
     }
   }

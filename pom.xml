@@ -878,16 +878,16 @@
 
     <!-- Enable S3guard against a DynamoDBLocal datastore -->
     <profile>
-      <id>localdynamo</id>
+      <id>localdynamodb</id>
       <activation>
         <property>
-          <name>localdynamo</name>
+          <name>localdynamodb</name>
         </property>
       </activation>
       <properties>
         <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore</fs.s3a.metadatastore.impl>
         <s3a.s3guard.test.enabled>true</s3a.s3guard.test.enabled>
-        <s3a.s3guard.test.implementation>dynamodblocal</s3a.s3guard.test.implementation>
+        <s3a.s3guard.test.implementation>localdynamodb</s3a.s3guard.test.implementation>
       </properties>
     </profile>
 

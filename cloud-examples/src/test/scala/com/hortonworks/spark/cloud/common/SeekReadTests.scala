@@ -41,9 +41,6 @@ class SeekReadTests extends CloudSuiteWithCSVDatasource  {
         | like Orc and Parquet.""".stripMargin) {
     val (source, fs) = getCSVSourceAndFileSystem()
     FileSystem.clearStatistics
-    val stats = FileSystem.getStatistics(fs.getScheme,
-      fs.getClass)
-    stats.reset()
     val storageStats = fs.getStorageStatistics
     storageStats.reset()
     val st = logDuration("stat") {
@@ -101,7 +98,6 @@ class SeekReadTests extends CloudSuiteWithCSVDatasource  {
     logDuration("close()") {
       in.close
     }
-    logInfo(s"Statistics $stats")
     dumpFileSystemStatistics(storageStats)
 
   }

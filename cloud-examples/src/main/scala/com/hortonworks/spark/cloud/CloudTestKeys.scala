@@ -187,7 +187,7 @@ object CloudTestKeys extends S3AConstants {
 
   val S3GUARD_IMPLEMENTATION_LOCAL = "local"
   val S3GUARD_IMPLEMENTATION_DYNAMO = "dynamo"
-  val S3GUARD_IMPLEMENTATION_DYNAMODBLOCAL = "dynamodblocal"
+  val S3GUARD_IMPLEMENTATION_DYNAMODBLOCAL = "localdynamodb"
   val S3GUARD_IMPLEMENTATION_NONE = "none"
 
 

@@ -630,56 +630,6 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("SPARK-8578",
-    "specified custom output committer will not be used to append data",
-    true) {
-    withSQLConf(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key ->
-      classOf[SQLHadoopMapReduceCommitProtocol].getCanonicalName) {
-      val extraOptions = Map[String, String](
-        SQLConf.OUTPUT_COMMITTER_CLASS.key ->
-          classOf[AlwaysFailOutputCommitter].getName,
-        // Since Parquet has its own output committer setting, also set it
-        // to AlwaysFailParquetOutputCommitter at here.
-        "spark.sql.parquet.output.committer.class" ->
-          classOf[AlwaysFailParquetOutputCommitter].getName
-      )
-
-      val df = spark.range(1, 10).toDF("i")
-      withPath("SPARK-8578") { dir =>
-        val name = dir.toString
-        df.write.mode("append").format(dataSourceName).save(name)
-        // Because there data already exists,
-        // this append should succeed because we will use the output committer associated
-        // with file format and AlwaysFailOutputCommitter will not be used.
-        df.write.mode("append").format(dataSourceName).save(name)
-        checkAnswer(
-          spark.read
-            .format(dataSourceName)
-            .option("dataSchema", df.schema.json)
-            .options(extraOptions)
-            .load(name),
-          df.union(df))
-
-        // This will fail because AlwaysFailOutputCommitter is used when we do append.
-        intercept[Exception] {
-          df.write.mode("overwrite")
-            .options(extraOptions).format(dataSourceName).save(name)
-        }
-      }
-      withPath("SPARK-8578-02") { dir =>
-        // Because there is no existing data,
-        // this append will fail because AlwaysFailOutputCommitter is used when we do append
-        // and there is no existing data.
-        intercept[Exception] {
-          df.write.mode("append")
-            .options(extraOptions)
-            .format(dataSourceName)
-            .save(dir.toString)
-        }
-      }
-    }
-  }
-
   ctest("SPARK-8887",
     "Explicitly define which data types can be used as dynamic partition columns",
     true) {
