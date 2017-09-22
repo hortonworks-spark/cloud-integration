@@ -17,15 +17,14 @@
 
 package com.hortonworks.spark.cloud.applications
 
-import com.hortonworks.spark.cloud._
-import com.hortonworks.spark.cloud.s3.S3AConstantsAndKeys
+import com.hortonworks.spark.cloud.ObjectStoreExample
 import com.hortonworks.spark.cloud.utils.ConfigSerDeser
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 
 import org.apache.spark.SparkConf
-import org.apache.spark.hortonworks.ParallelizedWithLocalityRDD
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.hortonworks.ParallelizedWithLocalityRDD
 
 /**
  * Minimal Implementation of DistCP within Spark.
@@ -82,13 +81,13 @@ class CloudCp extends ObjectStoreExample {
       return usage()
     }
 
-    val source = CloudTestKeys.S3A_CSV_PATH_DEFAULT
+//    val source = CloudTestKeys.S3A_CSV_PATH_DEFAULT
     val srcPath = new Path(args(0))
     val destPath = new Path(args(1))
 
     sparkConf.set("spark.default.parallelism", "4")
     applyObjectStoreConfigurationOptions(sparkConf, false)
-    hconf(sparkConf, S3AConstantsAndKeys.FAST_UPLOAD, "true")
+//    hconf(sparkConf, S3AConstantsAndKeys.FAST_UPLOAD, "true")
     val spark = SparkSession
       .builder
       .appName("CloudCp")

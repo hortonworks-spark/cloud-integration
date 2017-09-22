@@ -5,11 +5,16 @@ repository provides modules to improve Apache Spark's integration with cloud inf
 
 
 
-## cloud-committer
+## spark-cloud-integration
 
-Support for the S3guard committers in Apache Spark.
+Classes and Tools to make Spark work better in-cloud
 
-See [Cloud Committer](cloud-committer/src/main/site/markdown/index.md)
+* Committer integration with the s3a committers
+* 
+
+See [Spark Cloud Integration](spark-cloud-integration/src/main/site/markdown/index.md)
+
+
 
 ## cloud-examples
 
@@ -18,7 +23,5 @@ This does the packaging/integration tests for Spark and cloud against AWS, Azure
 These are basic tests of the core functionality of I/O, streaming, and verify that
 the commmitters work in the presence of inconsistent object storage
 As well as running as unit tests, they have CLI entry points which can be used for scalable functional testing.
-
-
 
 
