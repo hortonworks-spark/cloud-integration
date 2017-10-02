@@ -41,7 +41,7 @@ class S3ACSVReadSuite extends CSVReadSuite with S3ATestSetup {
     def next: T = source.next()
   }*/
 
-  /**
+  /*
    * This doesn't do much, except that it is designed to be pasted straight into
    * Zeppelin and work
    */
