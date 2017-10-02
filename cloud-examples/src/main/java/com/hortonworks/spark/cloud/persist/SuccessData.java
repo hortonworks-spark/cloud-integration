@@ -33,7 +33,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.commit.ValidationFailure;
 
 /**
  * Summary data saved into a {@code _SUCCESS} marker file.
@@ -96,7 +95,7 @@ public class SuccessData extends PersistentCommitData {
   private List<String> filenames = new ArrayList<>(0);
 
   @Override
-  public void validate() throws ValidationFailure {
+  public void validate() throws IOException {
 
   }
 

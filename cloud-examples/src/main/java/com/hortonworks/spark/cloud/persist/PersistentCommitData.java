@@ -25,7 +25,6 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.fs.s3a.commit.ValidationFailure;
 
 /**
  * Class for single/multiple commit data structures.
@@ -44,7 +43,7 @@ public abstract class PersistentCommitData implements Serializable {
    * Validate the data: those fields which must be non empty, must be set.
    * @throws ValidationFailure if the data is invalid
    */
-  public abstract void validate() throws ValidationFailure;
+  public abstract void validate() throws IOException;
 
   /**
    * Serialize to JSON and then to a byte array, after performing a

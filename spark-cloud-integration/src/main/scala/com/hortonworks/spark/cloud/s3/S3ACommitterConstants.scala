@@ -18,7 +18,6 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.commit.CommitterConstants
-import org.apache.hadoop.fs.s3a.commit.CommitConstants
 
 /**
  * Constants related to the S3A committers.
@@ -31,12 +30,17 @@ object S3ACommitterConstants {
     CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
     "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
-  val DIRECTORY_COMMITTER_FACTORY = CommitConstants.DIRECTORY_COMMITTER_FACTORY
     STAGING_PACKAGE + "DirectoryStagingCommitterFactory"
-  val PARTITIONED_COMMITTER_FACTORY = CommitConstants.PARTITION_COMMITTER_FACTORY
-  val STAGING_COMMITTER_FACTORY = CommitConstants.STAGING_COMMITTER_FACTORY
-  val MAGIC_COMMITTER_FACTORY = CommitConstants.MAGIC_COMMITTER_FACTORY
-  val DYNAMIC_COMMITTER_FACTORY = CommitConstants.DYNAMIC_COMMITTER_FACTORY
+  val DEFAULT_CREATE_SUCCESSFUL_JOB_DIR_MARKER = true
+  val S3A_COMMITTER_FACTORY_KEY: String = String
+    .format("mapreduce.outputcommitter.factory.scheme.%s", "s3a")
+  val STAGING_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.staging.StagingCommitterFactory"
+  val DIRECTORY_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory"
+  val PARTITIONED_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.staging.PartitonedStagingCommitterFactory"
+  val DYNAMIC_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory"
+  val MAGIC_COMMITTER_FACTORY = "org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory"
+  val FS_S3A_COMMITTER_NAME = "fs.s3a.committer.name"
+  val COMMITTER_NAME_FILE = "file"
 
   val MAGIC = "magic"
   val STAGING = "staging"

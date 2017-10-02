@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud.common
 
 import scala.collection.mutable
 
+import com.hortonworks.spark.cloud.s3.SequentialIOPolicy
 import org.apache.hadoop.fs.{FSDataInputStream, Path}
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.TextInputFormat
@@ -30,7 +31,7 @@ import org.apache.spark.rdd.HadoopRDD
 /**
  * A suite of tests reading in the test CSV file.
  */
-class CSVReadSuite extends CloudSuiteWithCSVDatasource  {
+class CSVReadSuite extends CloudSuiteWithCSVDatasource with SequentialIOPolicy {
 
   /**
    * Minimum number of lines, very pessimistic
