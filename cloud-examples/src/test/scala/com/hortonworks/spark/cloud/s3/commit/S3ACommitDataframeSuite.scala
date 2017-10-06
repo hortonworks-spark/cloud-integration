@@ -72,10 +72,10 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   private val committers = Seq(
-    DEFAULT_RENAME,
+//    DEFAULT_RENAME,
     DIRECTORY,
 //    PARTITIONED,
-    MAGIC,
+//    MAGIC,
     ""
   )
   private val s3 = filesystem.asInstanceOf[S3AFileSystem]
@@ -122,13 +122,19 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
       val conf = sc.hadoopConfiguration
       val numRows = 1000
       val numPartitions = 1
-      val sourceData = spark.range(0, numRows)
-        .map(i => (1, i, i.toString))
-        .repartition(numPartitions)
+      val eventData = Events.events(2016, 2017, 1, 12, 10).toDS()
+      val sourceData = eventData.repartition(numPartitions).cache()
+      sourceData.printSchema()
+      logInfo(s"${sourceData.count()} elements")
+      sourceData.show(10)
+
       val subdir = new Path(destDir, format)
       rm(s3, subdir)
       logDuration(s"write to $subdir in format $format") {
-        sourceData.write.format(format).save(subdir.toString)
+        sourceData
+          .write
+            .partitionBy("year", "month")
+          .format(format).save(subdir.toString)
       }
       val operations = new S3AOperations(s3)
       val stats = operations.getStorageStatistics()

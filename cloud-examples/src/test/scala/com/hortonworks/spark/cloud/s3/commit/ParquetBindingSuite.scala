@@ -31,11 +31,11 @@ import org.scalatest.FunSuite
 class ParquetBindingSuite extends FunSuite {
 
 
-  val jobId = "2007071202143_0101"
-  val attempt0 = "attempt_" + jobId + "_m_000000_0"
-  val taskAttempt0 = TaskAttemptID.forName(attempt0)
-  val attempt1 = "attempt_" + jobId + "_m_000001_0"
-  val taskAttempt1 = TaskAttemptID.forName(attempt1)
+  private val jobId = "2007071202143_0101"
+  private val attempt0 = "attempt_" + jobId + "_m_000000_0"
+  private val taskAttempt0 = TaskAttemptID.forName(attempt0)
+  private val attempt1 = "attempt_" + jobId + "_m_000001_0"
+  private val taskAttempt1 = TaskAttemptID.forName(attempt1)
 
   test("instantiate") {
     val path = new Path("http://example/data")

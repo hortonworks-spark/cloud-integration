@@ -124,7 +124,6 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
       s"s3a://$srcBucket/travel/borisbike/")
     val srcPath = new Path(srcDir)
 
-    val destBucket = "hwdev-steve-london"
     val destDir = argPath(1)
       .getOrElse(s"s3a://$srcBucket/travel/orc/borisbike/")
     val destPath = new Path(destDir)

@@ -17,6 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
+
 import com.hortonworks.spark.cloud.{CloudSuite, CloudTestKeys}
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -76,7 +77,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
 
     // switch to the local FS for staging
     val local = getLocalFS
-    setLocalFS();
+    setLocalFS()
 
     val sparkConf = newSparkConf("saveAsFile", local.getUri)
     val destDir = testPath(s3, "saveAsFile")
@@ -86,6 +87,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
       .config(sparkConf)
       .enableHiveSupport
       .getOrCreate()
+
     val operations = new S3AOperations(s3)
     val sc = spark.sparkContext
     val conf = sc.hadoopConfiguration
@@ -95,6 +97,9 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     val numRows = 10
 
     val sourceData = sc.range(0, numRows).map(i => i)
+
+    spark.createDataFrame(Seq((1, "4"), (2, "2")))
+
     val format = "orc"
     logDuration(s"write to $destDir in format $format") {
       saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
@@ -106,6 +111,5 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
       Some(1),
       s"Saving in format $format:")
   }
-
 
 }
