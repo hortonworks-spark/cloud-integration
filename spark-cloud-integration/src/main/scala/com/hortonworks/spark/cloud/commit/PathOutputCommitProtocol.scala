@@ -21,6 +21,7 @@ import java.io.IOException
 import java.lang.reflect.Method
 
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter
 import org.apache.hadoop.mapreduce.{JobContext, OutputCommitter, TaskAttemptContext}
 
 import org.apache.spark.internal.io.FileCommitProtocol.TaskCommitMessage
@@ -42,8 +43,7 @@ import org.apache.spark.internal.io.{FileCommitProtocol, HadoopMapReduceCommitPr
 class PathOutputCommitProtocol(jobId: String, destination: String)
   extends HadoopMapReduceCommitProtocol(jobId, destination) with Serializable {
 
-  @transient var committer: OutputCommitter = _
-  @transient var workPathMethod: Method = _
+  @transient var committer: PathOutputCommitter = _
 
   logInfo(s"Instantiate committer for job $jobId with path $destination")
 
@@ -57,12 +57,10 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
       throw new IllegalArgumentException("No committer factory defined")
     }
     conf.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
-    committer = super.setupCommitter(context)
-    workPathMethod = resolveWorkPathMethod(committer).getOrElse {
-      throw new IllegalArgumentException(s"Committer $committer of type" +
-        s" ${committer.getClass} does not support getWorkingDir()")
-    }
-    logInfo(s"Using committer $committer")
+    committer = super.setupCommitter(context).asInstanceOf[PathOutputCommitter]
+
+    logInfo(s"Using committer ${committer.getClass}")
+    logInfo(s"Committer details: $committer")
     committer
   }
 
@@ -98,8 +96,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
       taskContext: TaskAttemptContext,
       dir: Option[String],
       ext: String): String = {
-    val stagingDir = Option(workPathMethod.invoke(committer).asInstanceOf[Path])
-      .getOrElse(new Path(destination))
+    val stagingDir = committer.getWorkPath
     val parent = dir.map(d => new Path(stagingDir, d))
       .getOrElse(stagingDir)
     val file = new Path(parent, buildFilename(taskContext, ext))

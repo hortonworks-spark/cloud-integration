@@ -79,7 +79,7 @@ class S3AOperations(sourceFs: FileSystem)
       return None
     }
     val successData = SuccessData.load(fs, successFile)
-    logInfo(s"success data at $successFile : ${successData.toString}")
+    logInfo(s"Success data at $successFile : ${successData.toString}")
     logInfo("Metrics:\n" + successData.dumpMetrics("  ", " = ", "\n"))
     logInfo("Diagnostics:\n" + successData.dumpDiagnostics("  ", " = ", "\n"))
     committer.foreach(n =>
@@ -89,7 +89,7 @@ class S3AOperations(sourceFs: FileSystem)
       s"$text No 'filenames' in $successData")
     fileCount.foreach(expected =>
       assert(expected === files.size(),
-        s"$text Not enough files in $successData."))
+        s"$text Mismatch between expected and actual file count in $successData."))
     val listing = files.asScala
       .map(p => fs.makeQualified(new Path(p)))
       .map(fs.getFileStatus)

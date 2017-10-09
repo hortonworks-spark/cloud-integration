@@ -283,19 +283,28 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       CommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
   )
 
+
   val HIVE_TEST_SETUP_OPTIONS = Map(
     "spark.sql.test" -> "",
     "spark.sql.shuffle.partitions" -> "5",
     "spark.sql.hive.metastore.barrierPrefixes" -> "org.apache.spark.sql.hive.execution.PairSerDe"
   )
 
+  /**
+   * Create the JVM's temp dir, and return its path.
+   * @return the temp directory
+   */
   def createTmpDir(): File = {
     val tmp = new File(System.getProperty("java.io.tmpdir"))
     tmp.mkdirs()
     tmp
   }
 
-  def makeWarehouseDir(): File = {
+  /**
+   * Create a temporary warehouse directory for those tests which neeed on.
+   * @return a warehouse directory
+   */
+  def createWarehouseDir(): File = {
     val warehouseDir = File.createTempFile("warehouse", ".db", createTmpDir())
     warehouseDir.delete()
     warehouseDir

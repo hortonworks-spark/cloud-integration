@@ -47,7 +47,7 @@ object CommitterConstants {
     "com.hortonworks.spark.cloud.BindingPathOutputCommitter"
 
   val BINDING_PARQUET_OUTPUT_COMMITTER_CLASS =
-    "com.hortonworks.spark.cloud.BindingParquetOutputCommitter"
+    "com.hortonworks.spark.cloud.commit.BindingParquetOutputCommitter"
 
   val MR_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
   val MR_COMMITTER_CLEANUPFAILURES_IGNORED = "mapreduce.fileoutputcommitter.cleanup-failures.ignored"

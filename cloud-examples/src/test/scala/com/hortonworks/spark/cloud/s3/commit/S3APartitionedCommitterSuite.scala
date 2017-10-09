@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3A
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
-import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
 /**
@@ -72,33 +72,36 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
 //    "parquet"
   )
 
-  // there's an empty string at the end to aid with commenting out different
-  // committers and not have to worry about any trailing commas
-  private val committers = Seq(
-//    DEFAULT_RENAME,
-//    DIRECTORY,
-    PARTITIONED,
-//    MAGIC,
-    ""
-  )
-
   private val s3 = filesystem.asInstanceOf[S3AFileSystem]
   private val destDir = testPath(s3, "dataframe-committer")
-  private val isConsistentFS = isConsistentFilesystemConfig
 
-  ctest(s"Partitioned Dataframe+fail",
-    s"Write a dataframe as ORC with the partitioned committer") {
-    testOneFormat(
-      new Path(destDir, s"committer-partitione-ORC"),
+  ctest(s"Append Partitioned ORC Data",
+    s"Write a dataframe as ORC with append=true") {
+    testOneWriteSequence(
+      new Path(destDir, s"committer-partition-ORC"),
       "orc",
       PARTITIONED,
-      "fail")
+      "append",
+      true)
   }
 
-  def testOneFormat(destDir: Path,
+  ctest(s"Overwrite Partitioned Parquet Data",
+    s"Write a dataframe as parquet with the partitioned committer",
+    true) {
+    testOneWriteSequence(
+      new Path(destDir, s"committer-partitioneparquet"),
+      "parquet",
+      PARTITIONED,
+      "overwrite",
+      false)
+  }
+
+  def testOneWriteSequence(
+      destDir: Path,
       format: String,
       committerName: String,
-      confictMode: String): Unit = {
+      confictMode: String,
+      expectAppend: Boolean): Unit = {
 
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
@@ -110,8 +113,8 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
     logInfo(s"Using committer factory $factory with conflict mode $confictMode")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
     val s3aFS = filesystem.asInstanceOf[S3AFileSystem]
-    val subdir = new Path(destDir, format)
-    rm(s3aFS, subdir)
+    val dest = new Path(destDir, format)
+    rm(s3aFS, dest)
 
     val spark = SparkSession
       .builder
@@ -121,19 +124,26 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
     // ignore the IDE if it complains: this *is* used.
     import spark.implicits._
 
+    // Write the DS. Configure save mode so the committer gets
+    // to decide how to react to invidual partitions, rather than
+    // have the entire directory tree determine the outcome.
     def writeDS(sourceData: Dataset[Event]): Unit = {
-      logDuration(s"write to $subdir in format $format conflict = $confictMode") {
+      logDuration(s"write to $dest in format $format conflict = $confictMode") {
         sourceData
-          .write.partitionBy("year", "month")
-          .format(format).save(subdir.toString)
+          .write
+          .partitionBy("year", "month")
+          .mode(SaveMode.Append)
+          .format(format).save(dest.toString)
       }
     }
 
     try {
       val sc = spark.sparkContext
       val conf = sc.hadoopConfiguration
-      val numPartitions = 1
+      val numPartitions = 2
       val eventData = Events.events(2017, 2017, 1, 2, 10).toDS()
+      val origFileCount = Events.monthCount(2017, 2017, 1, 2) *
+        numPartitions
       val sourceData = eventData.repartition(numPartitions).cache()
       sourceData.printSchema()
       val eventCount = sourceData.count()
@@ -147,18 +157,48 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
 
       logDebug(s"Statistics = \n" + stats.mkString("  ", " = ", "\n"))
 
-      operations.maybeVerifyCommitter(subdir,
+      operations.maybeVerifyCommitter(dest,
         Some(committerName),
         Some(committerInfo._1),
         conf,
-        Some(numPartitions),
+        Some(origFileCount),
         s"$format:")
       // read back results and verify they match
-      validateRowCount(spark, s3aFS, subdir, format, numRows)
+      validateRowCount(spark, s3aFS, dest, format, numRows)
 
       // now for the real fun: write into a subdirectory alongside the others
-      val newPartition = Events.events(2017, 2017, 11, 12, 10).toDS()
+      val newPartition = Events.events(2017, 2017, 10, 12, 10).toDS()
+      val newFileCount = Events.monthCount(2017, 2017, 10, 12)
       writeDS(newPartition)
+      operations.maybeVerifyCommitter(dest,
+        Some(committerName),
+        Some(committerInfo._1),
+        conf,
+        Some(newFileCount),
+        s"$format:")
+
+      // now list the files under the system
+      val allFiles = listFiles(s3aFS, dest,true).filterNot(
+        st => st.getPath.getName.startsWith("_")).toList
+
+      val currentFileCount = newFileCount + origFileCount
+      assert(currentFileCount === allFiles.length,
+        s"File count in $allFiles")
+
+      // then write atop the existing files.
+      // here the failure depends on what the policy was
+      writeDS(newPartition)
+
+      val allFiles2 = listFiles(s3aFS, dest, true).filterNot(
+        st => st.getPath.getName.startsWith("_")).toList
+
+      var finalCount = currentFileCount
+      if (expectAppend) {
+        finalCount += newFileCount
+      }
+      assert(finalCount === allFiles2.length, s"Final file count in $allFiles2")
+
+
 
     } finally {
       spark.close()

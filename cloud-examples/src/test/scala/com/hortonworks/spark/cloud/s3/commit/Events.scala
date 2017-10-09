@@ -28,6 +28,16 @@ case class Event(
 
 object Events {
 
+  /**
+   * Build up an event sequence across years, every month in every
+   * year has "rows" events generated.
+   * @param year1 start year
+   * @param year2  end year
+   * @param startMonth start month
+   * @param endMonth end month
+   * @param rows rows per month
+   * @return the event sequence.
+   */
   def events(
       year1: Int,
       year2: Int,
@@ -42,6 +52,18 @@ object Events {
         month,
         day,
         "%d/%04f".format(r, Math.random() * 10000))
+  }
+
+  def monthCount(
+      year1: Int,
+      year2: Int,
+      startMonth: Int,
+      endMonth: Int): Int = {
+    var count = 0
+    for (year <- year1 to year2;
+      month <- startMonth to endMonth)
+      count += 1
+    count
   }
 
   /**

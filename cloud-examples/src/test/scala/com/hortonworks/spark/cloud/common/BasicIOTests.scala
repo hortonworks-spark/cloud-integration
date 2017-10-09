@@ -112,7 +112,7 @@ abstract class BasicIOTests extends CloudSuite {
     saveTextFile(numbers, destFile)
     val basePathStatus = filesystem.getFileStatus(destFile)
     // check blocksize in file status
-    val hadoopUtils = new SparkHadoopUtil
+    val hadoopUtils = new SparkHadoopUtil()
     logDuration("listLeafDir") {
       hadoopUtils.listLeafDirStatuses(filesystem, basePathStatus)
     }
@@ -128,8 +128,9 @@ abstract class BasicIOTests extends CloudSuite {
     }.count()
   }
 
+  //noinspection ScalaDeprecation
   ctest("Blocksize", "verify default block size is a viable number") {
-    val blockSize = filesystem.getDefaultBlockSize();
+    val blockSize = filesystem.getDefaultBlockSize()
     assert(blockSize > 512,
       s"Block size o ${filesystem.getUri} too low for partitioning to work: $blockSize")
   }

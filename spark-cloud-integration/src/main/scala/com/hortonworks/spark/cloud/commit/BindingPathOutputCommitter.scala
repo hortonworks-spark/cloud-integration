@@ -32,7 +32,7 @@ class BindingPathOutputCommitter(
     outputPath: Path,
     context: TaskAttemptContext) extends PathOutputCommitter(outputPath, context) {
 
-  var committer: PathOutputCommitter = getFactory(outputPath, context)
+  private val committer = getFactory(outputPath, context)
     .createOutputCommitter(outputPath, context)
 
 
@@ -74,6 +74,7 @@ class BindingPathOutputCommitter(
     committer.needsTaskCommit(taskAttemptContext)
   }
 
+  //noinspection ScalaDeprecation
   override def cleanupJob(jobContext: JobContext): Unit = {
     committer.cleanupJob(jobContext)
   }
@@ -96,6 +97,7 @@ class BindingPathOutputCommitter(
     committer.abortJob(jobContext, state)
   }
 
+  //noinspection ScalaDeprecation
   override def isRecoverySupported: Boolean = {
     committer.isRecoverySupported()
   }
