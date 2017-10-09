@@ -73,7 +73,7 @@ class S3AOperations(sourceFs: FileSystem)
     if (status.getLen == 0) {
       if (requireNonEmpty) {
         fail(
-          s"$text 0-byte $successFile implies that the S3A committer was not used" +
+          s"$text: the 0-byte $successFile implies that the S3A committer was not used" +
             s" to commit work to $destDir with committer $committer")
       }
       return None

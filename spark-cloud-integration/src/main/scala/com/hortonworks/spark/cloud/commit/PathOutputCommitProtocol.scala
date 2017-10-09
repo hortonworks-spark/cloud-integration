@@ -81,7 +81,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
     try {
       Some(c.getClass.getDeclaredMethod("getWorkPath"))
     } catch {
-      case e: NoSuchMethodException =>
+      case _: NoSuchMethodException =>
         // no method
         None
     }

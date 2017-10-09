@@ -26,7 +26,7 @@ import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
 class StubPathOutputCommitter(
     outputPath: Path,
     workPath: Path,
-    jobContext: JobContext) extends PathOutputCommitter(workPath, jobContext) {
+    context: TaskAttemptContext) extends PathOutputCommitter(workPath, context) {
 
   var setup: Boolean = false;
   var committed: Boolean = false;
@@ -83,11 +83,6 @@ class StubPathOutputCommitterFactory extends PathOutputCommitterFactory {
     new StubPathOutputCommitter(outputPath, workPath(outputPath), context)
   }
 
-  override def createOutputCommitter(
-      outputPath: Path,
-      context: JobContext): PathOutputCommitter = {
-    new StubPathOutputCommitter(outputPath, workPath(outputPath), context)
-  }
 
   private def workPath(out: Path): Path = new Path(out, CommitterConstants.TEMP_DIR_NAME)
 }

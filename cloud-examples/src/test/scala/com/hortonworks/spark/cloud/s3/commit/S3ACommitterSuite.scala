@@ -21,6 +21,9 @@ package com.hortonworks.spark.cloud.s3.commit
 import com.hortonworks.spark.cloud.{CloudSuite, CloudTestKeys}
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
+import org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
+import org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
+import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory, PartitonedStagingCommitterFactory}
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -60,7 +63,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     assert(getConf.getBoolean(CloudTestKeys.S3A_COMMITTER_TEST_ENABLED, false),
       "committer setup not passed in")
     val committer = expectOptionSet(conf,
-      S3ACommitterConstants.S3A_COMMITTER_KEY)
+      S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY)
     val cclass = Class.forName(committer)
     logInfo(s"Committer is $cclass")
   }
@@ -91,8 +94,7 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
     val operations = new S3AOperations(s3)
     val sc = spark.sparkContext
     val conf = sc.hadoopConfiguration
-    val committer = expectOptionSet(conf,
-      S3ACommitterConstants.S3A_COMMITTER_KEY)
+    expectOptionSet(conf, S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY)
 
     val numRows = 10
 
@@ -111,5 +113,22 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
       Some(1),
       s"Saving in format $format:")
   }
+
+  ctest("DirectoryStagingCommitterFactory on CP") {
+    new DirectoryStagingCommitterFactory()
+  }
+
+  ctest("PartitonedStagingCommitterFactory on CP") {
+    new PartitonedStagingCommitterFactory()
+  }
+
+  ctest("MagicS3GuardCommitterFactory on CP") {
+    new MagicS3GuardCommitterFactory()
+  }
+
+  ctest("DynamicCommitterFactory on CP") {
+    new DynamicCommitterFactory()
+  }
+
 
 }

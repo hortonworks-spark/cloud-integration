@@ -130,7 +130,10 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param conf configuration to use when requesting the filesystem
    * @param body string body
    */
-  def put(path: Path, conf: Configuration, body: String): Unit = {
+  def put(
+      path: Path,
+      conf: Configuration,
+      body: String): Unit = {
     put(path.getFileSystem(conf), path, body)
   }
 
@@ -195,7 +198,10 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param format format
    * @return the path the DF was saved to
    */
-  def saveDF(df: DataFrame, dest: Path, format: String): Path = {
+  def saveDF(
+      df: DataFrame,
+      dest: Path,
+      format: String): Path = {
     logDuration(s"write to $dest in format $format") {
       df.write.format(format).save(dest.toString)
     }
@@ -209,8 +215,11 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param srcFormat format
    * @return the loaded dataframe
    */
-  def loadDF(spark: SparkSession, source: Path, srcFormat: String,
-           opts: Map[String, String] = Map()): DataFrame = {
+  def loadDF(
+      spark: SparkSession,
+      source: Path,
+      srcFormat: String,
+      opts: Map[String, String] = Map()): DataFrame = {
     val reader = spark.read
     reader.options(opts)
     reader.format(srcFormat).load(source.toUri.toString)

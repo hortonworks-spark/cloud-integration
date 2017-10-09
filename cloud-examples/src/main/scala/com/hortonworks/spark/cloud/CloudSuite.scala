@@ -89,7 +89,7 @@ object CloudSuite extends Logging with S3AConstants
     getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
       val factory = COMMITTERS_BY_NAME(committer.toLowerCase())._2
       logInfo(s"Using committer factory $factory")
-      config.set(S3ACommitterConstants.S3A_COMMITTER_KEY, factory)
+      config.set(S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY, factory)
     })
     config
   }

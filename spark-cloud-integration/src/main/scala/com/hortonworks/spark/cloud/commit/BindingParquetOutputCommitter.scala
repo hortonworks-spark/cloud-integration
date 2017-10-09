@@ -26,8 +26,8 @@ import org.apache.spark.internal.Logging
 
 /**
  * This dynamically binds to the factory-configured
- * output committer. All superclass operations
- * are ignored.
+ * output committer, and is intended to allow callers to use any PathOutputCommitter,
+ * even if not a subclass of ParquetOutputCommitter.
  */
 
 class BindingParquetOutputCommitter(
@@ -38,7 +38,6 @@ class BindingParquetOutputCommitter(
   logInfo(s"${this.getClass.getName} binding to configured PathOutputCommitter")
 
   val committer = new BindingPathOutputCommitter(path, context)
-  committer.bind(path, context)
 
   /**
    * This is the committer ultimately bound to
@@ -47,6 +46,7 @@ class BindingParquetOutputCommitter(
   def boundCommitter(): PathOutputCommitter = {
     committer.getCommitter()
   }
+
   override def getWorkPath: Path = {
     committer.getWorkPath()
   }

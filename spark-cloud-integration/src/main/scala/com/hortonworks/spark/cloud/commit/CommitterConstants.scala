@@ -25,7 +25,7 @@ object CommitterConstants {
   /**
    * Scheme prefix for per-filesystem scheme committers.
    */
-  val OUTPUTCOMMITTER_FACTORY_SCHEME = "mapreduce.pathoutputcommitter.factory.scheme"
+  val OUTPUTCOMMITTER_FACTORY_SCHEME = "mapreduce.outputcommitter.factory.scheme"
 
   /**
    * String format pattern for per-filesystem scheme committers.
@@ -61,7 +61,6 @@ object CommitterConstants {
   /**
    * This is the "Pending" directory of the FileOutputCommitter;
    * data written here is, in that algorithm, renamed into place.
-   * Value: {@value }.
    */
   val TEMP_DIR_NAME = "_temporary"
   /**

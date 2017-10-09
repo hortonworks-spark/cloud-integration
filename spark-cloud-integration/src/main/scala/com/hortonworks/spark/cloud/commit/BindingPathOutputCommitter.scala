@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.commit
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.lib.output.{FileOutputFormat, PathOutputCommitter, PathOutputCommitterFactory}
+import org.apache.hadoop.mapreduce.lib.output.{PathOutputCommitter, PathOutputCommitterFactory}
 import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
 
 /**
@@ -30,114 +30,77 @@ import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
  */
 class BindingPathOutputCommitter(
     outputPath: Path,
-    jobContext: JobContext) extends PathOutputCommitter(outputPath, jobContext) {
+    context: TaskAttemptContext) extends PathOutputCommitter(outputPath, context) {
 
-  var factory: Option[PathOutputCommitterFactory] = None
-  var committer: Option[PathOutputCommitter] = None
-  var taskCommitter: Option[PathOutputCommitter] = None
+  var committer: PathOutputCommitter = getFactory(outputPath, context)
+    .createOutputCommitter(outputPath, context)
 
-  def bind(path: Path, taskAttemptContext: TaskAttemptContext): Unit = {
-    getCommitter(taskAttemptContext)
-  }
 
-  private def getFactory(jobContext: JobContext): PathOutputCommitterFactory = {
-    synchronized {
-      if (factory.isEmpty) {
-        factory = Some(
-          PathOutputCommitterFactory.getCommitterFactory(
-            getOutputPath(jobContext),
-            jobContext.getConfiguration))
-      }
-      factory.get
-    }
-  }
-
-  private def getOutputPath(jobContext: JobContext): Path = {
-    FileOutputFormat.getOutputPath(jobContext)
-  }
-
-  private def getCommitter(context: JobContext): PathOutputCommitter = {
-    synchronized {
-      if (committer.isEmpty) {
-        committer = Some(getFactory(context)
-          .createOutputCommitter(getOutputPath(context),
-            context))
-      }
-      committer.get
-    }
-  }
-
-  private def getCommitter(context: TaskAttemptContext): PathOutputCommitter = {
-    synchronized {
-      if (committer.isEmpty) {
-        committer = Some(getFactory(context)
-          .createOutputCommitter(getOutputPath(context),
-            context))
-      }
-      committer.get
-    }
+  private def getFactory(outputPath: Path,
+      context: TaskAttemptContext): PathOutputCommitterFactory = {
+      PathOutputCommitterFactory.getCommitterFactory(
+        outputPath,
+        context.getConfiguration)
   }
 
   def getCommitter(): PathOutputCommitter = {
-    committer.getOrElse {
-      throw new IllegalStateException("Committer is not yet initialized")
-    }
+    committer
   }
 
   override def getOutputPath: Path = {
-    getCommitter().getOutputPath
+    committer.getOutputPath
   }
 
   override def getWorkPath: Path = {
-    getCommitter().getWorkPath()
+    committer.getWorkPath()
   }
 
   override def setupTask(taskAttemptContext: TaskAttemptContext): Unit = {
-    getCommitter(taskAttemptContext).setupTask(taskAttemptContext)
+    committer.setupTask(taskAttemptContext)
   }
 
   override def commitTask(taskAttemptContext: TaskAttemptContext): Unit = {
-    getCommitter(taskAttemptContext).commitTask(taskAttemptContext)
+    committer.commitTask(taskAttemptContext)
   }
   override def abortTask(taskAttemptContext: TaskAttemptContext): Unit = {
-    getCommitter(taskAttemptContext).abortTask(taskAttemptContext)
+    committer.abortTask(taskAttemptContext)
   }
 
   override def setupJob(jobContext: JobContext): Unit = {
-    getCommitter(jobContext).setupJob(jobContext)
+    committer.setupJob(jobContext)
   }
 
   override def needsTaskCommit(taskAttemptContext: TaskAttemptContext): Boolean = {
-    getCommitter(taskAttemptContext).needsTaskCommit(taskAttemptContext)
+    committer.needsTaskCommit(taskAttemptContext)
   }
 
   override def cleanupJob(jobContext: JobContext): Unit = {
-    getCommitter(jobContext).cleanupJob(jobContext)
+    committer.cleanupJob(jobContext)
   }
 
   override def isCommitJobRepeatable(jobContext: JobContext): Boolean = {
-    getCommitter(jobContext).isCommitJobRepeatable(jobContext)
+    committer.isCommitJobRepeatable(jobContext)
   }
 
   override def commitJob(jobContext: JobContext): Unit = {
-    getCommitter(jobContext).commitJob(jobContext)
+    committer.commitJob(jobContext)
   }
 
   override def recoverTask(taskAttemptContext: TaskAttemptContext): Unit = {
-    getCommitter(taskAttemptContext).recoverTask(taskAttemptContext)
+    committer.recoverTask(taskAttemptContext)
   }
 
   override def abortJob(
       jobContext: JobContext,
       state: JobStatus.State): Unit = {
-    getCommitter(jobContext).abortJob(jobContext, state)
+    committer.abortJob(jobContext, state)
   }
 
   override def isRecoverySupported: Boolean = {
-    getCommitter().isRecoverySupported()
+    committer.isRecoverySupported()
   }
 
   override def isRecoverySupported(jobContext: JobContext): Boolean = {
-    getCommitter(jobContext).isRecoverySupported(jobContext)
+    committer.isRecoverySupported(jobContext)
   }
 }

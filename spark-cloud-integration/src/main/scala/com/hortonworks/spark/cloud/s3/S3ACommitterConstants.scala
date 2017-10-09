@@ -27,16 +27,16 @@ import org.apache.hadoop.fs.s3a.commit.CommitConstants
  */
 object S3ACommitterConstants {
 
-  val S3A_COMMITTER_KEY = String.format(
+  val S3A_COMMITTER_FACTORY_KEY: String = String.format(
     CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
     "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
-  val DIRECTORY_COMMITTER_FACTORY = CommitConstants.DIRECTORY_COMMITTER_FACTORY
+  val DIRECTORY_COMMITTER_FACTORY: String = CommitConstants.DIRECTORY_COMMITTER_FACTORY
     STAGING_PACKAGE + "DirectoryStagingCommitterFactory"
-  val PARTITIONED_COMMITTER_FACTORY = CommitConstants.PARTITION_COMMITTER_FACTORY
-  val STAGING_COMMITTER_FACTORY = CommitConstants.STAGING_COMMITTER_FACTORY
-  val MAGIC_COMMITTER_FACTORY = CommitConstants.MAGIC_COMMITTER_FACTORY
-  val DYNAMIC_COMMITTER_FACTORY = CommitConstants.DYNAMIC_COMMITTER_FACTORY
+  val PARTITIONED_COMMITTER_FACTORY: String = CommitConstants.PARTITION_COMMITTER_FACTORY
+  val STAGING_COMMITTER_FACTORY: String = CommitConstants.STAGING_COMMITTER_FACTORY
+  val MAGIC_COMMITTER_FACTORY: String = CommitConstants.MAGIC_COMMITTER_FACTORY
+  val DYNAMIC_COMMITTER_FACTORY: String = CommitConstants.DYNAMIC_COMMITTER_FACTORY
 
   val MAGIC = "magic"
   val STAGING = "staging"
@@ -44,6 +44,16 @@ object S3ACommitterConstants {
   val DIRECTORY = "directory"
   val PARTITIONED = "partitioned"
   val DEFAULT_RENAME = "default"
+
+  val CONFLICT_MODE: String =
+    CommitConstants.FS_S3A_COMMITTER_STAGING_CONFLICT_MODE
+
+  /** Conflict mode */
+  val CONFLICT_MODE_FAIL: String = "fail"
+
+  val CONFLICT_MODE_APPEND: String = "append"
+
+  val CONFLICT_MODE_REPLACE: String = "replace"
 
   /**
    * Committer name to: name in _SUCCESS, factory classname, requires consistent FS.
@@ -59,4 +69,13 @@ object S3ACommitterConstants {
     PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY, false),
     DEFAULT_RENAME -> ("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
   )
+
+  /**
+   * List of committer factories.
+   */
+  val FACTORIES: Seq[String] = Seq(
+    STAGING_COMMITTER_FACTORY,
+    PARTITIONED_COMMITTER_FACTORY,
+    MAGIC_COMMITTER_FACTORY,
+    DYNAMIC_COMMITTER_FACTORY)
 }
