@@ -18,10 +18,12 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.commit.{PathOutputCommitProtocol}
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
@@ -76,7 +78,8 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
   private val destDir = testPath(s3, "dataframe-committer")
 
   ctest(s"Append Partitioned ORC Data",
-    s"Write a dataframe as ORC with append=true") {
+    s"Write a dataframe as ORC with append=true",
+    true) {
     testOneWriteSequence(
       new Path(destDir, s"committer-partition-ORC"),
       "orc",
@@ -92,7 +95,7 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
       new Path(destDir, s"committer-partitioneparquet"),
       "parquet",
       PARTITIONED,
-      "overwrite",
+      "replace",
       false)
   }
 
@@ -112,10 +115,27 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
     hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY, factory)
     logInfo(s"Using committer factory $factory with conflict mode $confictMode")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
+    // force reject
+    hconf(sparkConf, PathOutputCommitProtocol.REJECT_FILE_OUTPUT, true)
+//    hconf(sparkConf, CommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)
+
+
+
+    // validate the conf by asserting that the spark conf is bonded
+    // to the partitioned committer.
+    assert(
+      PARQUET_COMMITTER_CLASS ===
+      sparkConf.get(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key),
+      s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
+
+
+    // uncomment to fail factory operations and see where they happen
+ //    sparkConf.set(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key, "unknown")
+
+
     val s3aFS = filesystem.asInstanceOf[S3AFileSystem]
     val dest = new Path(destDir, format)
     rm(s3aFS, dest)
-
     val spark = SparkSession
       .builder
       .config(sparkConf)
@@ -197,8 +217,6 @@ class S3APartitionedCommitterSuite extends CloudSuite with S3ATestSetup {
         finalCount += newFileCount
       }
       assert(finalCount === allFiles2.length, s"Final file count in $allFiles2")
-
-
 
     } finally {
       spark.close()

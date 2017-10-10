@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.commit
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter
+import org.apache.hadoop.mapreduce.lib.output.{BindingPathOutputCommitter, PathOutputCommitter}
 import org.apache.hadoop.mapreduce.{JobContext, JobStatus, TaskAttemptContext}
 import org.apache.parquet.hadoop.ParquetOutputCommitter
 
@@ -101,4 +101,5 @@ class BindingParquetOutputCommitter(
     committer.isRecoverySupported(jobContext)
   }
 
+  override def toString = s"BindingParquetOutputCommitter($committer)"
 }

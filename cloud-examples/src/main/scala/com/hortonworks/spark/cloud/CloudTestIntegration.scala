@@ -240,7 +240,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
    */
   protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     sparkConf.setAll(GENERAL_SPARK_OPTIONS)
-    sparkConf.setAll(MAPREDUCE_OPTIONS)
+    sparkConf.setAll(FILE_COMMITTER_OPTIONS)
     sparkConf.setAll(ORC_OPTIONS)
     sparkConf.setAll(PARQUET_OPTIONS)
     sparkConf.setAll(HIVE_TEST_SETUP_OPTIONS)
@@ -249,7 +249,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
     hconf(sparkConf, READAHEAD_RANGE, 128 * 1024)
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
-    hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, FAST_UPLOAD, true)
     hconf(sparkConf, FAST_UPLOAD_BUFFER, FAST_UPLOAD_BUFFER_ARRAY)
   }
 

@@ -18,10 +18,9 @@
 package com.hortonworks.spark.cloud.commit
 
 import java.io.IOException
-import java.lang.reflect.Method
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.lib.output.PathOutputCommitter
+import org.apache.hadoop.mapreduce.lib.output.{FileOutputCommitter, PathOutputCommitter, PathOutputCommitterFactory}
 import org.apache.hadoop.mapreduce.{JobContext, OutputCommitter, TaskAttemptContext}
 
 import org.apache.spark.internal.io.FileCommitProtocol.TaskCommitMessage
@@ -45,22 +44,42 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
 
   @transient var committer: PathOutputCommitter = _
 
+  val destPath = new Path(destination)
+
   logInfo(s"Instantiate committer for job $jobId with path $destination")
 
   import PathOutputCommitProtocol._
 
   override protected def setupCommitter(context: TaskAttemptContext): OutputCommitter = {
     logInfo(s"Setting up committer for path $destination")
+/*
     val conf = context.getConfiguration
     val factory = buildCommitterFactoryName(context)
     if (factory.isEmpty) {
       throw new IllegalArgumentException("No committer factory defined")
     }
     conf.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
+*/
     committer = super.setupCommitter(context).asInstanceOf[PathOutputCommitter]
+
+
+    val rejectFileOutput = context.getConfiguration
+      .getBoolean(REJECT_FILE_OUTPUT, REJECT_FILE_OUTPUT_DEFVAL)
+    if (rejectFileOutput && committer.isInstanceOf[FileOutputCommitter]) {
+      // the output format returned a file output format committer, which
+      // is exactly what we do not want. So switch back to the factory.
+      val factory = PathOutputCommitterFactory.getCommitterFactory(destPath,
+        context.getConfiguration)
+      committer = factory.createOutputCommitter(destPath, context)
+    }
 
     logInfo(s"Using committer ${committer.getClass}")
     logInfo(s"Committer details: $committer")
+    if (rejectFileOutput && committer.isInstanceOf[FileOutputCommitter]) {
+      // this is the wrong type
+      throw new IllegalStateException(
+        s"Created committer is the FileOutputCommitter $committer")
+    }
     committer
   }
 
@@ -73,16 +92,6 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
    */
   protected def buildCommitterFactoryName(context: TaskAttemptContext): String = {
     context.getConfiguration.getTrimmed(OUTPUTCOMMITTER_FACTORY_CLASS, "")
-  }
-
-  private def resolveWorkPathMethod(c: OutputCommitter): Option[Method] = {
-    try {
-      Some(c.getClass.getDeclaredMethod("getWorkPath"))
-    } catch {
-      case _: NoSuchMethodException =>
-        // no method
-        None
-    }
   }
 
   /**
@@ -186,7 +195,18 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
 
 object PathOutputCommitProtocol {
 
+  /**
+   * The option used to declare the general factory class (schema independent)
+   */
   val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class"
+
+  /**
+   * Fail fast if the committer is using the path output protocol.
+   * This option can be used to catch configuration issues early.
+   */
+  val REJECT_FILE_OUTPUT =  "pathoutputcommit.reject.fileoutput"
+
+  val REJECT_FILE_OUTPUT_DEFVAL = false
 }
 
 

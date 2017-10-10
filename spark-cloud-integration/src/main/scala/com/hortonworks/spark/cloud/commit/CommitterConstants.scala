@@ -43,14 +43,15 @@ object CommitterConstants {
   val DEFAULT_COMMITTER_FACTORY =
     "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory"
 
+  /**
+   * The committer which can be directly instantiated and which then delegates
+   * all operations to the factory-created committer it cretes itself.
+   */
   val BINDING_PATH_OUTPUT_COMMITTER_CLASS =
-    "com.hortonworks.spark.cloud.BindingPathOutputCommitter"
+    "org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter"
 
   val BINDING_PARQUET_OUTPUT_COMMITTER_CLASS =
     "com.hortonworks.spark.cloud.commit.BindingParquetOutputCommitter"
-
-  val MR_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
-  val MR_COMMITTER_CLEANUPFAILURES_IGNORED = "mapreduce.fileoutputcommitter.cleanup-failures.ignored"
 
   val SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
   val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"

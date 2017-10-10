@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
 import com.fasterxml.jackson.databind.JsonNode
 import com.hortonworks.spark.cloud.commit.CommitterConstants
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
+import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import com.hortonworks.spark.cloud.utils.TimeOperations
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
@@ -265,9 +266,20 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     "spark.sql.parquet.filterPushdown" -> "true"
   )
 
-  val MAPREDUCE_OPTIONS = Map(
-    "spark.hadoop." + MR_ALGORITHM_VERSION -> "2",
-    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true")
+  /**
+   * The name of the committer to use for Parquet.
+   */
+  val PARQUET_COMMITTER_CLASS =
+    CommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
+//    CommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
+
+  /**
+   * Options for file output committer: algorithm 2 & skip cleanup.
+   */
+  val FILE_COMMITTER_OPTIONS = Map(
+    "spark.hadoop." + FILEOUTPUTCOMMITTER_ALGORITHM_VERSION -> "2",
+    "spark.hadoop." + FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED -> "true")
+
 
   /**
    * Options for committer setup.
@@ -277,10 +289,10 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * then bind to the factory committer.
    */
   val COMMITTER_OPTIONS = Map(
-    "spark.hadoop." + MR_ALGORITHM_VERSION -> "3",
-    "spark.hadoop." + MR_COMMITTER_CLEANUPFAILURES_IGNORED -> "true",
+    "spark.hadoop." + FILEOUTPUTCOMMITTER_ALGORITHM_VERSION -> "3",
+    "spark.hadoop." + FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED -> "true",
     SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
-      CommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
+      PARQUET_COMMITTER_CLASS
   )
 
 
@@ -319,6 +331,18 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    */
   def hconf(sparkConf: SparkConf, k: String, v: String): Unit = {
     sparkConf.set(s"spark.hadoop.$k", v)
+  }
+
+  /**
+   * Set a Hadoop option in a spark configuration.
+   *
+   * @param sparkConf configuration to update
+   * @param k key
+   * @param v new value
+   */
+
+  def hconf(sparkConf: SparkConf, k: String, v: Boolean): Unit = {
+    sparkConf.set(s"spark.hadoop.$k", v.toString)
   }
 
   /**
@@ -456,7 +480,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       sparkConf: SparkConf,
       randomIO: Boolean): Unit = {
     // commit with v2 algorithm
-    sparkConf.setAll(MAPREDUCE_OPTIONS)
+    sparkConf.setAll(FILE_COMMITTER_OPTIONS)
     sparkConf.setAll(ORC_OPTIONS)
     sparkConf.setAll(PARQUET_OPTIONS)
     if (!sparkConf.contains("spark.master")) {
