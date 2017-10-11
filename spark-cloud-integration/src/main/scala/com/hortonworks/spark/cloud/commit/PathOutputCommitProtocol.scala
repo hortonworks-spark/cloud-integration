@@ -68,9 +68,9 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
     if (rejectFileOutput && committer.isInstanceOf[FileOutputCommitter]) {
       // the output format returned a file output format committer, which
       // is exactly what we do not want. So switch back to the factory.
-      val factory = PathOutputCommitterFactory.getCommitterFactory(destPath,
-        context.getConfiguration)
-      committer = factory.createOutputCommitter(destPath, context)
+      logDebug(s"Returned committer from output format is a FileOutputCommitter : $committer" +
+        s" switching to factory-managed committer")
+      committer = PathOutputCommitterFactory.createCommitter(destPath, context)
     }
 
     logInfo(s"Using committer ${committer.getClass}")
@@ -78,7 +78,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
     if (rejectFileOutput && committer.isInstanceOf[FileOutputCommitter]) {
       // this is the wrong type
       throw new IllegalStateException(
-        s"Created committer is the FileOutputCommitter $committer")
+        s"Created committer is a FileOutputCommitter $committer")
     }
     committer
   }

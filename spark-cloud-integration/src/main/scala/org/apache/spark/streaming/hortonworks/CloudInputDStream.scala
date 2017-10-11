@@ -38,6 +38,8 @@ import org.apache.spark.util.Utils
  * Hadoop FS APIs. Although it can work with any filesystem, it is
  * optimized for the object stores.
  *
+ * Derived from : `org.apache.spark.streaming.dstream.FileInputDStream`.
+ *
  * It's housed under `org.apache.streaming` so as to be able to subclass
  * classes which are scoped to that package.
  *
@@ -81,7 +83,7 @@ import org.apache.spark.util.Utils
 class CloudInputDStream[K, V, F <: NewInputFormat[K, V]](
     _ssc: StreamingContext,
     directory: String,
-    filter: Path => Boolean = FileInputDStream.defaultFilter,
+    filter: Path => Boolean = CloudInputDStream.defaultFilter,
     newFilesOnly: Boolean = true,
     conf: Option[Configuration] = None)
   (implicit km: ClassTag[K], vm: ClassTag[V], fm: ClassTag[F])
@@ -105,7 +107,7 @@ class CloudInputDStream[K, V, F <: NewInputFormat[K, V]](
   private def clock = ssc.scheduler.clock
 
   // Data to be saved as part of the streaming checkpoints
-   override val checkpointData = new FileInputDStreamCheckpointData
+   override val checkpointData = new CloudInputDStreamCheckpointData
 
   // Initial ignore threshold based on which old, existing files in the directory (at the time of
   // starting the streaming application) will be ignored or considered
@@ -117,7 +119,7 @@ class CloudInputDStream[K, V, F <: NewInputFormat[K, V]](
    * This would allow us to filter away not-too-old files which have already been recently
    * selected and processed.
    */
-  private val numBatchesToRemember = FileInputDStream
+  private val numBatchesToRemember = CloudInputDStream
     .calculateNumBatchesToRemember(slideDuration, minRememberDurationS)
   private val durationToRemember = slideDuration * numBatchesToRemember
   remember(durationToRemember)
@@ -338,7 +340,7 @@ class CloudInputDStream[K, V, F <: NewInputFormat[K, V]](
    * Hadoop files as checkpoint data.
    */
   private[streaming]
-  class FileInputDStreamCheckpointData extends DStreamCheckpointData(this) {
+  class CloudInputDStreamCheckpointData extends DStreamCheckpointData(this) {
 
     private def hadoopFiles = data
       .asInstanceOf[mutable.HashMap[Time, Array[String]]]
@@ -372,7 +374,7 @@ class CloudInputDStream[K, V, F <: NewInputFormat[K, V]](
 
 }
 
-object FileInputDStream {
+object CloudInputDStream {
 
   /**
    * Filter all files which start with . or _

@@ -10,7 +10,9 @@ repository provides modules to improve Apache Spark's integration with cloud inf
 Classes and Tools to make Spark work better in-cloud
 
 * Committer integration with the s3a committers
-* 
+* Proof of concept cloud-first distcp replacement
+* Anything else which turns out to be useful
+* Variant of FileInputStream for cloud storage, `org.apache.spark.streaming.hortonworks.CloudInputDStream`
 
 See [Spark Cloud Integration](spark-cloud-integration/src/main/site/markdown/index.md)
 

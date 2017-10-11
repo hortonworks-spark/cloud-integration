@@ -28,7 +28,6 @@ import scala.reflect.ClassTag
 import com.fasterxml.jackson.databind.JsonNode
 import com.hortonworks.spark.cloud.commit.CommitterConstants
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
-import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import com.hortonworks.spark.cloud.utils.TimeOperations
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
