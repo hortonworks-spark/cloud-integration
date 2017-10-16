@@ -214,10 +214,7 @@ public class JsonSerialization<T> {
     }
     byte[] b = new byte[(int) len];
     FSDataInputStream dataInputStream = fs.open(path);
-    int count = dataInputStream.read(b);
-    if (verifyLength && count != len) {
-      throw new EOFException(path.toString() + ": read finished prematurely");
-    }
+    dataInputStream.readFully(0, b);
     return fromBytes(path.toString(), b);
   }
 
