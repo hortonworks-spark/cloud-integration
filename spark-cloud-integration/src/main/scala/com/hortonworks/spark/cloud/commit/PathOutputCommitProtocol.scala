@@ -20,7 +20,7 @@ package com.hortonworks.spark.cloud.commit
 import java.io.IOException
 
 import org.apache.hadoop.fs.Path
-import org.apache.hadoop.mapreduce.lib.output.{FileOutputCommitter, PathOutputCommitter, PathOutputCommitterFactory}
+import org.apache.hadoop.mapreduce.lib.output.{PathOutputCommitter, PathOutputCommitterFactory}
 import org.apache.hadoop.mapreduce.{JobContext, OutputCommitter, TaskAttemptContext}
 
 import org.apache.spark.internal.io.FileCommitProtocol.TaskCommitMessage
@@ -33,9 +33,12 @@ import org.apache.spark.internal.io.{FileCommitProtocol, HadoopMapReduceCommitPr
  * use the same interface; doing it here avoids needing any changes to Spark.
  * All implementations *must* be serializable.
  *
- * To support building against other versions of Hadoop. this class uses
- * introspection to check for the existence of the relevant method...it
- * (currently) doesn't actually cast to the relevant operation
+ *
+ * Rather than ask the FileOutputFormat for a committer, it uses the
+ * `org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory` factory
+ * API to create the committer. This is what `FileOutputFormat` does, but
+ * as some subclasses do not do this, overrides those subclasses to using the
+ * factory mechanism now supported in the base class.
  * @param jobId job
  * @param destination destination
  */
@@ -52,34 +55,11 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
 
   override protected def setupCommitter(context: TaskAttemptContext): OutputCommitter = {
     logInfo(s"Setting up committer for path $destination")
-/*
-    val conf = context.getConfiguration
-    val factory = buildCommitterFactoryName(context)
-    if (factory.isEmpty) {
-      throw new IllegalArgumentException("No committer factory defined")
-    }
-    conf.set(OUTPUTCOMMITTER_FACTORY_CLASS, factory)
-*/
-    committer = super.setupCommitter(context).asInstanceOf[PathOutputCommitter]
+    committer = PathOutputCommitterFactory.createCommitter(destPath, context)
 
-
-    val rejectFileOutput = context.getConfiguration
-      .getBoolean(REJECT_FILE_OUTPUT, REJECT_FILE_OUTPUT_DEFVAL)
-    if (rejectFileOutput && committer.isInstanceOf[FileOutputCommitter]) {
-      // the output format returned a file output format committer, which
-      // is exactly what we do not want. So switch back to the factory.
-      logDebug(s"Returned committer from output format is a FileOutputCommitter : $committer" +
-        s" switching to factory-managed committer")
-      committer = PathOutputCommitterFactory.createCommitter(destPath, context)
-    }
 
     logInfo(s"Using committer ${committer.getClass}")
     logInfo(s"Committer details: $committer")
-    if (rejectFileOutput && committer.isInstanceOf[FileOutputCommitter]) {
-      // this is the wrong type
-      throw new IllegalStateException(
-        s"Created committer is a FileOutputCommitter $committer")
-    }
     committer
   }
 
@@ -159,6 +139,10 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
     super.commitJob(jobContext, taskCommits)
   }
 
+  /**
+   * Abort the job; log and ignore any failure thrown.
+   * @param jobContext job context
+   */
   override def abortJob(jobContext: JobContext): Unit = {
     try {
       super.abortJob(jobContext)
@@ -178,6 +162,11 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
     super.commitTask(taskContext)
   }
 
+  /**
+   * Abort the task; log and ignore any failure thrown.
+   *
+   * @param taskContext context
+   */
   override def abortTask(taskContext: TaskAttemptContext): Unit = {
     logInfo("Abort task")
     try {

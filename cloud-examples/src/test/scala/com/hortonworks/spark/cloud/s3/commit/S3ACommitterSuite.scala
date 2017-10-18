@@ -18,8 +18,7 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 
-import com.hortonworks.spark.cloud.{CloudSuite, CloudTestKeys}
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
 import org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
@@ -28,7 +27,7 @@ import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
-class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
+class S3ACommitterSuite extends AbstractCommitterSuite {
 
   init()
 
@@ -51,22 +50,8 @@ class S3ACommitterSuite extends CloudSuite with S3ATestSetup {
   override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     super.addSuiteConfigurationOptions(sparkConf)
     sparkConf.setAll(COMMITTER_OPTIONS)
-    sparkConf.setAll(SparkS3ACommitProtocol.BINDING_OPTIONS)
   }
 
-  ctest("propagation",  "verify property passdown", false) {
-    val name = expectSome(getKnownSysprop(S3A_COMMITTER_NAME),
-      s"Unset property ${S3A_COMMITTER_NAME}")
-    logInfo(s"Committer name is $name")
-
-    val conf = getConf
-    assert(getConf.getBoolean(CloudTestKeys.S3A_COMMITTER_TEST_ENABLED, false),
-      "committer setup not passed in")
-    val committer = expectOptionSet(conf,
-      S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY)
-    val cclass = Class.forName(committer)
-    logInfo(s"Committer is $cclass")
-  }
 
   /**
    * This is the least complex of the output writers, the original RDD

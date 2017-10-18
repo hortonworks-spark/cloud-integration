@@ -28,16 +28,20 @@ import org.apache.hadoop.mapreduce.task.TaskAttemptContextImpl
 import org.apache.hadoop.mapreduce.{Job, JobStatus, MRJobConfig, TaskAttemptID}
 import org.scalatest.FunSuite
 
+/**
+ * This is here to isolate the binding logic
+ * in the Parquet code, specifically, does the
+ * `BindingParquetOutputCommitter` committer bind to the schema-specific
+ * committer declared for the destination path.
+ */
 class ParquetBindingSuite extends FunSuite {
 
 
   private val jobId = "2007071202143_0101"
   private val attempt0 = "attempt_" + jobId + "_m_000000_0"
   private val taskAttempt0 = TaskAttemptID.forName(attempt0)
-  private val attempt1 = "attempt_" + jobId + "_m_000001_0"
-  private val taskAttempt1 = TaskAttemptID.forName(attempt1)
 
-  test("instantiate") {
+  test("BindingParquetOutputCommitter will bind") {
     val path = new Path("http://example/data")
     val job = newJob(path)
     val conf = job.getConfiguration

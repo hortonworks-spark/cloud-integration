@@ -34,6 +34,8 @@ import org.apache.spark.util.Utils
 
 /**
  * Minimal base class for cloud relation tests.
+ *
+ * See: org.apache.spark.sql.sources.HadoopFsRelationTest
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   with TestHiveSingleton with CloudSuiteTrait with BeforeAndAfterAll {
@@ -41,6 +43,12 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   import spark.implicits._
 
   val dataSourceName: String
+
+/*
+  protected override def beforeAll(): Unit = {
+
+  }
+*/
 
   protected override def afterAll(): Unit = {
     try {

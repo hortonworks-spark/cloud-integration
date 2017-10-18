@@ -24,7 +24,7 @@ import org.apache.hadoop.fs.Path
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.hive.orc.OrcFileFormat
 import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.sources.{AbstractCloudRelationTest, CloudRelationBasicSuite}
+import org.apache.spark.sql.sources.CloudRelationBasicSuite
 import org.apache.spark.sql.types._
 
 class S3AOrcRelationSuite extends CloudRelationBasicSuite with S3ATestSetup {

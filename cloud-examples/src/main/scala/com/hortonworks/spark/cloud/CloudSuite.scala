@@ -26,7 +26,7 @@ import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite}
 
-import org.apache.spark.LocalSparkContext
+import org.apache.spark.{LocalSparkContext, SparkConf}
 import org.apache.spark.internal.Logging
 
 /**

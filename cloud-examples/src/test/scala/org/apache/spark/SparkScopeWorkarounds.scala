@@ -21,7 +21,7 @@ import org.apache.spark.sql.hive.HiveUtils
 
 /**
  * Here to get at useful stuff that Spark keeps private but which turn out be
- * invalualable during testing.
+ * invaluable during testing.
  *
  * Needless to say: things may break here without warning or redress.
  */

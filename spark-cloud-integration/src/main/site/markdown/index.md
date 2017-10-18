@@ -12,12 +12,13 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 
-# Cloud Committer for Apache Spark
+# Cloud Committers for Apache Spark
 
 
-This module contains an ApacheSpark job committer which supports the new committer
-plug in mechanism of Apache Hadoop —so supporting high performance and deterministic
-committing of work to eventually consistent object stores where the trandition
+This module contains classes which integrate an Apache Spark job with
+the new committer plug in mechanism of Apache Hadoop 
+—so supporting high performance and deterministic
+committing of work to object stores.
 
 Features
 
@@ -26,6 +27,7 @@ Hadoop committer, the classic `FileOutputCommitter` included.
 * When Hadoop is configured to use a cloud-infrastructure specific committer,
 uses that committer for committing the output of the Spark job.
 * Tested with the new S3A committers, "Directory", "Partitioned and "Magic".
+* Includes the support classes need to support Parquet output.
 
 
 ## Requirements
@@ -41,15 +43,103 @@ means that S3Guard is also supported.
 ## Enabling the committer
 
 
+To use a committer you need to do a number of things
+
+1. Perform any filesystem-level setup/configuration required by the committer.
+1. Declare the Hadoop-level options to use the the new committer for the target
+filesystem schemas (here: `s3a://`)
+1. Declare any configuration options supported by the committer
+1. Declare any Spark SQL options needed to support the new committer
+
+### Identify the Committer.
+
+### FileSystem Level configuration
+
+This is beyond the scope of this document. Consult the Hadoop/Hadoop committer
+documents.
+
+### Declare the Hadoop bindings
+
+The underlying Hadoop FileOutputFormat needs to be configured to use an S3-specific
+factory of committers, one which will then let us choose which S3A committer to
+use:
+
 ```
-spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.s3.SparkS3ACommitter
-spark.hadoop.mapreduce.pathoutputcommitter.factory.class=org.apache.hadoop.fs.s3a.commit.staging.DirectoryStagingCommitterFactory
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
 ```
 
-# Committing to Amazon S3
+
+### Declare the Spark Binding
+
+Two settings need to be changed here to ensure that when Spark creates a committer
+for a normal Hadoop `FileOutputFormat` subclass, it uses the Hadoop 3.1 factory
+mechanism.
+
+1. The Spark commit protocol class.
+1. For Apache Parquet output: the Parquet committer to use in the Spark `ParquetFileFormat`
+classes. 
+
+```
+spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
+spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
+```
+
+You do not need an equivalent of the Parquet committer option for other formats
+(ORC, Avro, CSV, etc); as there is no harm in setting it when not used, it is 
+best to set it for all jobs, irrespective of output formats.
 
 
-## Staging committers: Directory and Partitioned
+```
+spark.hadoop.fs.s3a.committer.tmp.path=hdfs://nn1:8088/tmp
+```
+
+# Choosng a committer
+
+There are now three S3A-specific committers available
+
+**Directory**: stage data into the local filesystem, then copy up the entire
+directory tree to the destination.
+
+**Partition**: stage data into the local filesystem, then copy up the data
+to the destination, with a conflict policy designed to support writing to 
+invidual partitions.
+
+**Magic**: write data directly to "magic" paths in the filesystem, with
+the data only becoming visible in the destination directory tree when
+the job is completed.
+
+
+The choice of committer is selected from the value of `fs.s3a.committer.name`
+
+| value of `fs.s3a.committer.name` |  meaning |
+|--------|---------|
+| `directory` | directory staging committer |
+| `partition` | partition staging committer |
+| `magic` | the "magic" committer |
+
+
+(There is also the option `file` to revert back
+to the original file committer)
+
+
+## The Staging committers: Directory and Partitioned
+
+These stage data locally, upload it to the destination when executors
+complete individual tasks, and makes the uploaded files visible when the
+job is completed. 
+
+They differ in how conflict in directories are resolved. 
+
+Directory committer: conflict resolution is managed that the level of the
+entire directory tree: fail, replace or append works on all the data.
+
+Partitioned committer: conflict resolution is only considered in the final
+destination paths of output which is expected to be generated with
+a data frame configured to generate partitioned output. The contents
+of directories in the destination directory tree which do are not updated
+in the job are not examined. As a result, this committer can be used to
+efficiently managed in-place updates of data within a large directory
+tree of partitioned data.
 
 Prerequisites: 
 
@@ -87,38 +177,22 @@ and in the spark committer. This excludes the specific details to enable
 S3Guard for the target bucket.
 
 ```
-spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.s3.SparkS3ACommitter
-spark.hadoop.mapreduce.pathoutputcommitter.factory.class=org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
+spark.hadoop.fs.s3a.committer.committer.name=magic
 spark.hadoop.fs.s3a.committer.magic.enabled=true
 ```
 
+
+
 ## Supporting per-bucket configuration
 
-There is a special committer factory, "dynamic", whic
 
-```
-spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.s3.SparkS3ACommitter
-spark.hadoop.mapreduce.pathoutputcommitter.factory.class=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
-```
-
-The choice of committer is then chosen from the value of `fs.s3a.committer.name`
-
-| value of `fs.s3a.committer.name` |  meaning |
-|--------|---------|
-| `file` | the original File committer; (not safe for use with S3 storage) |
-| `directory` | directory staging committer |
-| `partition` | partition staging committer |
-| `magic` | the "magic" committer |
-
-This committer option enables different committers to be used for different
-S3 buckets, taking advantage of the S3a per-bucket configuration feature, wherein
-any option set in `fs.s3a.bucket.BUCKETNAME.option=value` is mapped to
-the base option `fs.s3a.option=value` when the s3a: URL has `BUCKETNAME` as its
+The S3A per-bucket configuration feature, means that any option set in `fs.s3a.bucket.BUCKETNAME.option=value`
+is mapped to the base option `fs.s3a.option=value` when the s3a: URL has `BUCKETNAME` as its
 hostname.
 
 
 As an example, here are the options needed to enable the magic committer for
-the bucket "guarded", while the default committer is the directory staging committer.
+the bucket "guarded", while still retaining the default committer as "directory".
 
 ```
 spark.hadoop.fs.s3a.committer.name=directory
@@ -126,11 +200,4 @@ spark.hadoop.fs.s3a.bucket.guarded.committer.name=magic
 spark.hadoop.fs.s3a.bucket.guarded.committer.magic.enabled=true
 
 ```
-
-
-
-## Troubleshooting
-
-
-
 

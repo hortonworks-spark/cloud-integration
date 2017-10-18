@@ -17,15 +17,13 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SparkS3ACommitProtocol}
+import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
-class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
+class S3ACommitDataframeSuite extends AbstractCommitterSuite {
 
   import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 
@@ -38,44 +36,19 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     }
   }
 
-  /**
-   * Patch up hive for re-use.
-   * @param sparkConf configuration to patch
-   */
-  def addTransientDerbySettings(sparkConf: SparkConf): Unit = {
-    val hiveConfig = SparkScopeWorkarounds.tempHiveConfig()
-    hconf(sparkConf, hiveConfig)
-  }
-
-  /**
-   * Override point for suites: a method which is called
-   * in all the `newSparkConf()` methods.
-   * This can be used to alter values for the configuration.
-   * It is called before the configuration read in from the command line
-   * is applied, so that tests can override the values applied in-code.
-   *
-   * @param sparkConf spark configuration to alter
-   */
-  override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
-    super.addSuiteConfigurationOptions(sparkConf)
-    sparkConf.setAll(COMMITTER_OPTIONS)
-    sparkConf.setAll(SparkS3ACommitProtocol.BINDING_OPTIONS)
-    addTransientDerbySettings(sparkConf)
-  }
-
   private val formats = Seq(
     "orc"
-//    ,
-//    "parquet"
+    //    ,
+    //    "parquet"
   )
 
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   private val committers = Seq(
-//    DEFAULT_RENAME,
+    //    DEFAULT_RENAME,
     DIRECTORY,
-//    PARTITIONED,
-//    MAGIC,
+    //    PARTITIONED,
+    MAGIC,
     ""
   )
   private val s3 = filesystem.asInstanceOf[S3AFileSystem]
@@ -98,7 +71,8 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
     }
   }
 
-  def testOneFormat(destDir: Path,
+  def testOneFormat(
+      destDir: Path,
       format: String,
       committerName: Option[String]): Unit = {
 
@@ -134,7 +108,7 @@ class S3ACommitDataframeSuite extends CloudSuite with S3ATestSetup {
       logDuration(s"write to $subdir in format $format") {
         sourceData
           .write
-            .partitionBy("year", "month")
+          .partitionBy("year", "month")
           .format(format).save(subdir.toString)
       }
       val operations = new S3AOperations(s3)

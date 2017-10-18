@@ -26,8 +26,8 @@ import org.apache.spark.internal.Logging
 
 /**
  * This dynamically binds to the factory-configured
- * output committer, and is intended to allow callers to use any PathOutputCommitter,
- * even if not a subclass of ParquetOutputCommitter.
+ * output committer, and is intended to allow callers to use any `PathOutputCommitter`,
+ * even if not a subclass of `ParquetOutputCommitter`.
  */
 
 class BindingParquetOutputCommitter(

@@ -26,9 +26,10 @@ import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
 /**
- * Tests around the partitioned committer and its conflict resolution.
+ * This is a large data workflow, starting with the landsat
+ * dataset
  */
-class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSetup {
+class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup {
 
   import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 
@@ -38,14 +39,16 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     // propagate S3 credentials
     if (enabled) {
       initFS()
+      prepareTestCSVFile()
     }
   }
 
-
+  override def enabled: Boolean = super.enabled && hasCSVTestFile &&
+    isScaleTestEnabled
 
   private val destFS = filesystem.asInstanceOf[S3AFileSystem]
 
-  private val destDir = testPath(destFS, "partitioned-committer")
+  private val destDir = testPath(destFS, "bulkdata")
 
   private val formats = Seq(
     "orc",
@@ -111,10 +114,6 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
       s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
 
 
-    // uncomment to fail factory operations and see where they happen
- //    sparkConf.set(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key, "unknown")
-
-
     val dest = new Path(destDir, format)
     rm(destFS, dest)
     val spark = SparkSession
@@ -124,6 +123,8 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
       .getOrCreate()
     // ignore the IDE if it complains: this *is* used.
     import spark.implicits._
+
+
 
     // Write the DS. Configure save mode so the committer gets
     // to decide how to react to invidual partitions, rather than

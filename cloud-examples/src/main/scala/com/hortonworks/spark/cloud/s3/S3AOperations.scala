@@ -23,7 +23,7 @@ import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.StoreTestOperations
 import com.hortonworks.spark.cloud.commit.CommitterConstants
-import com.hortonworks.spark.cloud.persist.SuccessData
+import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
