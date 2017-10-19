@@ -18,6 +18,7 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations}
+import com.hortonworks.spark.cloud.utils.StatisticsTracker
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
@@ -105,6 +106,9 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
 
       val subdir = new Path(destDir, format)
       rm(s3, subdir)
+
+      val stats = new StatisticsTracker(s3)
+
       logDuration(s"write to $subdir in format $format") {
         sourceData
           .write
@@ -112,9 +116,9 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
           .format(format).save(subdir.toString)
       }
       val operations = new S3AOperations(s3)
-      val stats = operations.getStorageStatistics()
+      stats.update(s3)
 
-      logDebug(s"Statistics = \n" + stats.mkString("  ", " = ", "\n"))
+      logDebug(s"Statistics = \n${stats.dump()}")
 
       operations.maybeVerifyCommitter(subdir,
         committerName,

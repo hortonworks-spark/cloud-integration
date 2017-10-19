@@ -50,7 +50,7 @@ class S3AOperations(sourceFs: FileSystem)
    * Verify that an S3A committer was used
    *
    * @param destDir destination directory of work
-   * @param committer commiter name, if known
+   * @param committer committer name, if known
    * @param fileCount expected number of files
    * @param text message to include in all assertions
    */
@@ -99,6 +99,8 @@ class S3AOperations(sourceFs: FileSystem)
     Some(successData)
   }
 
+
+
   /**
    * If the committer is flagged as enabled, verify that it was used; return
    * the success data.
@@ -118,7 +120,7 @@ class S3AOperations(sourceFs: FileSystem)
       fileCount: Option[Integer],
       text: String = ""): Option[SuccessData] = {
     committerName match {
-      case Some(S3ACommitterConstants.DEFAULT_RENAME) =>
+      case Some(S3ACommitterConstants.FILE) =>
         verifyS3Committer(destDir, None, fileCount, text, false)
 
       case Some(c) => verifyS3Committer(destDir,
@@ -130,5 +132,6 @@ class S3AOperations(sourceFs: FileSystem)
     }
 
   }
+
 
 }

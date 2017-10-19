@@ -20,7 +20,7 @@ package com.hortonworks.spark.cloud.s3
 trait SequentialIOPolicy extends IOPolicy {
 
   /**
-   * Use original seqential IO
+   * Use original sequential IO
    *
    * @return the IO type
    */

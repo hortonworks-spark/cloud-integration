@@ -18,13 +18,8 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup}
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.s3a.S3AFileSystem
+import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.sql.internal.SQLConf
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
 abstract class AbstractCommitterSuite extends CloudSuite with S3ATestSetup {

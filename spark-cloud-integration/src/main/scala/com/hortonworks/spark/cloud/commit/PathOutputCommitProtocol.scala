@@ -189,13 +189,6 @@ object PathOutputCommitProtocol {
    */
   val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class"
 
-  /**
-   * Fail fast if the committer is using the path output protocol.
-   * This option can be used to catch configuration issues early.
-   */
-  val REJECT_FILE_OUTPUT =  "pathoutputcommit.reject.fileoutput"
-
-  val REJECT_FILE_OUTPUT_DEFVAL = false
 }
 
 

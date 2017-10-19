@@ -43,7 +43,7 @@ object S3ACommitterConstants {
   val DYNAMIC = "dynamic"
   val DIRECTORY = "directory"
   val PARTITIONED = "partitioned"
-  val DEFAULT_RENAME = "default"
+  val FILE = "file"
 
   val CONFLICT_MODE: String =
     CommitConstants.FS_S3A_COMMITTER_STAGING_CONFLICT_MODE
@@ -67,7 +67,7 @@ object S3ACommitterConstants {
     DYNAMIC -> ("",  DYNAMIC_COMMITTER_FACTORY, false),
     DIRECTORY -> ("DirectoryStagingCommitter",  DIRECTORY_COMMITTER_FACTORY, false),
     PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY, false),
-    DEFAULT_RENAME -> ("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
+    FILE -> ("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
   )
 
   /**

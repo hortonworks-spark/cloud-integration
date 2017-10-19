@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.Path
 import com.hortonworks.spark.cloud.CloudTestKeys._
 
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.DataTypes._
 
 /**
@@ -111,7 +111,6 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       val landsatOrcPath = new Path(landsatPath, "orc")
       val landsatParqetPath = new Path(landsatPath, "parquet")
       val landsatParqet = landsatParqetPath.toString
-      val landsat = landsatPath.toUri.toString
       // load this FS instance into memory with random
       val destFS = destPath.getFileSystem(config)
       rm(destFS, landsatPath)

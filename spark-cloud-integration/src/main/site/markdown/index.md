@@ -89,9 +89,6 @@ You do not need an equivalent of the Parquet committer option for other formats
 best to set it for all jobs, irrespective of output formats.
 
 
-```
-spark.hadoop.fs.s3a.committer.tmp.path=hdfs://nn1:8088/tmp
-```
 
 # Choosng a committer
 
@@ -151,6 +148,15 @@ be reused.
 1. A consistent cluster-wide filesystem for storage of summary information.
 This is generally HDFS. 
 
+
+```
+spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
+spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
+spark.hadoop.fs.s3a.committer.committer.name=directory
+spark.hadoop.fs.s3a.committer.tmp.path=hdfs://nn1:8088/tmp
+```
+
 ## Magic
 
 This alters the Hadoop S3A filesytem client to consider some paths "magic"
@@ -177,6 +183,9 @@ and in the spark committer. This excludes the specific details to enable
 S3Guard for the target bucket.
 
 ```
+spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
+spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
 spark.hadoop.fs.s3a.committer.committer.name=magic
 spark.hadoop.fs.s3a.committer.magic.enabled=true
 ```
@@ -195,9 +204,13 @@ As an example, here are the options needed to enable the magic committer for
 the bucket "guarded", while still retaining the default committer as "directory".
 
 ```
+spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
+spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
 spark.hadoop.fs.s3a.committer.name=directory
 spark.hadoop.fs.s3a.bucket.guarded.committer.name=magic
 spark.hadoop.fs.s3a.bucket.guarded.committer.magic.enabled=true
-
 ```
 
+The `spark.sql` options cannot be set on a per-bucket basis. However, they work across
+buckets and filesystems.

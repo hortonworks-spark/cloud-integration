@@ -31,6 +31,7 @@ import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import com.hortonworks.spark.cloud.utils.TimeOperations
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.s3a.Constants
 import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
@@ -268,7 +269,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   /**
    * The name of the committer to use for Parquet.
    */
-  val PARQUET_COMMITTER_CLASS =
+  val PARQUET_COMMITTER_CLASS : String =
     CommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
 //    CommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
 
@@ -288,11 +289,14 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * then bind to the factory committer.
    */
   val COMMITTER_OPTIONS = Map(
-    "spark.hadoop." + FILEOUTPUTCOMMITTER_ALGORITHM_VERSION -> "3",
+
     "spark.hadoop." + FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED -> "true",
     SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
-      PARQUET_COMMITTER_CLASS
-  )
+      PARQUET_COMMITTER_CLASS,
+    "spark.hadoop." + Constants.PURGE_EXISTING_MULTIPART -> "true",
+    "spark.hadoop." + Constants.PURGE_EXISTING_MULTIPART_AGE ->
+      (60 * 1000 * 10).toString
+    )
 
 
   val HIVE_TEST_SETUP_OPTIONS = Map(
@@ -316,9 +320,17 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @return a warehouse directory
    */
   def createWarehouseDir(): File = {
-    val warehouseDir = File.createTempFile("warehouse", ".db", createTmpDir())
-    warehouseDir.delete()
-    warehouseDir
+    tempDir("warehouse", ".db")
+  }
+
+  /**
+   * Create a temporary warehouse directory for those tests which neeed on.
+   * @return a warehouse directory
+   */
+  def tempDir(name: String, suffix: String): File = {
+    val dir = File.createTempFile(name, suffix, createTmpDir())
+    dir.delete()
+    dir
   }
 
   /**

@@ -95,8 +95,6 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     logInfo(s"Using committer factory $factory with conflict mode $confictMode" +
       s" writing $format data")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
-    // force reject
-    hconf(sparkConf, PathOutputCommitProtocol.REJECT_FILE_OUTPUT, true)
 
     // force failfast
     hconf(sparkConf, CommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)

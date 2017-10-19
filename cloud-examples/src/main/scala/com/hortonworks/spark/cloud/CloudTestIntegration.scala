@@ -63,6 +63,12 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
   private var _filesystem: Option[FileSystem] = None
 
   /**
+   * Get the filesystem as an option; only valid if enabled and inited
+   * @return a filesystem or None
+   */
+  protected def filesystemOption: Option[FileSystem] = _filesystem
+
+  /**
    * Accessor for the filesystem.
    *
    * @return the filesystem

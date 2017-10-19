@@ -44,12 +44,6 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   val dataSourceName: String
 
-/*
-  protected override def beforeAll(): Unit = {
-
-  }
-*/
-
   protected override def afterAll(): Unit = {
     try {
       super.afterAll()
