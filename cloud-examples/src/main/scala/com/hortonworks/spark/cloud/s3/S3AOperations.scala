@@ -71,25 +71,25 @@ class S3AOperations(sourceFs: FileSystem)
           "No commit success file: " + successFile)
     }
     if (status.getLen == 0) {
-      if (requireNonEmpty) {
-        fail(
-          s"$text: the 0-byte $successFile implies that the S3A committer was not used" +
-            s" to commit work to $destDir with committer $committer")
-      }
+      require(!requireNonEmpty,
+        s"$text: the 0-byte $successFile implies that the S3A committer was not used" +
+          s" to commit work to $destDir with committer $committer")
       return None
     }
     val successData = SuccessData.load(fs, successFile)
     logInfo(s"Success data at $successFile : ${successData.toString}")
     logInfo("Metrics:\n" + successData.dumpMetrics("  ", " = ", "\n"))
     logInfo("Diagnostics:\n" + successData.dumpDiagnostics("  ", " = ", "\n"))
-    committer.foreach(n =>
-      assert(n === successData.getCommitter, s"in $successData"))
+    committer.foreach(name =>
+      require(name == successData.getCommitter, s"Wrong committer name in $successData;" +
+        s" expected $name"))
     val files = successData.getFilenames
     assert(files != null,
       s"$text No 'filenames' in $successData")
     fileCount.foreach(expected =>
-      assert(expected === files.size(),
-        s"$text Mismatch between expected and actual file count in $successData."))
+      require(expected == files.size(),
+       s"$text Mismatch between expected ($expected ) and actual file count" +
+         s" (${files.size()}) in $successData."))
     val listing = files.asScala
       .map(p => fs.makeQualified(new Path(p)))
       .map(fs.getFileStatus)

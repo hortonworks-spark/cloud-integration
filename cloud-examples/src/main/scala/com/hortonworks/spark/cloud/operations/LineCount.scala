@@ -123,7 +123,7 @@ class LineCount extends ObjectStoreExample with SequentialIOPolicy {
     0
   }
 
-  def defaultSource = {
+  def defaultSource: Option[String] = {
     Some(S3A_CSV_PATH_DEFAULT)
   }
 

@@ -34,7 +34,7 @@ import org.apache.spark.sql._
  * handling for eventually consistent filesystems through retries.
  */
 trait StoreTestOperations extends ObjectStoreOperations with Eventually
-  with Assertions {
+  {
 
   protected val retryTimeout: Span = 30 seconds
 
@@ -162,4 +162,11 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually
     waitForConsistency(fs)
     r
   }
+}
+
+/**
+ * Instantiation of StoreTestHelper.
+ */
+class StoreTestHelper extends StoreTestOperations {
+
 }
