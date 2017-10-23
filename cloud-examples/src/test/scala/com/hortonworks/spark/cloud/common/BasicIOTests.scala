@@ -58,7 +58,8 @@ abstract class BasicIOTests extends CloudSuite {
       | This committer has race and failure conditions, with the commit being O(bytes)
       | and non-atomic.
     """.stripMargin) {
-    sc = new SparkContext("local", "test", newSparkConf())
+    val sparkConf = newSparkConf()
+    sc = new SparkContext("local", "test", sparkConf)
     val conf = sc.hadoopConfiguration
     assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
     val entryCount = testEntryCount

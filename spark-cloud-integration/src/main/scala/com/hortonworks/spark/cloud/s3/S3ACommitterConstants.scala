@@ -27,7 +27,7 @@ import org.apache.hadoop.fs.s3a.commit.CommitConstants
  */
 object S3ACommitterConstants {
 
-  val S3A_COMMITTER_FACTORY_KEY: String = String.format(
+  val S3A_SCHEME_COMMITTER_FACTORY: String = String.format(
     CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
     "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."

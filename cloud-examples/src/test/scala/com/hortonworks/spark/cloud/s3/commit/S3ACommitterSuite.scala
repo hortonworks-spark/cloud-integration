@@ -58,7 +58,8 @@ class S3ACommitterSuite extends AbstractCommitterSuite {
    * API.
    */
   ctest("saveAsNewAPIHadoopFile",
-    "Write output via the RDD saveAsNewAPIHadoopFile API", false) {
+    "Write output via the RDD saveAsNewAPIHadoopFile API",
+    false) {
 
     // store the S3A FS the test is bonded to
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
@@ -79,7 +80,7 @@ class S3ACommitterSuite extends AbstractCommitterSuite {
     val operations = new S3AOperations(s3)
     val sc = spark.sparkContext
     val conf = sc.hadoopConfiguration
-    expectOptionSet(conf, S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY)
+    expectOptionSet(conf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY)
 
     val numRows = 10
 

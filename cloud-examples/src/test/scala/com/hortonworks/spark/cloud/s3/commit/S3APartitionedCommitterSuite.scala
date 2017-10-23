@@ -32,30 +32,45 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
 
   import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 
+  private var destFS: S3AFileSystem = _
+
+  private var destDir: Path = _
+
   init()
 
   def init(): Unit = {
     // propagate S3 credentials
     if (enabled) {
       initFS()
+      destFS = filesystem.asInstanceOf[S3AFileSystem]
+      destDir = testPath(destFS, "partitioned-committer")
     }
   }
 
 
-
-  private val destFS = filesystem.asInstanceOf[S3AFileSystem]
-
-  private val destDir = testPath(destFS, "partitioned-committer")
-
   private val formats = Seq(
     "orc",
-    "parquet"
+    "parquet",
+    ""
   )
 
-  private val modes = Seq("append", "replace")
+  private val modes = Seq(
+    "append",
+    "replace",
+    ""
+  )
 
-  formats.foreach { format =>
-    modes.foreach{ mode =>
+  /**
+   * Strip out the empty options
+   * @param src source list
+   * @return  the list without "" entries
+   */
+  private def nonEmpty(src: Seq[String]): Seq[String] = {
+    src.filterNot(_.isEmpty)
+  }
+
+  nonEmpty(formats).foreach { format =>
+    nonEmpty(modes).foreach{ mode =>
       ctest(s"Write $format-$mode",
         s"Write a partitioned dataframe in format $format with conflict mode $mode") {
         testOneWriteSequence(
@@ -63,7 +78,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
           format,
           PARTITIONED,
           mode,
-          true)
+          mode == "append")
       }
 
     }
@@ -91,10 +106,12 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     val committerInfo = COMMITTERS_BY_NAME(committerName)
 
     val factory = committerInfo._2
-    hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY, factory)
+    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, factory)
+
     logInfo(s"Using committer factory $factory with conflict mode $confictMode" +
       s" writing $format data")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
+    hconf(sparkConf, PathOutputCommitProtocol.REJECT_FILE_OUTPUT, true)
 
     // force failfast
     hconf(sparkConf, CommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)
@@ -141,8 +158,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
       val conf = sc.hadoopConfiguration
       val numPartitions = 2
       val eventData = Events.events(2017, 2017, 1, 2, 10).toDS()
-      val origFileCount = Events.monthCount(2017, 2017, 1, 2) *
-        numPartitions
+      val origFileCount = Events.monthCount(2017, 2017, 1, 2) * numPartitions
       val sourceData = eventData.repartition(numPartitions).cache()
       sourceData.printSchema()
       val eventCount = sourceData.count()
@@ -177,26 +193,22 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
         s"$format:")
 
       // now list the files under the system
-      val allFiles = listFiles(destFS, dest,true).filterNot(
-        st => st.getPath.getName.startsWith("_")).toList
-
       val currentFileCount = newFileCount + origFileCount
-      assert(currentFileCount === allFiles.length,
-        s"File count in $allFiles")
+      assertFileCount(currentFileCount, destFS, dest)
 
       // then write atop the existing files.
       // here the failure depends on what the policy was
       writeDS(newPartition)
+      operations.maybeVerifyCommitter(dest,
+        Some(committerName),
+        Some(committerInfo._1),
+        conf,
+        Some(newFileCount),
+        s"$format:")
 
-      val allFiles2 = listFiles(destFS, dest, true).filterNot(
-        st => st.getPath.getName.startsWith("_")).toList
+      val finalCount = currentFileCount + (if (expectAppend) newFileCount else 0)
 
-      var finalCount = currentFileCount
-      if (expectAppend) {
-        finalCount += newFileCount
-      }
-      assert(finalCount === allFiles2.length, s"Final file count in $allFiles2")
-
+      assertFileCount(finalCount, destFS, dest)
     } finally {
       spark.close()
     }

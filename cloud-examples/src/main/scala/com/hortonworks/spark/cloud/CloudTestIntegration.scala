@@ -350,7 +350,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
    * @return true if this is staging. Not checked: does Hadoop support staging.
    */
   def isUsingStagingCommitter(config: Configuration): Boolean = {
-    val committer = config.get(S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY, "")
+    val committer = config.get(S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, "")
     committer != null && committer.startsWith(S3ACommitterConstants.STAGING_PACKAGE)
   }
 
@@ -382,5 +382,38 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
    */
   def describe(info: => String): Unit = {
     logInfo(s"\n\n$info\n")
+  }
+
+  /**
+   * Assert that the number of FS entries matches the list; raises an
+   * exception if not, including a sorted list of the entries' paths.
+   *
+   * @param expectedCount expected number of files
+   * @param fs fs to list
+   * @param dir directory to examine
+   */
+  def assertFileCount(expectedCount: Int, fs: FileSystem, dir: Path): Unit = {
+    val allFiles = listFiles(fs, dir, true).filterNot(
+      st => st.getPath.getName.startsWith("_")).toList
+    assertFileStatusCount(expectedCount, allFiles)
+  }
+
+  /**
+   * Assert that the number of FS entries matches the list; raises an
+   * exception if not, incluidng a sorted list of the entries' paths
+   *
+   * @param expectedCount expected number of files
+   * @param files file list
+   */
+  def assertFileStatusCount(
+      expectedCount: Int,
+      files: List[LocatedFileStatus]): Unit = {
+    val len = files.length
+    if (len != expectedCount) {
+      val listing = files.map(st => st.getPath.toString).sorted.mkString("\n")
+      val text = s"Found $len files; expected $expectedCount\n$listing"
+      logError(text)
+      assert(expectedCount === len, text)
+    }
   }
 }

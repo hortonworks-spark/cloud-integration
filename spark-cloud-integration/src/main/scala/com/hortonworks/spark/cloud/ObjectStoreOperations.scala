@@ -26,7 +26,7 @@ import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.hortonworks.spark.cloud.commit.CommitterConstants
+import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import com.hortonworks.spark.cloud.utils.TimeOperations
 import org.apache.commons.io.IOUtils
@@ -223,11 +223,8 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       opts: Map[String, String] = Map()): DataFrame = {
     val reader = spark.read
     reader.options(opts)
-    reader.format(srcFormat).load(source.toUri.toString)
-  }
-
-  def applyOrcSpeedupOptions(spark: SparkSession): Unit = {
-    spark.read.option("mergeSchema", "false")
+    reader.format(srcFormat)
+      .load(source.toUri.toString)
   }
 
   /**
@@ -277,8 +274,8 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * Options for file output committer: algorithm 2 & skip cleanup.
    */
   val FILE_COMMITTER_OPTIONS = Map(
-    "spark.hadoop." + FILEOUTPUTCOMMITTER_ALGORITHM_VERSION -> "2",
-    "spark.hadoop." + FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED -> "true")
+    hkey(FILEOUTPUTCOMMITTER_ALGORITHM_VERSION) -> "2",
+    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
 
 
   /**
@@ -289,13 +286,15 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * then bind to the factory committer.
    */
   val COMMITTER_OPTIONS = Map(
-
-    "spark.hadoop." + FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED -> "true",
+    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true",
     SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
       PARQUET_COMMITTER_CLASS,
-    "spark.hadoop." + Constants.PURGE_EXISTING_MULTIPART -> "true",
-    "spark.hadoop." + Constants.PURGE_EXISTING_MULTIPART_AGE ->
+    SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key ->
+      classOf[PathOutputCommitProtocol].getCanonicalName,
+    hkey(Constants.PURGE_EXISTING_MULTIPART) -> "true",
+    hkey(Constants.PURGE_EXISTING_MULTIPART_AGE) ->
       (60 * 1000 * 10).toString
+
     )
 
 
@@ -337,34 +336,47 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * Set a Hadoop option in a spark configuration.
    *
    * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
+   * @param key key
+   * @param value new value
    */
-  def hconf(sparkConf: SparkConf, k: String, v: String): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v)
+  def hconf(sparkConf: SparkConf, key: String, value: String): SparkConf = {
+    sparkConf.set(hkey(key), value)
+    sparkConf
   }
 
   /**
    * Set a Hadoop option in a spark configuration.
    *
    * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
+   * @param key key
+   * @param value new value
    */
 
-  def hconf(sparkConf: SparkConf, k: String, v: Boolean): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v.toString)
+  def hconf(sparkConf: SparkConf, key: String, value: Boolean): SparkConf = {
+    sparkConf.set(hkey(key), value.toString)
+    sparkConf
+  }
+
+  /**
+   * Take a Hadoop key, add the prefix to allow it to be added to
+   * a Spark Config and then picked up properly later.
+   * @param key key
+   * @return the new key
+   */
+  def hkey(key: String) : String = {
+    "spark.hadoop." + key
   }
 
   /**
    * Set a long hadoop option in a spark configuration.
    *
    * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
+   * @param key key
+   * @param value new value
    */
-  def hconf(sparkConf: SparkConf, k: String, v: Long): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v.toString)
+  def hconf(sparkConf: SparkConf, key: String, value: Long): SparkConf = {
+    sparkConf.set(hkey(key), value.toString)
+    sparkConf
   }
 
   /**
@@ -373,8 +385,9 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param sparkConf Spark configuration to update
    * @param settings map of settings.
    */
-  def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): Unit = {
+  def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): SparkConf = {
     settings.foreach(e => hconf(sparkConf, e._1, e._2))
+    sparkConf
   }
 
   /**

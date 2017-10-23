@@ -49,7 +49,7 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
     //    DEFAULT_RENAME,
     DIRECTORY,
     //    PARTITIONED,
-    MAGIC,
+//    MAGIC,
     ""
   )
   private val s3 = filesystem.asInstanceOf[S3AFileSystem]
@@ -82,7 +82,7 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
     val committerInfo = committerName.map(COMMITTERS_BY_NAME(_))
 
     committerInfo.foreach { info =>
-      hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY, info._2)
+      hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, info._2)
     }
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
     val spark = SparkSession

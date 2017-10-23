@@ -208,7 +208,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val committerInfo = COMMITTERS_BY_NAME(committerName)
 
     val factory = committerInfo._2
-    hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_FACTORY_KEY, factory)
+    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, factory)
     logInfo(s"Using committer factory $factory with conflict mode $confictMode" )
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
 
