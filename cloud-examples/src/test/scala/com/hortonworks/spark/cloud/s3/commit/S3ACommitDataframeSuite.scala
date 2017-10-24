@@ -116,7 +116,7 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
           .format(format).save(subdir.toString)
       }
       val operations = new S3AOperations(s3)
-      stats.update(s3)
+      stats.update()
 
       logDebug(s"Statistics = \n${stats.dump()}")
 

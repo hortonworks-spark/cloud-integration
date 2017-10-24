@@ -767,7 +767,7 @@
     <profile>
       <id>hadoop-2.8</id>
       <properties>
-        <required.hadoop.version>2.8.0</required.hadoop.version>
+        <required.hadoop.version>2.8.2</required.hadoop.version>
       </properties>
     </profile>
 
@@ -784,6 +784,15 @@
         <!--<required.hadoop.version>3.0.0-alpha4-SNAPSHOT</required.hadoop.version>-->
         <required.hadoop.version>2.11</required.hadoop.version>
         <guava.version>21.0</guava.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>spark-2.2</id>
+      <properties>
+        <spark.version>2.2.0</spark.version>
+        <!-- pull in a random module -->
+        <spark.cloud.module.name>spark-repl</spark.cloud.module.name>
       </properties>
     </profile>
 
@@ -817,6 +826,7 @@
         <scale.test.enabled>true</scale.test.enabled>
       </properties>
     </profile>
+
 
     <profile>
       <id>staging</id>

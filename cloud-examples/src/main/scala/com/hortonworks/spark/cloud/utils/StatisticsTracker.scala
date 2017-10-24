@@ -22,16 +22,9 @@ import scala.collection.JavaConverters._
 
 import org.apache.spark.internal.Logging
 
-class StatisticsTracker(start: StorageStatistics) extends Logging {
+class StatisticsTracker(fs: FileSystem) extends Logging {
 
-  def this(fs: FileSystem) = {
-    this(fs.getStorageStatistics)
-  }
-
-  def this(start: StorageStatistics, end: StorageStatistics) {
-    this(start)
-    update(end)
-  }
+  private val start: StorageStatistics = fs.getStorageStatistics
 
   import StatisticsTracker._
 
@@ -39,12 +32,8 @@ class StatisticsTracker(start: StorageStatistics) extends Logging {
 
   var updated: Map[String, Long] = Map()
 
-  def update(fs: FileSystem): Unit = {
-    update(fs.getStorageStatistics)
-  }
-
-  def update(stats: StorageStatistics): StatisticsTracker = {
-    updated = statsToMap(stats)
+  def update(): StatisticsTracker = {
+    updated = statsToMap(fs.getStorageStatistics)
     this
   }
 
@@ -74,11 +63,7 @@ class StatisticsTracker(start: StorageStatistics) extends Logging {
   }
 
   def dump(): String = {
-    dump("  [", " = ", "]", "\n")
-  }
-
-  def printStats(operation: String): Unit = {
-    logInfo(s"After $operation:\n $dump()" )
+    fs.getUri + "\n" + dump("  [", " = ", "]", "\n")
   }
 
 

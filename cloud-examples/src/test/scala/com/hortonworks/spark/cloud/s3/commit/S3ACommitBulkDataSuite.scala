@@ -206,15 +206,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       .getOrCreate()
   }
 
-  val csvOptions = Map(
-    "header" -> "true",
-    "ignoreLeadingWhiteSpace" -> "true",
-    "ignoreTrailingWhiteSpace" -> "true",
-    "timestampFormat" -> "dd-MM-yyyy HH:mm",
-    "inferSchema" -> "false",
-    "mode" -> "DROPMALFORMED")
-
-  val paralellism = 1
+  val paralellism = 4
 
   /**
    * This is the test
@@ -235,17 +227,34 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     spark = sparkSession
     val conf = spark.sparkContext.hadoopConfiguration
 
+    val destPath = new Path(destDir, "output")
+    rm(destFS, destPath)
+    val landsatPath = new Path(destPath, "landsat")
+    val landsatParquetPath = new Path(landsatPath, "parquet")
+
+    val fileMap = nonEmpty(formats).
+      map(fmt => fmt -> new Path(landsatPath, fmt)).toMap
+
+    val landsatOrcPath = new Path(fileMap("orc"), "filtered")
+
     // make very sure that the FS is normal IO
     val csvFS = csvPath.getFileSystem(conf).asInstanceOf[S3AFileSystem]
     assert(csvFS.getInputPolicy === S3AInputPolicy.Sequential,
       s"wrong input policy for $csvPath in $csvFS")
+    val srcStats = new StatisticsTracker(csvFS)
 
 
     // ignore the IDE if it complains: this *is* used.
     import sparkSession.implicits._
 
-    val rawCsvData = spark.read.options(LandsatIO.csvOptions)
-      .csv(csvPath.toUri.toString)
+    val csvSchema = LandsatIO.buildCsvSchema()
+    logInfo("CSV Schema:")
+    csvSchema.printTreeString()
+    val rawCsvData = logDuration("set up initial .csv load") {
+      spark.read.options(LandsatIO.CsvOptions)
+        .schema(csvSchema)
+        .csv(csvPath.toUri.toString)
+    }
     logInfo("Add landsat columns")
     val csvDataFrame = LandsatIO.addLandsatColumns(rawCsvData)
 
@@ -256,11 +265,16 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       spark.read.format(format).load(src.toUri.toString).as[LandsatImage]
     }
 
+    val destStats = new StatisticsTracker(destFS)
+
+    logInfo("Saving")
+    val orcWriteTime = writeDS(landsatOrcPath,
+      csvDataFrame.sample(false, 0.05d).filter("cloudCover < 30"),
+      "orc")
+
+/*
     val localSnapshotDir = tempDir("landsat", "")
     val localSnapshotPath = new Path(localSnapshotDir.toURI)
-    logInfo("Saving to local directory")
-    writeDS(localSnapshotPath, csvDataFrame.sample(0.05d, 0), "orc")
-
     val localFiles = getLocalFS.listStatus(localSnapshotPath)
     assert(localFiles.nonEmpty, "No local files written")
 
@@ -272,24 +286,13 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
     logInfo(s"Record count ${filteredData.count()}")
 
-    val destPath = new Path(destDir, "output")
-    rm(destFS, destPath)
-    val landsatPath = new Path(destPath, "landsat")
-    val landsatParqetPath = new Path(landsatPath, "parquet")
 
 
-    val fileMap = nonEmpty(formats).
-      map(fmt => fmt -> new Path(landsatPath, fmt)).toMap
-
-    val landsatOrcPath = new Path(fileMap("orc"), "filtered")
-
-
-    val stats = new StatisticsTracker(destFS)
     val orcWrite = writeDS(landsatOrcPath, filteredData, "orc")
-    stats.update(destFS)
+*/
 
-    logInfo("Write duration = %3.3f".format((orcWrite / 1000.0f)))
-    logInfo(s"Statistics diff ${stats.dump()}")
+    logInfo("Write duration = %3.3f".format((orcWriteTime / 1000.0f)))
+
 
     //list destination files
     ls(landsatOrcPath, true).foreach { stat =>
@@ -298,12 +301,11 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
 
     val operations = new S3AOperations(destFS)
-    val numPartitions = paralellism
     operations.maybeVerifyCommitter(landsatOrcPath,
       Some(committer),
       Some(COMMITTERS_BY_NAME(committer)._1),
       conf,
-      Some(numPartitions),
+      None,
       "ORC")
 
     // now do some dataframe
@@ -313,15 +315,20 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     writeDS(landsatOrcByYearPath, landsatOrcData, "orc", true)
     val landsatPartData= readLandsatDS(landsatOrcByYearPath)
     val (negativeCloudCover, nCCDuration) = logDuration2(s"Filter on cloudcover of $landsatOrcByYearPath") {
-      val negative = landsatPartData.filter("year = 213 AND cloudCover < 0").sort("year")
+      val negative = landsatPartData
+        .filter("year = 2013 AND cloudCover < 0")
+        .sort("year")
       negative.show(10)
       negative.count()
     }
     logInfo(s"Number of entries with negative cloud cover: $negativeCloudCover")
     summary += (("filter cloudcover < 0", nCCDuration))
 
+    srcStats.update()
+    destStats.update()
 
-
+    logInfo(s"Source Statistics diff ${srcStats.dump()}")
+    logInfo(s"Dest Statistics diff ${destStats.dump()}")
 
   }
 
