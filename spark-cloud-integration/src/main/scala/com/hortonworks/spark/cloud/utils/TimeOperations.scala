@@ -42,15 +42,25 @@ trait TimeOperations extends Logging {
    * @return the result
    */
   def logDuration[T](operation: String)(testFun: => T): T = {
-    val start = nanos
     logInfo(s"Starting $operation")
-    try {
-      testFun
-    } finally {
-      val end = nanos()
-      val d = end - start
-      logInfo(s"Duration of $operation = ${toHuman(d)}")
-    }
+    val (r, d) = durationOf(testFun)
+    logInfo(s"Duration of $operation = ${toHuman(d)}")
+    r
+  }
+
+  /**
+   * Measure the duration of an operation, log it with the text.
+   *
+   * @param operation operation description
+   * @param testFun function to execute
+   * @return the result and the operation duration in nanos
+   *
+   */
+  def logDuration2[T](operation: String)(testFun: => T): (T, Long) = {
+    logInfo(s"Starting $operation")
+    val (r, d) = durationOf(testFun)
+    logInfo(s"Duration of $operation = ${toHuman(d)}")
+    (r, d)
   }
 
   /**

@@ -72,7 +72,7 @@ abstract class BasicIOTests extends CloudSuite {
 
     // child entries that aren't just the SUCCESS marker
     val children = filesystem.listStatus(output)
-      .filter(_.getPath.getName != "_SUCCESS")
+      .filter(p => p.isFile && !(p.getPath.getName.startsWith("_")))
     assert(children.nonEmpty, s"No children under $output")
 
     children.foreach { child =>

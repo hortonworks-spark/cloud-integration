@@ -20,7 +20,7 @@ package com.hortonworks.spark.cloud.s3
 /**
  * Subclass of `S3aSeekReadSuite` with random IO turned on.
  */
-class S3ARandomSeekReadSuite extends S3ASeekReadSuite {
+class S3ASeekReadRandomIOSuite extends S3ASeekReadSequentialIOSuite {
 
   override def inputPolicy: String = RANDOM_IO
 }

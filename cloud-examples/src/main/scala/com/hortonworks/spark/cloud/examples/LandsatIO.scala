@@ -26,16 +26,18 @@ import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types._
+import org.apache.spark.sql.functions._
 /**
  * Reusable landsat assist.
  */
 object LandsatIO {
 
   /**
-   * Take a dataframe and add the landsat columns
+   * Take a dataframe and add the landsat columns, including type
+   * casting and adding year/month/day fields derived from timestamps
    *
-   * @param csv
-   * @return
+   * @param csv source CSV
+   * @return dataframe with typed columns
    */
   def addLandsatColumns(csv: DataFrame): DataFrame = {
     csv
@@ -49,7 +51,12 @@ object LandsatIO {
       .withColumn("min_lon", csv.col("min_lon").cast(DoubleType))
       .withColumn("max_lat", csv.col("max_lat").cast(DoubleType))
       .withColumn("max_lon", csv.col("max_lon").cast(DoubleType))
-
+      .withColumn("year",
+        year(col("acquisitionDate")))
+      .withColumn("month",
+        month(col("acquisitionDate")))
+      .withColumn("day",
+        month(col("acquisitionDate")))
   }
 
   /**
@@ -65,12 +72,16 @@ object LandsatIO {
 }
 
 case class LandsatImage(
-    id: StringType,
-    acquisitionDate: TimestampType,
-    cloudCover: DoubleType,
-    path: IntegerType,
-    row: IntegerType,
-    min_lat: IntegerType,
-    min_lon: IntegerType,
-    max_lat: IntegerType,
-    max_lon: IntegerType)
+    id: String,
+    acquisitionDate: Long,
+    year: Int,
+    month: Int,
+    day: Int,
+    cloudCover: Double,
+    path: Int,
+    row: Int,
+    min_lat: Double,
+    min_lon: Double,
+    max_lat: Double,
+    max_lon: Double)
+

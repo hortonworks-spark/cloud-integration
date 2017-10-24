@@ -22,7 +22,7 @@ import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations}
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
 import org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
-import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory, PartitonedStagingCommitterFactory}
+import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory, PartitionedStagingCommitterFactory}
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -104,8 +104,8 @@ class S3ACommitterSuite extends AbstractCommitterSuite {
     new DirectoryStagingCommitterFactory()
   }
 
-  ctest("PartitonedStagingCommitterFactory on CP") {
-    new PartitonedStagingCommitterFactory()
+  ctest("PartitionedStagingCommitterFactory on CP") {
+    new PartitionedStagingCommitterFactory()
   }
 
   ctest("MagicS3GuardCommitterFactory on CP") {

@@ -60,15 +60,6 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     ""
   )
 
-  /**
-   * Strip out the empty options
-   * @param src source list
-   * @return  the list without "" entries
-   */
-  private def nonEmpty(src: Seq[String]): Seq[String] = {
-    src.filterNot(_.isEmpty)
-  }
-
   nonEmpty(formats).foreach { format =>
     nonEmpty(modes).foreach{ mode =>
       ctest(s"Write $format-$mode",

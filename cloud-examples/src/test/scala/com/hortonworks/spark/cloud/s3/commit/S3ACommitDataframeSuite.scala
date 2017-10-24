@@ -38,9 +38,9 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
   }
 
   private val formats = Seq(
-    "orc"
-    //    ,
-    //    "parquet"
+    "orc",
+    "parquet",
+    ""
   )
 
   // there's an empty string at the end to aid with commenting out different
@@ -49,15 +49,15 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
     //    DEFAULT_RENAME,
     DIRECTORY,
     //    PARTITIONED,
-//    MAGIC,
+    MAGIC,
     ""
   )
   private val s3 = filesystem.asInstanceOf[S3AFileSystem]
   private val destDir = testPath(s3, "dataframe-committer")
   private val isConsistentFS = isConsistentFilesystemConfig
 
-  committers.filter(!_.isEmpty).foreach { committer =>
-    formats.foreach {
+  nonEmpty(committers).foreach { committer =>
+    nonEmpty(formats).foreach {
       fmt =>
         val commitInfo = COMMITTERS_BY_NAME(committer)
         val compatibleFS = isConsistentFS || !commitInfo._3
