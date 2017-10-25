@@ -62,9 +62,14 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     }
   }
 
+  protected val Parquet = "parquet"
+  protected val Csv = "csv"
+  protected val Orc = "orc"
+
   private val formats = Seq(
-    "orc",
-    "parquet",
+    Orc,
+    Parquet,
+    Csv,
     ""
   )
 
@@ -211,6 +216,9 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
   /**
    * This is the test
    */
+
+
+
   ctest("landsat pipeine", "work with the landsat data") {
     val csvPath = getTestCSVPath()
 
@@ -230,7 +238,6 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val destPath = new Path(destDir, "output")
     rm(destFS, destPath)
     val landsatPath = new Path(destPath, "landsat")
-    val landsatParquetPath = new Path(landsatPath, "parquet")
 
     val fileMap = nonEmpty(formats).
       map(fmt => fmt -> new Path(landsatPath, fmt)).toMap
@@ -241,8 +248,6 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val csvFS = csvPath.getFileSystem(conf).asInstanceOf[S3AFileSystem]
     assert(csvFS.getInputPolicy === S3AInputPolicy.Sequential,
       s"wrong input policy for $csvPath in $csvFS")
-    val srcStats = new StatisticsTracker(csvFS)
-
 
     // ignore the IDE if it complains: this *is* used.
     import sparkSession.implicits._
@@ -250,48 +255,37 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val csvSchema = LandsatIO.buildCsvSchema()
     logInfo("CSV Schema:")
     csvSchema.printTreeString()
-    val rawCsvData = logDuration("set up initial .csv load") {
+    val (rawCsvData, tBuildRDD) = logDuration2("set up initial .csv load") {
       spark.read.options(LandsatIO.CsvOptions)
         .schema(csvSchema)
         .csv(csvPath.toUri.toString)
     }
+    summary += (("Build CSV RDD", tBuildRDD))
     logInfo("Add landsat columns")
+
     val csvDataFrame = LandsatIO.addLandsatColumns(rawCsvData)
 
     def readLandsatDS(
         src: Path,
-        format: String = "orc"): Dataset[LandsatImage] = {
+        format: String = Orc): Dataset[LandsatImage] = {
 
-      spark.read.format(format).load(src.toUri.toString).as[LandsatImage]
+      val op = s"read $src as $format"
+      val (r, t) = logDuration2(op) {
+        spark.read.format(format).load(src.toUri.toString).as[LandsatImage]
+      }
+      summary += ((op, t))
+      r
     }
 
     val destStats = new StatisticsTracker(destFS)
 
     logInfo("Saving")
-    val orcWriteTime = writeDS(landsatOrcPath,
+    val (_, orcWriteTime) = writeDS(landsatOrcPath,
       csvDataFrame.sample(false, 0.05d).filter("cloudCover < 30"),
-      "orc")
+      Orc, false)
 
-/*
-    val localSnapshotDir = tempDir("landsat", "")
-    val localSnapshotPath = new Path(localSnapshotDir.toURI)
-    val localFiles = getLocalFS.listStatus(localSnapshotPath)
-    assert(localFiles.nonEmpty, "No local files written")
-
-    val localData = readLandsatDS(localSnapshotPath)
-
-    val filteredData = logDuration(s"Filter and cache the CSV source $csvPath") {
-      localData.filter("cloudCover < 30")
-    }
-
-    logInfo(s"Record count ${filteredData.count()}")
-
-
-
-    val orcWrite = writeDS(landsatOrcPath, filteredData, "orc")
-*/
-
-    logInfo("Write duration = %3.3f".format((orcWriteTime / 1000.0f)))
+    logInfo(s"Write duration = ${toHuman(orcWriteTime)}")
+    summary += (("Filter and write orc unparted", orcWriteTime))
 
 
     //list destination files
@@ -306,35 +300,75 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       Some(COMMITTERS_BY_NAME(committer)._1),
       conf,
       None,
-      "ORC")
+      Orc)
 
     // now do some dataframe
     val landsatOrcData = readLandsatDS(landsatOrcPath)
 
-    val landsatOrcByYearPath = new Path(fileMap("orc"), "parted")
-    writeDS(landsatOrcByYearPath, landsatOrcData, "orc", true)
-    val landsatPartData= readLandsatDS(landsatOrcByYearPath)
-    val (negativeCloudCover, nCCDuration) = logDuration2(s"Filter on cloudcover of $landsatOrcByYearPath") {
+    val landsatOrcByYearPath = new Path(fileMap(Orc), "parted")
+    val (_, tOrcByYear) = writeDS(landsatOrcByYearPath, landsatOrcData, Orc, true)
+    summary += (("write orc parted", tOrcByYear))
+    val landsatPartData = readLandsatDS(landsatOrcByYearPath)
+    val (nveCloudCover, tNegativeCloud) =
+      logDuration2(s"Filter on year and cloudcover of $landsatOrcByYearPath") {
       val negative = landsatPartData
         .filter("year = 2013 AND cloudCover < 0")
         .sort("year")
       negative.show(10)
       negative.count()
     }
-    logInfo(s"Number of entries with negative cloud cover: $negativeCloudCover")
-    summary += (("filter cloudcover < 0", nCCDuration))
+    logInfo(s"Number of entries with negative cloud cover: $nveCloudCover")
+    summary += (("ORC filter cloudcover < 0", tNegativeCloud))
 
-    srcStats.update()
+    val landsat2014CSVParted = new Path(fileMap(Csv), "parted/y2013")
+    val (_, tCsvWrite) = writeDS(
+          landsat2014CSVParted,
+          landsatPartData.filter("year = 2014 AND cloudCover >= 0"),
+          Csv,
+          true)
+    summary += (("ORC -> csv where year = 2104 AND cloudCover >= 0", tCsvWrite))
+
+    // bit of parquet, using same ops as ORC
+    val landsatParquetPath = new Path(fileMap(Parquet), "parted")
+    val (_, tParquetWrite) = writeDS(landsatParquetPath, landsatOrcData, Parquet, true )
+
+    summary += (("ORC -> Parquet", tParquetWrite))
+    operations.maybeVerifyCommitter(landsatParquetPath,
+      Some(committer),
+      Some(COMMITTERS_BY_NAME(committer)._1),
+      conf,
+      None,
+      Parquet)
+
+    val landsatParquetData = readLandsatDS(landsatParquetPath, Parquet)
+    val (nveCloudCover2, tNegativeCloud2) =
+      logDuration2(s"Filter on year and cloudcover of $landsatOrcByYearPath") {
+        val negative = landsatParquetData
+          .filter("year = 2013 AND cloudCover < 0")
+          .sort("year")
+        negative.show(10)
+        negative.count()
+      }
+    assert(nveCloudCover === nveCloudCover2, "cloud cover queries across formats")
+    summary += (("Parquet filter cloudcover < 0", tNegativeCloud2))
+
     destStats.update()
 
-    logInfo(s"Source Statistics diff ${srcStats.dump()}")
-    logInfo(s"Dest Statistics diff ${destStats.dump()}")
+    logInfo(s"S3 Statistics diff ${destStats.dump()}")
 
+    logInfo("Operation Summaries")
+    summary.foreach(e =>
+      logInfo(s"${e._1} ${toSeconds(e._2)}"))
   }
 
+//  val codec = Some("lzo")
+  val codec: Option[String] = None
 
-  def writeDS[T](dest: Path, sourceData: Dataset[T],
-      format: String, parted: Boolean = false): Long = {
+  def writeDS[T](
+      dest: Path,
+      sourceData: Dataset[T],
+      format: String,
+      parted: Boolean = false): (Dataset[T], Long) = {
 
     logInfo(s"write to $dest in format $format partitioning: $parted")
     val t = time {
@@ -342,14 +376,14 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       if(parted) {
         writer.partitionBy("year", "month")
       }
+      writer.mode(SaveMode.Append)
+      codec.foreach( writer.option("compression", _))
       writer
-        .mode(SaveMode.Append)
-        .option("compression", "snappy")
         .format(format)
         .save(dest.toUri.toString)
     }
-    logInfo(s"Write time: ${toHuman(t)}")
-    t
+    logInfo(s"Write time: ${toSeconds(t)}")
+    (sourceData, t)
   }
 
 
