@@ -18,16 +18,13 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations}
-import org.apache.hadoop.fs.s3a.S3AFileSystem
-import org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
+import org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
 import org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
 import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory, PartitionedStagingCommitterFactory}
 
 import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
 
-class S3ACommitterSuite extends AbstractCommitterSuite {
+class S3ACommitterFactorySuite extends AbstractCommitterSuite {
 
   init()
 
@@ -52,54 +49,6 @@ class S3ACommitterSuite extends AbstractCommitterSuite {
     sparkConf.setAll(COMMITTER_OPTIONS)
   }
 
-
-  /**
-   * This is the least complex of the output writers, the original RDD
-   * API.
-   */
-  ctest("saveAsNewAPIHadoopFile",
-    "Write output via the RDD saveAsNewAPIHadoopFile API",
-    false) {
-
-    // store the S3A FS the test is bonded to
-    val s3 = filesystem.asInstanceOf[S3AFileSystem]
-
-    // switch to the local FS for staging
-    val local = getLocalFS
-    setLocalFS()
-
-    val sparkConf = newSparkConf("saveAsFile", local.getUri)
-    val destDir = testPath(s3, "saveAsFile")
-    rm(s3, destDir)
-    val spark = SparkSession
-      .builder
-      .config(sparkConf)
-      .enableHiveSupport
-      .getOrCreate()
-
-    val operations = new S3AOperations(s3)
-    val sc = spark.sparkContext
-    val conf = sc.hadoopConfiguration
-    expectOptionSet(conf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY)
-
-    val numRows = 10
-
-    val sourceData = sc.range(0, numRows).map(i => i)
-
-    spark.createDataFrame(Seq((1, "4"), (2, "2")))
-
-    val format = "orc"
-    logDuration(s"write to $destDir in format $format") {
-      saveAsTextFile(sourceData, destDir, conf, Long.getClass, Long.getClass)
-    }
-    operations.maybeVerifyCommitter(destDir,
-      None,
-      None,
-      conf,
-      Some(1),
-      s"Saving in format $format:")
-  }
-
   ctest("DirectoryStagingCommitterFactory on CP") {
     new DirectoryStagingCommitterFactory()
   }
@@ -112,8 +61,8 @@ class S3ACommitterSuite extends AbstractCommitterSuite {
     new MagicS3GuardCommitterFactory()
   }
 
-  ctest("DynamicCommitterFactory on CP") {
-    new DynamicCommitterFactory()
+  ctest("S3ACommitterFactory on CP") {
+    new S3ACommitterFactory()
   }
 
 

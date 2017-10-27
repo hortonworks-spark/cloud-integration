@@ -280,9 +280,9 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val destStats = new StatisticsTracker(destFS)
 
     logInfo("Saving")
-    val (_, orcWriteTime) = writeDS(landsatOrcPath,
-      csvDataFrame.sample(false, 0.05d).filter("cloudCover < 30"),
-      Orc, false)
+    val (_, orcWriteTime) = writeDS(
+      dest = landsatOrcPath,
+      source = csvDataFrame.sample(false, 0.05d).filter("cloudCover < 30"))
 
     logInfo(s"Write duration = ${toHuman(orcWriteTime)}")
     summary += (("Filter and write orc unparted", orcWriteTime))
@@ -322,10 +322,10 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
     val landsat2014CSVParted = new Path(fileMap(Csv), "parted/y2013")
     val (_, tCsvWrite) = writeDS(
-          landsat2014CSVParted,
-          landsatPartData.filter("year = 2014 AND cloudCover >= 0"),
-          Csv,
-          true)
+      dest = landsat2014CSVParted,
+      source = landsatPartData.filter("year = 2014 AND cloudCover >= 0"),
+      format = Csv,
+      parted = true)
     summary += (("ORC -> csv where year = 2104 AND cloudCover >= 0", tCsvWrite))
 
     // bit of parquet, using same ops as ORC
@@ -352,6 +352,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     assert(nveCloudCover === nveCloudCover2, "cloud cover queries across formats")
     summary += (("Parquet filter cloudcover < 0", tNegativeCloud2))
 
+
     destStats.update()
 
     logInfo(s"S3 Statistics diff ${destStats.dump()}")
@@ -366,24 +367,26 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
   def writeDS[T](
       dest: Path,
-      sourceData: Dataset[T],
-      format: String,
-      parted: Boolean = false): (Dataset[T], Long) = {
+      source: Dataset[T],
+      format: String = Orc,
+      parted: Boolean = false,
+      extraOps: Map[String, String] = Map()): (Dataset[T], Long) = {
 
     logInfo(s"write to $dest in format $format partitioning: $parted")
     val t = time {
-      val writer = sourceData.write
+      val writer = source.write
       if(parted) {
         writer.partitionBy("year", "month")
       }
       writer.mode(SaveMode.Append)
       codec.foreach( writer.option("compression", _))
+      extraOps.foreach(t => writer.option(t._1, t._2))
       writer
         .format(format)
         .save(dest.toUri.toString)
     }
     logInfo(s"Write time: ${toSeconds(t)}")
-    (sourceData, t)
+    (source, t)
   }
 
 

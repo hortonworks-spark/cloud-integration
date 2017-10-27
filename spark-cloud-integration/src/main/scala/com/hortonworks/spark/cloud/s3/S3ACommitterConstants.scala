@@ -36,7 +36,7 @@ object S3ACommitterConstants {
   val PARTITIONED_COMMITTER_FACTORY: String = CommitConstants.PARTITION_COMMITTER_FACTORY
   val STAGING_COMMITTER_FACTORY: String = CommitConstants.STAGING_COMMITTER_FACTORY
   val MAGIC_COMMITTER_FACTORY: String = CommitConstants.MAGIC_COMMITTER_FACTORY
-  val DYNAMIC_COMMITTER_FACTORY: String = CommitConstants.DYNAMIC_COMMITTER_FACTORY
+  val S3A_COMMITTER_FACTORY: String = CommitConstants.S3A_COMMITTER_FACTORY
 
   val MAGIC = "magic"
   val STAGING = "staging"
@@ -64,7 +64,7 @@ object S3ACommitterConstants {
   val COMMITTERS_BY_NAME: Map[String, (String, String, Boolean)] = Map(
     MAGIC -> ("MagicS3GuardCommitter",  MAGIC_COMMITTER_FACTORY, true),
     STAGING -> ("StagingCommitter",  STAGING_COMMITTER_FACTORY, false),
-    DYNAMIC -> ("",  DYNAMIC_COMMITTER_FACTORY, false),
+    DYNAMIC -> ("",  S3A_COMMITTER_FACTORY, false),
     DIRECTORY -> ("DirectoryStagingCommitter",  DIRECTORY_COMMITTER_FACTORY, false),
     PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY, false),
     FILE -> ("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
@@ -77,5 +77,5 @@ object S3ACommitterConstants {
     STAGING_COMMITTER_FACTORY,
     PARTITIONED_COMMITTER_FACTORY,
     MAGIC_COMMITTER_FACTORY,
-    DYNAMIC_COMMITTER_FACTORY)
+    S3A_COMMITTER_FACTORY)
 }
