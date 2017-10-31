@@ -22,10 +22,11 @@ import scala.collection.mutable
 import com.hortonworks.spark.cloud.examples.{LandsatIO, LandsatImage}
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
 import com.hortonworks.spark.cloud.utils.StatisticsTracker
-import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.{Path, PathExistsException}
+import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}
 
+import org.apache.spark.SparkException
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
 /**
@@ -50,7 +51,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
   override def enabled: Boolean = super.enabled &&
     hasCSVTestFile // && isScaleTestEnabled
 
-  val paralellism = 6
+  val paralellism = 8
 
 
   private val destFS = filesystemOption.orNull.asInstanceOf[S3AFileSystem]
@@ -79,6 +80,10 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     Csv,
     ""
   )
+
+  // choose the filter percentage; on a scale test
+  // the output is bigger
+  val filterPercentage: Double = if (isScaleTestEnabled) 0.5d else 0.05d
 
   val operations = new S3AOperations(destFS)
 
@@ -129,6 +134,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     logInfo(s"Duration of $s = ${toSeconds(t)}")
     summary += ((s, t))
   }
+
 
 
   ctest("landsat pipeine", "work with the landsat data") {
@@ -190,35 +196,26 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val destStats = new StatisticsTracker(destFS)
 
     logInfo("Saving sampled and filtered ORC data")
-    val (_, orcWriteTime) = writeDS(
+    val filteredCSVSource = csvDataFrame.sample(false, filterPercentage)
+      .filter("cloudCover < 75")
+    writeDS(
+      summary = "Filter and write orc unparted",
       dest = landsatOrcPath,
-      source = csvDataFrame.sample(false, 0.05d).filter("cloudCover < 75"),
+      committer = committer,
+      source = filteredCSVSource,
       parted = false)
 
-    logInfo(s"Write duration = ${toHuman(orcWriteTime)}")
-    summarize("Filter and write orc unparted", orcWriteTime)
-
-
-    //list destination files
-    ls(landsatOrcPath, true).foreach { stat =>
-      logInfo(s"  ${stat.getPath} + ${stat.getLen} bytes")
-    }
-
-
-    operations.maybeVerifyCommitter(landsatOrcPath,
-      Some(committer),
-      Some(COMMITTERS_BY_NAME(committer)),
-      conf,
-      None,
-      Orc)
 
     // read in the unpartitioned
     val landsatOrcData = readLandsatDS(landsatOrcPath)
 
     // save it partitioned
     val landsatOrcByYearPath = new Path(fileMap(Orc), "parted")
-    val (_, tOrcByYear) = writeDS(landsatOrcByYearPath, landsatOrcData, Orc, true)
-    summarize("write orc parted", tOrcByYear)
+    writeDS(
+      summary = "write orc parted",
+      dest = landsatOrcByYearPath,
+      source = landsatOrcData,
+      format = Orc)
 
     // read in the partitioned data; filter and count
     val landsatOrcPartData = readLandsatDS(landsatOrcByYearPath)
@@ -236,25 +233,22 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
     // generate CSV for 2014 and positive clouds
     val landsat2014CSVParted = new Path(fileMap(Csv), "parted")
-    val (_, tCsvWrite) = writeDS(
+    writeDS(
+      summary = "ORC -> csv where year = 2014 AND cloudCover >= 0",
       dest = landsat2014CSVParted,
       source = landsatOrcPartData.filter("year = 2014 AND cloudCover >= 0"),
       format = Csv,
-      parted = true,
-      extraOps = Map(CONFLICT_MODE -> CONFLICT_MODE_REPLACE))
-    summarize("ORC -> csv where year = 2104 AND cloudCover >= 0", tCsvWrite)
+      committer = DIRECTORY,
+      conflict = CONFLICT_MODE_REPLACE)
 
     // bit of parquet, using same ops as ORC
     val landsatParquetPath = new Path(fileMap(Parquet), "parted-1")
-    val (_, tParquetWrite) = writeDS(landsatParquetPath, landsatOrcData, Parquet, true )
-
-    summarize("ORC -> Parquet", tParquetWrite)
-    operations.maybeVerifyCommitter(landsatParquetPath,
-      Some(committer),
-      Some(COMMITTERS_BY_NAME(committer)),
-      conf,
-      None,
-      Parquet)
+    writeDS(
+      summary = "ORC -> Parquet",
+      dest = landsatParquetPath,
+      source = landsatOrcData,
+      format = Parquet,
+      committer = DIRECTORY)
 
     val landsatParquetData = readLandsatDS(landsatParquetPath, Parquet)
     val (nveCloudCover2, tNegativeCloud2) =
@@ -272,14 +266,11 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     // first, write to directory with commit conflict = fail
     val landsatParquetPath2 = new Path(fileMap(Parquet), "parted-2")
     val (_, tParquetWrite2) = writeDS(
+      summary = "Parquet write 2013 data",
       dest = landsatParquetPath2,
       source = landsatOrcPartData.filter("year = 2013 AND cloudCover < 30"),
       format = Parquet,
-      parted = true,
-      extraOps = Map(
-        S3A_COMMITTER_NAME -> DIRECTORY,
-        CONFLICT_MODE -> CONFLICT_MODE_FAIL
-      ))
+      committer = DIRECTORY)
     summarize("Parquet write 2013 directory+fail ", tParquetWrite2)
 
     val parquetDS2 = readLandsatDS(src = landsatParquetPath2, format = Parquet)
@@ -296,14 +287,11 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val (_, tFailingDirCommit) = logDuration2("failing directory commit") {
       intercept[PathExistsException] {
         writeDS(
+          summary = "failing directory commit",
           dest = landsatParquetPath2,
           source = landsatOrcPartData.filter("year = 2014 AND cloudCover < 30"),
           format = Parquet,
-          parted = true,
-          extraOps = Map(
-            S3A_COMMITTER_NAME -> DIRECTORY,
-            CONFLICT_MODE -> CONFLICT_MODE_FAIL
-          ))
+          committer = DIRECTORY)
       }
     }
 
@@ -317,19 +305,13 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       }
     }
 
-
     // now write parted +fail and expect all to be well, because
     // it is updating a different part from the 2013 data
-    val (_, tPartUpdate) = writeDS(
+    writeDS(
+      summary = "Parquet write 2014 parts with conflict=fail",
       dest = landsatParquetPath2,
       source = landsatOrcPartData.filter("year = 2014 AND cloudCover < 30"),
-      format = Parquet,
-      parted = true,
-      extraOps = Map(
-        S3A_COMMITTER_NAME -> PARTITIONED,
-        CONFLICT_MODE -> CONFLICT_MODE_FAIL
-      ))
-    summarize("Parquet write 2014 parts with conflict=fail ", tPartUpdate)
+      format = Parquet)
 
     // count
     val (parquetDS2_2, t_countDS2_2) = durationOf {
@@ -341,42 +323,65 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       s"Count of dataset $landsatParquetPath2 unchanged at $parquetDS2_1")
 
     // now append into the same dest dir with a different cloud year
-    val (_, tPartAppend) = writeDS(
+    writeDS(
+      summary = "Append to existing parts",
       dest = landsatParquetPath2,
       source = landsatOrcPartData.filter("" +
         "year = 2014 AND cloudCover > 50 AND cloudCover < 75"),
       format = Parquet,
-      parted = true,
-      extraOps = Map(
-        S3A_COMMITTER_NAME -> PARTITIONED,
-        CONFLICT_MODE -> CONFLICT_MODE_APPEND
-      ))
-    summarize("Parquet write append to existing partitions > parted + append",
-      tPartAppend)
+      conflict = CONFLICT_MODE_APPEND
+//      conflict = CONFLICT_MODE_FAIL
+    )
 
     val (parquetDS2_3, t_countDS2_3) = durationOf {
       readLandsatDS(src = landsatParquetPath2, format = Parquet).count()
     }
-    summarize(s"Parquet read second count $parquetDS2_3", t_countDS2_3)
+    summarize(s"Parquet read third count $parquetDS2_3", t_countDS2_3)
+
+    assert(t_countDS2_3 > t_countDS2_2,
+      s"Count of dataset $landsatParquetPath2 unchanged at $parquetDS2_2")
 
 
     // now do a failing part commit to same dest
-    val (_, tFailingPartCommit) = logDuration2("failing directory commit") {
-      intercept[PathExistsException] {
-        writeDS(
+    val (_, tFailingPartCommit) = logDuration2("failing part commit") {
+      intercept[SparkException] {
+        val success = writeDS(
+          summary = "failing part commit",
           dest = landsatParquetPath2,
-          source = landsatOrcPartData.filter("year = 2014 AND cloudCover >=75"),
+          source = landsatOrcPartData.filter("year = 2013"),
           format = Parquet,
-          parted = true,
           conflict = CONFLICT_MODE_FAIL)
+        logWarning(s"Success outcome: ${success._1.toString}")
       }
     }
     summarize("Failing Parquet write existing parts to fail", tFailingPartCommit)
 
-    // get final stats
+    // before asserting that a failing part commit where there is no output
+    // is not an error, because there are no parts to conflict
+    val r = writeDS(
+      summary = "Append to existing partitions with empty output",
+      dest = landsatParquetPath2,
+      source = landsatOrcPartData.filter("year = 2014 AND cloudCover > 150"),
+      format = Parquet,
+      conflict = CONFLICT_MODE_FAIL)
+    assert(r._1.getFilenames.isEmpty, s"Expected no files in ${r._1}")
+
+    // get stats
     destStats.update()
 
     logInfo(s"S3 Statistics diff ${destStats.dump()}")
+
+    // now play with the magic committer with a full write of the CSV data
+    // as ORC parted
+
+    val magicOrcPath = new Path(fileMap(Orc), "magic/parted")
+
+    writeDS(
+      summary = "republish ORC data through magic",
+      dest = magicOrcPath,
+      committer = MAGIC,
+      source = landsatOrcData,
+      parted = false)
 
   }
 
@@ -396,15 +401,18 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     * @return success data
     */
   def writeDS[T](
-      dest: Path,
-      source: Dataset[T],
-      format: String = Orc,
-      parted: Boolean = false,
-      committer: String = PARTITIONED,
-      conflict: String = CONFLICT_MODE_FAIL,
-      extraOps: Map[String, String] = Map()): (SuccessData, Long) = {
+    dest: Path,
+    source: Dataset[T],
+    summary: String = "",
+    format: String = Orc,
+    parted: Boolean = true,
+    committer: String = PARTITIONED,
+    conflict: String = CONFLICT_MODE_FAIL,
+    extraOps: Map[String, String] = Map()): (SuccessData, Long) = {
 
-    logInfo(s"write to $dest in format $format partitioning: $parted")
+    val text = s"$summary + committer=$committer format $format partitioning: $parted" +
+      s" conflict=$conflict"
+    logInfo(s"write to $dest: $text")
     val t = time {
       val writer = source.write
       if(parted) {
@@ -419,13 +427,13 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
         .format(format)
         .save(dest.toUri.toString)
     }
-    logInfo(s"Write time: ${toSeconds(t)}")
+    summarize(summary, t)
     val success = operations.maybeVerifyCommitter(dest,
       Some(committer),
       Some(COMMITTERS_BY_NAME(committer)),
       destFS.getConf,
       None,
-      s"Write to $dest in format $format")
+      text)
 
     (success.get, t)
   }

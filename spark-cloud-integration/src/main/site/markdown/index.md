@@ -228,3 +228,87 @@ What can be changed
 
 
 What can not be changed: anything else.
+
+### Troubleshooting
+
+
+## Job/Task fails "Destination path exists and committer conflict resolution mode is FAIL" 
+
+This surfaces when either of two conditions are met.
+
+1. The Directory committer is used conflict resolution mode == "fail" and the output/destination directory exists.
+The job will fail in the driver during job setup.
+1. the Partitioned Committer is used with conflict resolution mode == "fail" and one of the partitions.
+The specific task(s) generating conflicting data will fail during task commit.
+
+If you are trying to write data and want write conflicts to be rejected, this is the correct
+behavior: there was data at the destination so the job was aborted.
+
+Example top level stack
+
+```
+017-10-31 17:25:40,985 [ScalaTest-main-running-S3ACommitBulkDataSuite] ERROR commit.S3ACommitBulkDataSuite (Logging.scala:logError(91))
+ - After 6,175,190,585 nS: org.apache.spark.SparkException: Job aborted.
+org.apache.spark.SparkException: Job aborted.
+  at org.apache.spark.sql.execution.datasources.FileFormatWriter$.write(FileFormatWriter.scala:224)
+  at org.apache.spark.sql.execution.datasources.InsertIntoHadoopFsRelationCommand.run(InsertIntoHadoopFsRelationCommand.scala:140)
+  at org.apache.spark.sql.execution.command.ExecutedCommandExec.sideEffectResult$lzycompute(commands.scala:70)
+  at org.apache.spark.sql.execution.command.ExecutedCommandExec.sideEffectResult(commands.scala:68)
+  at org.apache.spark.sql.execution.command.ExecutedCommandExec.doExecute(commands.scala:86)
+  at org.apache.spark.sql.execution.SparkPlan$$anonfun$execute$1.apply(SparkPlan.scala:114)
+  at org.apache.spark.sql.execution.SparkPlan$$anonfun$execute$1.apply(SparkPlan.scala:114)
+  at org.apache.spark.sql.execution.SparkPlan$$anonfun$executeQuery$1.apply(SparkPlan.scala:135)
+  at org.apache.spark.rdd.RDDOperationScope$.withScope(RDDOperationScope.scala:151)
+  at org.apache.spark.sql.execution.SparkPlan.executeQuery(SparkPlan.scala:132)
+  at org.apache.spark.sql.execution.SparkPlan.execute(SparkPlan.scala:113)
+  at org.apache.spark.sql.execution.QueryExecution.toRdd$lzycompute(QueryExecution.scala:93)
+  at org.apache.spark.sql.execution.QueryExecution.toRdd(QueryExecution.scala:93)
+  at org.apache.spark.sql.DataFrameWriter$$anonfun$runCommand$1.apply(DataFrameWriter.scala:635)
+  at org.apache.spark.sql.DataFrameWriter$$anonfun$runCommand$1.apply(DataFrameWriter.scala:635)
+  at org.apache.spark.sql.execution.SQLExecution$.withNewExecutionId(SQLExecution.scala:77)
+  at org.apache.spark.sql.DataFrameWriter.runCommand(DataFrameWriter.scala:635)
+  at org.apache.spark.sql.DataFrameWriter.save(DataFrameWriter.scala:257)
+  at org.apache.spark.sql.DataFrameWriter.save(DataFrameWriter.scala:221)
+```
+
+
+with logged route cause showing `org.apache.hadoop.fs.PathExistsException`
+
+
+```
+  Cause: org.apache.hadoop.fs.PathExistsException: `s3a://example/landsat/year=2014/month=10':
+   Destination path exists and committer conflict resolution mode is FAIL
+  at org.apache.hadoop.fs.s3a.commit.staging.PartitionedStagingCommitter.commitTaskInternal(PartitionedStagingCommitter.java:100)
+  at org.apache.hadoop.fs.s3a.commit.staging.StagingCommitter.commitTask(StagingCommitter.java:661)
+  at org.apache.spark.mapred.SparkHadoopMapRedUtil$.performCommit$1(SparkHadoopMapRedUtil.scala:50)
+  at org.apache.spark.mapred.SparkHadoopMapRedUtil$.commitTask(SparkHadoopMapRedUtil.scala:76)
+  at org.apache.spark.internal.io.HadoopMapReduceCommitProtocol.commitTask(HadoopMapReduceCommitProtocol.scala:172)
+  at com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol.commitTask(PathOutputCommitProtocol.scala:186)
+  at org.apache.spark.sql.execution.datasources.FileFormatWriter$$anonfun$org$apache$spark$sql$execution$datasources$FileFormatWriter$$executeTask$3.apply(FileFormatWriter.scala:271)
+  at org.apache.spark.sql.execution.datasources.FileFormatWriter$$anonfun$org$apache$spark$sql$execution$datasources$FileFormatWriter$$executeTask$3.apply(FileFormatWriter.scala:267)
+  at org.apache.spark.util.Utils$.tryWithSafeFinallyAndFailureCallbacks(Utils.scala:1398)
+  at org.apache.spark.sql.execution.datasources.FileFormatWriter$.org$apache$spark$sql$execution$datasources$FileFormatWriter$$executeTask(FileFormatWriter.scala:272)
+  ...
+
+```
+
+Fixes: 
+
+Directory Committer
+
+* Delete the destination directory before the job is executed.
+* Make sure nothing is creating the directory durign the job's execution.
+* Maybe: consider/explore alternate conflict policies.
+
+Partitioned Committer
+
+It may be that the query is generating broader output than expected, so trying
+to overwrite existing partitions --or that previous work has done this.
+
+* Review the state of the destination directory tree. Are there unexpected
+partitions there? If so: which query created them.
+* Review the current query. Can it be filtered to generate exactly the 
+desired number of partitions?
+* Maybe: consider/explore alternate conflict policies.
+  
+

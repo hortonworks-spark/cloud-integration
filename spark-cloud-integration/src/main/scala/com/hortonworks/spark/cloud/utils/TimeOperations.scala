@@ -40,8 +40,7 @@ trait TimeOperations extends Logging {
    */
   def toSeconds(durationNanos: Long): String = {
     val millis = durationNanos / 1e6
-    "%,fS".format(
-      (millis / 1000))
+    "%,fs".format((millis / 1000))
   }
 
   /**
