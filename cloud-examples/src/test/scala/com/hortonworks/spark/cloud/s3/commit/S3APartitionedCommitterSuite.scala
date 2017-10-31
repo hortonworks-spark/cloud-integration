@@ -96,10 +96,9 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
 
     val committerInfo = COMMITTERS_BY_NAME(committerName)
 
-    val factory = committerInfo._2
-    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, factory)
+    committerInfo.bind(sparkConf)
 
-    logInfo(s"Using committer factory $factory with conflict mode $confictMode" +
+    logInfo(s"Using committer binding $committerInfo with conflict mode $confictMode" +
       s" writing $format data")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
     hconf(sparkConf, PathOutputCommitProtocol.REJECT_FILE_OUTPUT, true)
@@ -165,7 +164,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
 
       operations.maybeVerifyCommitter(dest,
         Some(committerName),
-        Some(committerInfo._1),
+        Some(committerInfo),
         conf,
         Some(origFileCount),
         s"$format:")
@@ -178,7 +177,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
       writeDS(newPartition)
       operations.maybeVerifyCommitter(dest,
         Some(committerName),
-        Some(committerInfo._1),
+        Some(committerInfo),
         conf,
         Some(newFileCount),
         s"$format:")
@@ -192,7 +191,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
       writeDS(newPartition)
       operations.maybeVerifyCommitter(dest,
         Some(committerName),
-        Some(committerInfo._1),
+        Some(committerInfo),
         conf,
         Some(newFileCount),
         s"$format:")

@@ -51,8 +51,13 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
       if (spark != null) {
         logInfo("Closing spark context")
         spark.stop()
+        spark == null
       }
     }
+  }
+
+  def assertSparkRunning(): Unit = {
+    assert(spark != null, "No spark context")
   }
 
   /**

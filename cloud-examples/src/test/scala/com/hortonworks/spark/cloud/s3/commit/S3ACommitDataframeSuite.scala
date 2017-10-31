@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations}
+import com.hortonworks.spark.cloud.s3.S3AOperations
 import com.hortonworks.spark.cloud.utils.StatisticsTracker
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -60,7 +60,7 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
     nonEmpty(formats).foreach {
       fmt =>
         val commitInfo = COMMITTERS_BY_NAME(committer)
-        val compatibleFS = isConsistentFS || !commitInfo._3
+        val compatibleFS = isConsistentFS || !commitInfo.needsConsistent
         ctest(s"Dataframe+$committer-$fmt",
           s"Write a dataframe to $fmt with the committer $committer",
           compatibleFS) {
@@ -81,8 +81,9 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
     val sparkConf = newSparkConf("DataFrames", local.getUri)
     val committerInfo = committerName.map(COMMITTERS_BY_NAME(_))
 
+
     committerInfo.foreach { info =>
-      hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, info._2)
+      info.bind(sparkConf)
     }
     val s3 = filesystem.asInstanceOf[S3AFileSystem]
     val spark = SparkSession
@@ -122,7 +123,7 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
 
       operations.maybeVerifyCommitter(subdir,
         committerName,
-        committerInfo.map(_._1),
+        committerInfo,
         conf,
         Some(numPartitions),
         s"$format:")

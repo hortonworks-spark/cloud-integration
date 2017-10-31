@@ -64,8 +64,8 @@ The underlying Hadoop FileOutputFormat needs to be configured to use an S3-speci
 factory of committers, one which will then let us choose which S3A committer to
 use:
 
-```
-spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
+```properties
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
 ```
 
 
@@ -79,7 +79,7 @@ mechanism.
 1. For Apache Parquet output: the Parquet committer to use in the Spark `ParquetFileFormat`
 classes. 
 
-```
+```properties
 spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
 spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
 ```
@@ -149,11 +149,11 @@ be reused.
 This is generally HDFS. 
 
 
-```
+```properties
 spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
 spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
-spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
-spark.hadoop.fs.s3a.committer.committer.name=directory
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
+spark.hadoop.fs.s3a.committer.name=directory
 spark.hadoop.fs.s3a.committer.tmp.path=hdfs://nn1:8088/tmp
 ```
 
@@ -182,11 +182,11 @@ Here are the options to enable the magic committer support in both the filesyste
 and in the spark committer. This excludes the specific details to enable
 S3Guard for the target bucket.
 
-```
+```properties
 spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
 spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
-spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
-spark.hadoop.fs.s3a.committer.committer.name=magic
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
+spark.hadoop.fs.s3a.committer.name=magic
 spark.hadoop.fs.s3a.committer.magic.enabled=true
 ```
 
@@ -203,10 +203,10 @@ hostname.
 As an example, here are the options needed to enable the magic committer for
 the bucket "guarded", while still retaining the default committer as "directory".
 
-```
+```properties
 spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
 spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
-spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.DynamicCommitterFactory
+spark.hadoop.mapreduce.outputcommitter.factory.scheme.s3a=org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
 spark.hadoop.fs.s3a.committer.name=directory
 spark.hadoop.fs.s3a.bucket.guarded.committer.name=magic
 spark.hadoop.fs.s3a.bucket.guarded.committer.magic.enabled=true
@@ -214,3 +214,17 @@ spark.hadoop.fs.s3a.bucket.guarded.committer.magic.enabled=true
 
 The `spark.sql` options cannot be set on a per-bucket basis. However, they work across
 buckets and filesystems.
+
+## Changing committer option on a per-query basis.
+
+You may change the choice of specific S3A committer and conflict resolution
+basis on a query-by-query basis, *within the same Spark context*.
+
+What can be changed
+
+
+* `fs.s3a.committer.name`
+* `fs.s3a.committer.staging.conflict-options`
+
+
+What can not be changed: anything else.

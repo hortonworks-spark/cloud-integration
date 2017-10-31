@@ -17,8 +17,6 @@
 
 package com.hortonworks.spark.cloud.utils
 
-import java.util.Locale
-
 import org.apache.spark.internal.Logging
 
 /**

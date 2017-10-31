@@ -24,10 +24,10 @@ import com.hortonworks.spark.cloud.s3._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
 
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.types.DataType
-import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.apache.spark.sql.types.DataTypes._
+import org.apache.spark.sql.{DataFrame, SparkSession}
+import org.apache.spark.{SparkConf, SparkContext}
 
 /**
  * Fun with the boris bike dataset
@@ -109,7 +109,9 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
 
     hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
-      S3ACommitterConstants.PARTITIONED_COMMITTER_FACTORY)
+      S3ACommitterConstants.S3A_COMMITTER_FACTORY)
+    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
+      S3ACommitterConstants.S3A_COMMITTER_FACTORY)
 
     val spark = SparkSession
         .builder

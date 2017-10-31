@@ -19,10 +19,9 @@ package com.hortonworks.spark.cloud.operations
 
 import java.net.URI
 
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import com.hortonworks.spark.cloud.ObjectStoreExample
 import com.hortonworks.spark.cloud.s3.SequentialIOPolicy
-import com.hortonworks.spark.cloud.CloudTestKeys._
-
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 import org.apache.spark.{SparkConf, SparkContext}

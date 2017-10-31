@@ -26,13 +26,13 @@ import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 import com.fasterxml.jackson.databind.JsonNode
-import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
+import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
 import com.hortonworks.spark.cloud.utils.TimeOperations
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.s3a.Constants
 import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
+import org.apache.hadoop.fs.s3a.Constants
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 
@@ -46,7 +46,7 @@ import org.apache.spark.sql.internal.SQLConf
  * Extra Hadoop operations for object store integration.
  */
 trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
-  TimeOperations {
+  TimeOperations with HConf {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -294,7 +294,6 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     hkey(Constants.PURGE_EXISTING_MULTIPART) -> "true",
     hkey(Constants.PURGE_EXISTING_MULTIPART_AGE) ->
       (60 * 1000 * 10).toString
-
     )
 
 
@@ -332,63 +331,6 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     dir
   }
 
-  /**
-   * Set a Hadoop option in a spark configuration.
-   *
-   * @param sparkConf configuration to update
-   * @param key key
-   * @param value new value
-   */
-  def hconf(sparkConf: SparkConf, key: String, value: String): SparkConf = {
-    sparkConf.set(hkey(key), value)
-    sparkConf
-  }
-
-  /**
-   * Set a Hadoop option in a spark configuration.
-   *
-   * @param sparkConf configuration to update
-   * @param key key
-   * @param value new value
-   */
-
-  def hconf(sparkConf: SparkConf, key: String, value: Boolean): SparkConf = {
-    sparkConf.set(hkey(key), value.toString)
-    sparkConf
-  }
-
-  /**
-   * Take a Hadoop key, add the prefix to allow it to be added to
-   * a Spark Config and then picked up properly later.
-   * @param key key
-   * @return the new key
-   */
-  def hkey(key: String) : String = {
-    "spark.hadoop." + key
-  }
-
-  /**
-   * Set a long hadoop option in a spark configuration.
-   *
-   * @param sparkConf configuration to update
-   * @param key key
-   * @param value new value
-   */
-  def hconf(sparkConf: SparkConf, key: String, value: Long): SparkConf = {
-    sparkConf.set(hkey(key), value.toString)
-    sparkConf
-  }
-
-  /**
-   * Set all supplied options to the spark configuration as hadoop options.
-   *
-   * @param sparkConf Spark configuration to update
-   * @param settings map of settings.
-   */
-  def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): SparkConf = {
-    settings.foreach(e => hconf(sparkConf, e._1, e._2))
-    sparkConf
-  }
 
   /**
    * Get a sorted list of the FS statistics.
@@ -474,19 +416,17 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   }
 
   /**
-   * Recursive delete. Special feature: waits for the inconsistency delay
-   * both before and after if the fs property has it set to anything
+   * Recursive delete.
    *
-   * @param fs
-   * @param path
-   * @return
+   * @param fs filesystem
+   * @param path path to delete
+   * @return the restult of the delete
    */
   protected def rm(
       fs: FileSystem,
       path: Path): Boolean = {
     try {
-      val r = fs.delete(path, true)
-      r
+      fs.delete(path, true)
     } catch {
       case e: IOException =>
         throw new IOException(s"Failed to delete $path on $fs $e", e)

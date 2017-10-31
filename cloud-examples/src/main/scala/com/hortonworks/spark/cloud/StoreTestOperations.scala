@@ -23,7 +23,6 @@ import scala.language.postfixOps
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path}
-import org.scalatest.Assertions
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.Span
 

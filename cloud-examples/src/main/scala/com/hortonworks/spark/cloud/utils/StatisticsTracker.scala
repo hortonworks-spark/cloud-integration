@@ -17,8 +17,9 @@
 
 package com.hortonworks.spark.cloud.utils
 
-import org.apache.hadoop.fs.{FileSystem, StorageStatistics}
 import scala.collection.JavaConverters._
+
+import org.apache.hadoop.fs.{FileSystem, StorageStatistics}
 
 import org.apache.spark.internal.Logging
 

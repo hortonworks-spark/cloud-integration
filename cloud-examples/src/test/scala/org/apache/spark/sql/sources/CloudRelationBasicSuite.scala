@@ -31,6 +31,7 @@ import testImplicits._
   ctest("save()/load() - non-partitioned table - Overwrite",
     "",
     true) {
+    assertSparkRunning()
     withPath("non-part-t-overwrite") { path =>
       val name = path.toString
       testDF.write.mode(SaveMode.Overwrite).format(dataSourceName).save(name)
@@ -48,6 +49,7 @@ import testImplicits._
   ctest("save()/load() - non-partitioned table - ErrorIfExists",
     "",
     true) {
+    assertSparkRunning()
     withTempPathDir("errorIfExists") { path =>
       intercept[AnalysisException] {
         testDF.write.format(dataSourceName).mode(SaveMode.ErrorIfExists)
@@ -59,6 +61,7 @@ import testImplicits._
   ctest("load() - with directory of unpartitioned data in nested subdirs",
     "",
     true) {
+    assertSparkRunning()
     withPath("nested") { dir =>
       val subdir = new Path(dir, "subdir")
 

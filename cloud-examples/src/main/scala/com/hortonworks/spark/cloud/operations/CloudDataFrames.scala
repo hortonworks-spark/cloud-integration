@@ -19,7 +19,7 @@ package com.hortonworks.spark.cloud.operations
 
 import scala.language.postfixOps
 
-import com.hortonworks.spark.cloud.{ ObjectStoreExample, StoreTestOperations}
+import com.hortonworks.spark.cloud.{ObjectStoreExample, StoreTestOperations}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.scalatest.time.{Seconds, Span}

@@ -99,7 +99,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     import spark.implicits._
 
     // Write the DS. Configure save mode so the committer gets
-    // to decide how to react to invidual partitions, rather than
+    // to decide how to react to individual partitions, rather than
     // have the entire directory tree determine the outcome.
     def writeDS(sourceData: Dataset[Event]): Unit = {
       logDuration(s"write to $dest in format $format conflict = $confictMode") {
@@ -132,7 +132,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
     operations.maybeVerifyCommitter(dest,
       Some(committerName),
-      Some(committerInfo._1),
+      Some(committerInfo),
       conf,
       Some(origFileCount),
       s"$format:")
@@ -145,7 +145,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     writeDS(newPartition)
     operations.maybeVerifyCommitter(dest,
       Some(committerName),
-      Some(committerInfo._1),
+      Some(committerInfo),
       conf,
       Some(newFileCount),
       s"$format:")
@@ -189,12 +189,9 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val sparkConf = newSparkConf("DataFrames", local.getUri)
     sparkConf.setAll(settings)
     val committerInfo = COMMITTERS_BY_NAME(committerName)
+    committerInfo.bind(sparkConf)
 
-    val factory = committerInfo._2
-    hconf(sparkConf,
-      S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
-      factory)
-    logInfo(s"Using committer factory $factory with conflict mode $confictMode")
+    logInfo(s"Using committer $committerInfo with conflict mode $confictMode")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
 
     // landsat always uses normal IO
@@ -297,7 +294,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val operations = new S3AOperations(destFS)
     operations.maybeVerifyCommitter(landsatOrcPath,
       Some(committer),
-      Some(COMMITTERS_BY_NAME(committer)._1),
+      Some(COMMITTERS_BY_NAME(committer)),
       conf,
       None,
       Orc)
@@ -325,7 +322,8 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
       dest = landsat2014CSVParted,
       source = landsatPartData.filter("year = 2014 AND cloudCover >= 0"),
       format = Csv,
-      parted = true)
+      parted = true,
+      extraOps = Map("fs.s3a.staging.conflict" -> "replace"))
     summary += (("ORC -> csv where year = 2104 AND cloudCover >= 0", tCsvWrite))
 
     // bit of parquet, using same ops as ORC
@@ -335,7 +333,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     summary += (("ORC -> Parquet", tParquetWrite))
     operations.maybeVerifyCommitter(landsatParquetPath,
       Some(committer),
-      Some(COMMITTERS_BY_NAME(committer)._1),
+      Some(COMMITTERS_BY_NAME(committer)),
       conf,
       None,
       Parquet)

@@ -17,8 +17,12 @@
 
 package com.hortonworks.spark.cloud.s3
 
+import com.hortonworks.spark.cloud.HConf
 import com.hortonworks.spark.cloud.commit.CommitterConstants
+import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.commit.CommitConstants
+
+import org.apache.spark.SparkConf
 
 /**
  * Constants related to the S3A committers.
@@ -31,16 +35,12 @@ object S3ACommitterConstants {
     CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
     "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
-  val DIRECTORY_COMMITTER_FACTORY: String = CommitConstants.DIRECTORY_COMMITTER_FACTORY
-    STAGING_PACKAGE + "DirectoryStagingCommitterFactory"
-  val PARTITIONED_COMMITTER_FACTORY: String = CommitConstants.PARTITION_COMMITTER_FACTORY
-  val STAGING_COMMITTER_FACTORY: String = CommitConstants.STAGING_COMMITTER_FACTORY
-  val MAGIC_COMMITTER_FACTORY: String = CommitConstants.MAGIC_COMMITTER_FACTORY
   val S3A_COMMITTER_FACTORY: String = CommitConstants.S3A_COMMITTER_FACTORY
+
+  val S3A_COMMITTER_NAME: String = CommitConstants.FS_S3A_COMMITTER_NAME
 
   val MAGIC = "magic"
   val STAGING = "staging"
-  val DYNAMIC = "dynamic"
   val DIRECTORY = "directory"
   val PARTITIONED = "partitioned"
   val FILE = "file"
@@ -61,21 +61,32 @@ object S3ACommitterConstants {
    * If the first field is "", it means "this committer doesn't put its name into
    * the success file (or that it isn't actually created).
    */
-  val COMMITTERS_BY_NAME: Map[String, (String, String, Boolean)] = Map(
-    MAGIC -> ("MagicS3GuardCommitter",  MAGIC_COMMITTER_FACTORY, true),
-    STAGING -> ("StagingCommitter",  STAGING_COMMITTER_FACTORY, false),
-    DYNAMIC -> ("",  S3A_COMMITTER_FACTORY, false),
-    DIRECTORY -> ("DirectoryStagingCommitter",  DIRECTORY_COMMITTER_FACTORY, false),
-    PARTITIONED -> ("PartitionedStagingCommitter",  PARTITIONED_COMMITTER_FACTORY, false),
-    FILE -> ("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
+  val COMMITTERS_BY_NAME: Map[String, CommitterInfo] = Map(
+    MAGIC -> CommitterInfo(MAGIC, S3A_COMMITTER_FACTORY, true),
+    STAGING -> CommitterInfo(STAGING, S3A_COMMITTER_FACTORY, false),
+    DIRECTORY -> CommitterInfo(DIRECTORY, S3A_COMMITTER_FACTORY, false),
+    PARTITIONED -> CommitterInfo(PARTITIONED, S3A_COMMITTER_FACTORY, false),
+    FILE -> CommitterInfo("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
   )
 
-  /**
-   * List of committer factories.
-   */
-  val FACTORIES: Seq[String] = Seq(
-    STAGING_COMMITTER_FACTORY,
-    PARTITIONED_COMMITTER_FACTORY,
-    MAGIC_COMMITTER_FACTORY,
-    S3A_COMMITTER_FACTORY)
 }
+
+case class CommitterInfo(name: String, factory: String, needsConsistent: Boolean)
+  extends HConf {
+
+  def bind(sparkConf: SparkConf): Unit = {
+    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
+      factory)
+    hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_NAME,
+      name)
+  }
+
+  def bind(conf: Configuration): Unit = {
+    conf.set(S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
+      factory)
+    conf.set(S3ACommitterConstants.S3A_COMMITTER_NAME, name)
+  }
+
+  override def toString: String = s"Committer binding $factory($name)"
+}
+

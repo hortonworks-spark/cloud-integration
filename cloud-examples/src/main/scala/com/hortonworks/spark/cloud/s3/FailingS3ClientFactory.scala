@@ -22,7 +22,7 @@ import java.io.IOException
 import com.amazonaws.ClientConfiguration
 import com.amazonaws.auth.AWSCredentialsProvider
 import com.amazonaws.services.s3.AmazonS3
-import org.apache.hadoop.fs.s3a.{DefaultS3ClientFactory, InconsistentAmazonS3Client}
+import org.apache.hadoop.fs.s3a.DefaultS3ClientFactory
 
 import org.apache.spark.internal.Logging
 
