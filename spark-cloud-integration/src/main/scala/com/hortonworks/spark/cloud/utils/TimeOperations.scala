@@ -39,9 +39,9 @@ trait TimeOperations extends Logging {
    * @return a string describing the time
    */
   def toSeconds(durationNanos: Long): String = {
-    "%,d.%03d S".format(
-      durationNanos / 1000,
-      (durationNanos * 1000) % 1000)
+    val millis = durationNanos / 1e6
+    "%,fS".format(
+      (millis / 1000))
   }
 
   /**
@@ -154,7 +154,7 @@ trait TimeOperations extends Logging {
       message: => String = "timeout")
       (predicate: => Boolean): Unit = {
     val endTime = now() + timeout
-    var succeeded = false;
+    var succeeded = false
     while (!succeeded && now() < endTime) {
       succeeded = predicate
       if (!succeeded) {

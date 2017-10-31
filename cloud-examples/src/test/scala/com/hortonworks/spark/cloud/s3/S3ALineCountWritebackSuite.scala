@@ -39,7 +39,7 @@ class S3ALineCountWritebackSuite extends CloudSuiteWithCSVDatasource with S3ATes
 
   override def enabled: Boolean = super.enabled && hasCSVTestFile
 
-  override def cleanFSInTeardownEnabled: Boolean = false
+  override def cleanFSInTeardownEnabled: Boolean = true
 
   after {
     cleanFilesystemInTeardown()
