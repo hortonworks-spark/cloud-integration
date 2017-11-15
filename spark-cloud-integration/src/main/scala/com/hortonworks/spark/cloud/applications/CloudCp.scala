@@ -127,7 +127,7 @@ class CloudCp extends ObjectStoreExample {
       // which we may want to batch up more
       val marshalledSrcConfig = new ConfigSerDeser(contextConf)
 
-      // parallelise the copy.
+      // parallelize the copy.
       val copyOperation = new ParallelizedWithLocalityRDD(
         sc,
         shuffledCopyList,
@@ -224,15 +224,14 @@ object CloudCp {
 
   /**
    * Maps block locations to host. Strips out localhosts
-   * @param blockLocation
+   * @param blockLocation list of block locations
    * @return
    */
   def blockLocationToHost(blockLocation: BlockLocation): Seq[String] ={
-    val hosts = blockLocation.getHosts
-    if (hosts == null) {
-      return Nil
+    blockLocation.getHosts match {
+      case null => Nil
+      case hosts => hosts.filterNot(_.equals("localhost"))
     }
-    hosts.filterNot( h => h.equals("localhoat"))
   }
 
 }
