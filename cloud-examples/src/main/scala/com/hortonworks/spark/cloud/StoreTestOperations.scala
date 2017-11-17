@@ -22,8 +22,7 @@ import scala.language.postfixOps
 
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
-import org.scalatest.Assertions
+import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.Span
 
@@ -34,7 +33,7 @@ import org.apache.spark.sql._
  * handling for eventually consistent filesystems through retries.
  */
 trait StoreTestOperations extends ObjectStoreOperations with Eventually
-  with Assertions {
+  {
 
   protected val retryTimeout: Span = 30 seconds
 
@@ -68,6 +67,22 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually
     }
   }
 
+  /**
+   * Perform a recursive the directory listing, _eventually_.
+   * It does not wait for the directory tree to become consistent,
+   * only for the root path to be listable.
+   *
+   * @param fs filesystem
+   * @param p path
+   * @return the result
+   */
+  def eventuallyListFiles(fs: FileSystem, p: Path): Seq[LocatedFileStatus] = {
+    eventually(timeout(retryTimeout),
+      interval(retryInterval)) {
+      listFiles(fs, p, true)
+    }
+  }
+
   //
   // return how long it took
   /**
@@ -91,7 +106,7 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually
     val status = eventuallyGetFileStatus(fs, success)
     assert(status.isDirectory || status.getBlockSize > 0,
       s"Block size 0 in $status")
-    val files = eventuallyListStatus(fs, source).filter { st =>
+    val files = eventuallyListFiles(fs, source).filter { st =>
       val name = st.getPath.getName
       st.isFile && !name.startsWith(".") && !name.startsWith("_")
     }
@@ -146,4 +161,11 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually
     waitForConsistency(fs)
     r
   }
+}
+
+/**
+ * Instantiation of StoreTestHelper.
+ */
+class StoreTestHelper extends StoreTestOperations {
+
 }

@@ -18,8 +18,8 @@
 package com.hortonworks.spark.cloud.common
 
 import com.hortonworks.spark.cloud.CloudSuite
-import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, Path}
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic._
+import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{IntWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.SequenceFileOutputFormat
 
@@ -36,7 +36,7 @@ abstract class NumbersRddTests extends CloudSuite {
   }
 
   /**
-   * cleanup is currently disabled
+   * cleanup flag.
    */
   override protected def cleanFSInTeardownEnabled: Boolean = true;
 

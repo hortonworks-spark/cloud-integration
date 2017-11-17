@@ -69,9 +69,9 @@ class CloudFileGenerator extends ObjectStoreExample {
       )
       val filePerMonthRange = 1 to fileCount
       // build paths like 2016/2016-05/2016-05-0012.txt
-      val filepaths = monthsByYear.flatMap { case (y, m) =>
-        filePerMonthRange.map(r =>
-          "%1$04d/%1$04d-%2$02d/%1$04d-%2$02d-%3$04d".format(y, m, r) + suffix
+      val filepaths = monthsByYear.flatMap { case (year, month) =>
+        filePerMonthRange.map(ranger =>
+          "%1$04d/%1$04d-%2$02d/%1$04d-%2$02d-%3$04d".format(year, month, ranger) + suffix
         )
       }.map(new Path(destPath, _))
       val fileURIs = filepaths.map(_.toUri)
@@ -122,30 +122,22 @@ class CloudFileGenerator extends ObjectStoreExample {
       logInfo(s"File System = $destFS")
 
 
-      // verify that the length of a listed file is that expected
-      def verifyLength(name: String, actual: Long): Unit = {
-        if (expectedFileLength != actual) {
-          throw new IOException(s"Expected length of ${name}: $expectedFileLength;" +
-              s" actual $actual")
-        }
-      }
-
       // list all files under the path using listFiles; verify size
       val (listing, listDuration) = durationOf(destFS.listFiles(destPath, true))
       logInfo(s"time to list paths under $destPath: $listDuration")
       while (listing.hasNext) {
         val entry = listing.next()
-        verifyLength(entry.getPath.toString, entry.getLen)
+        verifyLength(entry.getPath.toString, expectedFileLength, entry.getLen)
       }
 
       // do a parallel scan of a directory and count the entries
       val lenAccumulator = sc.longAccumulator("totalsize")
       val dataGlobPath = new Path(destPath, "*/*/*" + suffix)
       val fileContentRDD = sc.wholeTextFiles(dataGlobPath.toUri.toString)
-      val fileSizeRdd = fileContentRDD.map(r => {
-        val actual = r._2.length
-        val name = r._1
-        verifyLength(name, actual)
+      val fileSizeRdd = fileContentRDD.map(record => {
+        val actual = record._2.length
+        val name = record._1
+        verifyLength(name, expectedFileLength, actual)
         lenAccumulator.add(actual)
         actual
       })
@@ -157,6 +149,15 @@ class CloudFileGenerator extends ObjectStoreExample {
       sc.stop()
     }
     0
+  }
+
+  // verify that the length of a listed file is that expected
+  def verifyLength(name: String, expectedFileLength: Long, actual: Long): Unit = {
+    if (expectedFileLength != actual) {
+      throw new IOException(
+        s"Expected length of ${name}: $expectedFileLength;" +
+          s" actual $actual")
+    }
   }
 
 }

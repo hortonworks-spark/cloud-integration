@@ -17,8 +17,6 @@
 
 package com.hortonworks.spark.cloud.utils
 
-import java.util.Locale
-
 import org.apache.spark.internal.Logging
 
 /**
@@ -32,7 +30,17 @@ trait TimeOperations extends Logging {
    * @return a string describing the time
    */
   def toHuman(durationNanos: Long): String = {
-    String.format(Locale.ENGLISH, "%,d nS", durationNanos.asInstanceOf[Object])
+    "%,d nS".format(durationNanos)
+  }
+
+  /**
+   * Convert a time in nanoseconds into a human-readable form for logging.
+   * @param durationNanos duration in nanoseconds
+   * @return a string describing the time
+   */
+  def toSeconds(durationNanos: Long): String = {
+    val millis = durationNanos / 1e6
+    "%,fs".format((millis / 1000))
   }
 
   /**
@@ -42,15 +50,25 @@ trait TimeOperations extends Logging {
    * @return the result
    */
   def logDuration[T](operation: String)(testFun: => T): T = {
-    val start = nanos
     logInfo(s"Starting $operation")
-    try {
-      testFun
-    } finally {
-      val end = nanos()
-      val d = end - start
-      logInfo(s"Duration of $operation = ${toHuman(d)}")
-    }
+    val (r, d) = durationOf(testFun)
+    logInfo(s"Duration of $operation = ${toHuman(d)}")
+    r
+  }
+
+  /**
+   * Measure the duration of an operation, log it with the text.
+   *
+   * @param operation operation description
+   * @param testFun function to execute
+   * @return the result and the operation duration in nanos
+   *
+   */
+  def logDuration2[T](operation: String)(testFun: => T): (T, Long) = {
+    logInfo(s"Starting $operation")
+    val (r, d) = durationOf(testFun)
+    logInfo(s"Duration of $operation = ${toHuman(d)}")
+    (r, d)
   }
 
   /**
@@ -135,7 +153,7 @@ trait TimeOperations extends Logging {
       message: => String = "timeout")
       (predicate: => Boolean): Unit = {
     val endTime = now() + timeout
-    var succeeded = false;
+    var succeeded = false
     while (!succeeded && now() < endTime) {
       succeeded = predicate
       if (!succeeded) {

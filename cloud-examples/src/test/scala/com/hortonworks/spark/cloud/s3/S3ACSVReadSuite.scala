@@ -23,7 +23,7 @@ import com.hortonworks.spark.cloud.common.CSVReadSuite
 /**
  * A suite of tests reading in the S3A CSV file.
  */
-class S3ACSVReadSuite extends CSVReadSuite with S3ATestSetup {
+class S3ACSVReadSuite extends CSVReadSuite with S3ATestSetup with SequentialIOPolicy {
 
   init()
 

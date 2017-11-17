@@ -17,8 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.operations.LineCount
 import com.hortonworks.spark.cloud.CloudTestKeys._
+import com.hortonworks.spark.cloud.operations.LineCount
 
 import org.apache.spark.SparkConf
 
@@ -28,7 +28,7 @@ import org.apache.spark.SparkConf
  */
 object S3ALineCount extends LineCount with S3AExampleSetup with SequentialIOPolicy {
 
-  override def defaultSource = {
+  override def defaultSource: Option[String] = {
     Some(S3A_CSV_PATH_DEFAULT)
   }
 

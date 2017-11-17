@@ -18,9 +18,9 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs._
-import com.hortonworks.spark.cloud.CloudTestKeys._
 
 /**
  * A suite of tests working with encryption.

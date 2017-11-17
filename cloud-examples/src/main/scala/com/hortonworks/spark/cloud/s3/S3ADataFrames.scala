@@ -17,12 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudTestKeys._
 import com.hortonworks.spark.cloud.operations.CloudDataFrames
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.{FileSystem, Path}
-
-import org.apache.spark.sql.SparkSession
 
 /**
  * Test dataframe operations using S3 as the destination and source of operations.
@@ -32,18 +27,4 @@ import org.apache.spark.sql.SparkSession
  */
 object S3ADataFrames extends CloudDataFrames with S3AExampleSetup {
 
-  override def extraValidation(
-      session: SparkSession,
-      conf: Configuration,
-      fs: FileSystem,
-      results: Seq[(String, Path, Long, Long)]): Unit = {
-
-    val operations = new S3AOperations(fs)
-    if (conf.getBoolean(S3A_COMMITTER_TEST_ENABLED, false)) {
-      results.foreach((tuple: (String, Path, Long, Long)) => {
-        operations.verifyS3Committer(tuple._2, None, None, "")
-      })
-    }
-
-  }
 }

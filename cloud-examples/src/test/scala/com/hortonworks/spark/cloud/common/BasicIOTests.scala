@@ -58,7 +58,8 @@ abstract class BasicIOTests extends CloudSuite {
       | This committer has race and failure conditions, with the commit being O(bytes)
       | and non-atomic.
     """.stripMargin) {
-    sc = new SparkContext("local", "test", newSparkConf())
+    val sparkConf = newSparkConf()
+    sc = new SparkContext("local", "test", sparkConf)
     val conf = sc.hadoopConfiguration
     assert(filesystemURI.toString === conf.get(CommonConfigurationKeysPublic.FS_DEFAULT_NAME_KEY))
     val entryCount = testEntryCount
@@ -71,7 +72,7 @@ abstract class BasicIOTests extends CloudSuite {
 
     // child entries that aren't just the SUCCESS marker
     val children = filesystem.listStatus(output)
-      .filter(_.getPath.getName != "_SUCCESS")
+      .filter(p => p.isFile && !(p.getPath.getName.startsWith("_")))
     assert(children.nonEmpty, s"No children under $output")
 
     children.foreach { child =>
@@ -112,7 +113,7 @@ abstract class BasicIOTests extends CloudSuite {
     saveTextFile(numbers, destFile)
     val basePathStatus = filesystem.getFileStatus(destFile)
     // check blocksize in file status
-    val hadoopUtils = new SparkHadoopUtil
+    val hadoopUtils = new SparkHadoopUtil()
     logDuration("listLeafDir") {
       hadoopUtils.listLeafDirStatuses(filesystem, basePathStatus)
     }
@@ -128,8 +129,9 @@ abstract class BasicIOTests extends CloudSuite {
     }.count()
   }
 
+  //noinspection ScalaDeprecation
   ctest("Blocksize", "verify default block size is a viable number") {
-    val blockSize = filesystem.getDefaultBlockSize();
+    val blockSize = filesystem.getDefaultBlockSize()
     assert(blockSize > 512,
       s"Block size o ${filesystem.getUri} too low for partitioning to work: $blockSize")
   }

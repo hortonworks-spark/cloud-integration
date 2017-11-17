@@ -21,7 +21,6 @@ import java.net.URI
 
 import com.hortonworks.spark.cloud.CloudSuiteTrait
 import com.hortonworks.spark.cloud.CloudTestKeys._
-
 import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}

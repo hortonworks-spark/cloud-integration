@@ -22,9 +22,9 @@ import java.net.URI
 
 import scala.collection.JavaConverters._
 
+import com.hortonworks.spark.cloud.CloudTestKeys._
 import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import com.hortonworks.spark.cloud.utils.ExtraAssertions
-import com.hortonworks.spark.cloud.CloudTestKeys._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FSHelper, FileStatus, FileSystem, LocalFileSystem, LocatedFileStatus, Path}
 
@@ -61,6 +61,12 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
    * The filesystem.
    */
   private var _filesystem: Option[FileSystem] = None
+
+  /**
+   * Get the filesystem as an option; only valid if enabled and inited
+   * @return a filesystem or None
+   */
+  protected def filesystemOption: Option[FileSystem] = _filesystem
 
   /**
    * Accessor for the filesystem.
@@ -376,5 +382,38 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
    */
   def describe(info: => String): Unit = {
     logInfo(s"\n\n$info\n")
+  }
+
+  /**
+   * Assert that the number of FS entries matches the list; raises an
+   * exception if not, including a sorted list of the entries' paths.
+   *
+   * @param expectedCount expected number of files
+   * @param fs fs to list
+   * @param dir directory to examine
+   */
+  def assertFileCount(expectedCount: Int, fs: FileSystem, dir: Path): Unit = {
+    val allFiles = listFiles(fs, dir, true).filterNot(
+      st => st.getPath.getName.startsWith("_")).toList
+    assertFileStatusCount(expectedCount, allFiles)
+  }
+
+  /**
+   * Assert that the number of FS entries matches the list; raises an
+   * exception if not, incluidng a sorted list of the entries' paths
+   *
+   * @param expectedCount expected number of files
+   * @param files file list
+   */
+  def assertFileStatusCount(
+      expectedCount: Int,
+      files: List[LocatedFileStatus]): Unit = {
+    val len = files.length
+    if (len != expectedCount) {
+      val listing = files.map(st => st.getPath.toString).sorted.mkString("\n")
+      val text = s"Found $len files; expected $expectedCount\n$listing"
+      logError(text)
+      assert(expectedCount === len, text)
+    }
   }
 }
