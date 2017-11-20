@@ -248,16 +248,5 @@
 
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>guava19</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-          <version>19.0</version>
-        </dependency>
-      </dependencies>
-    </profile>
-  </profiles>
+
 </project>

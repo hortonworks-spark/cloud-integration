@@ -17,7 +17,6 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import org.jets3t.service.S3ServiceException
 import org.scalatest.{FunSuite, Matchers}
 
 import org.apache.spark.internal.Logging
@@ -33,14 +32,9 @@ class S3DependencyCheckSuite extends FunSuite with Logging with Matchers {
     instantiate("org.apache.hadoop.fs.s3a.S3AFileSystem")
   }
 
-  test("Create Jets3t class") {
-    new S3ServiceException("jets3t")
-  }
-
   test("Create class in Amazon com.amazonaws.services.s3 JAR") {
     instantiate("com.amazonaws.services.s3.S3ClientOptions")
   }
-
 
   test("hive") {
     instantiate("org.apache.hadoop.hive.conf.HiveConf")
