@@ -20,7 +20,6 @@ package com.hortonworks.spark.cloud
 import java.io.{File, FileNotFoundException}
 
 import com.hortonworks.spark.cloud.CloudTestKeys._
-import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 import com.hortonworks.spark.cloud.s3.S3AConstants
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually

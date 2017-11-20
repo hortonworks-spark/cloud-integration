@@ -40,6 +40,7 @@
   <modules>
     <module>cloud-examples</module>
     <module>spark-cloud-integration</module>
+    <module>check-cp</module>
   </modules>
 
   <properties>
@@ -48,7 +49,11 @@
     <scala.binary.version>2.11</scala.binary.version>
 
     <!-- These examples use the version of Hadoop which Spark was built with-->
+<!--
     <spark.version>2.2.0</spark.version>
+-->
+
+    <spark.version>2.3.0-SNAPSHOT</spark.version>
 
     <!-- needed to pick up the new stuff-->
     <hadoop.version>2.8.2</hadoop.version>
@@ -948,6 +953,16 @@
       </properties>
     </profile>
 
+    <profile>
+      <id>guava19</id>
+      <dependencies>
+        <dependency>
+          <groupId>com.google.guava</groupId>
+          <artifactId>guava</artifactId>
+          <version>19.0</version>
+        </dependency>
+      </dependencies>
+    </profile>
   </profiles>
 
 </project>  
