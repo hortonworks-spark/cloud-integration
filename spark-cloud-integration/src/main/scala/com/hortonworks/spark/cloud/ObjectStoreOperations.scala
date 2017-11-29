@@ -45,7 +45,7 @@ import org.apache.spark.sql.internal.SQLConf
  * Extra Hadoop operations for object store integration.
  */
 trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
-  TimeOperations {
+  TimeOperations with HConf {
 
 
   def saveTextFile[T](rdd: RDD[T], path: Path): Unit = {
@@ -130,7 +130,10 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param conf configuration to use when requesting the filesystem
    * @param body string body
    */
-  def put(path: Path, conf: Configuration, body: String): Unit = {
+  def put(
+      path: Path,
+      conf: Configuration,
+      body: String): Unit = {
     put(path.getFileSystem(conf), path, body)
   }
 
@@ -195,7 +198,10 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param format format
    * @return the path the DF was saved to
    */
-  def saveDF(df: DataFrame, dest: Path, format: String): Path = {
+  def saveDF(
+      df: DataFrame,
+      dest: Path,
+      format: String): Path = {
     logDuration(s"write to $dest in format $format") {
       df.write.format(format).save(dest.toString)
     }
@@ -209,8 +215,11 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * @param srcFormat format
    * @return the loaded dataframe
    */
-  def loadDF(spark: SparkSession, source: Path, srcFormat: String,
-           opts: Map[String, String] = Map()): DataFrame = {
+  def loadDF(
+      spark: SparkSession,
+      source: Path,
+      srcFormat: String,
+      opts: Map[String, String] = Map()): DataFrame = {
     val reader = spark.read
     reader.options(opts)
     reader.format(srcFormat).load(source.toUri.toString)
@@ -286,43 +295,24 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     tmp
   }
 
-  def makeWarehouseDir(): File = {
-    val warehouseDir = File.createTempFile("warehouse", ".db", createTmpDir())
-    warehouseDir.delete()
-    warehouseDir
+  /**
+   * Create a temporary warehouse directory for those tests which neeed on.
+   * @return a warehouse directory
+   */
+  def createWarehouseDir(): File = {
+    tempDir("warehouse", ".db")
   }
 
   /**
-   * Set a Hadoop option in a spark configuration.
-   *
-   * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
+   * Create a temporary warehouse directory for those tests which neeed on.
+   * @return a warehouse directory
    */
-  def hconf(sparkConf: SparkConf, k: String, v: String): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v)
+  def tempDir(name: String, suffix: String): File = {
+    val dir = File.createTempFile(name, suffix, createTmpDir())
+    dir.delete()
+    dir
   }
 
-  /**
-   * Set a long hadoop option in a spark configuration.
-   *
-   * @param sparkConf configuration to update
-   * @param k key
-   * @param v new value
-   */
-  def hconf(sparkConf: SparkConf, k: String, v: Long): Unit = {
-    sparkConf.set(s"spark.hadoop.$k", v.toString)
-  }
-
-  /**
-   * Set all supplied options to the spark configuration as hadoop options.
-   *
-   * @param sparkConf Spark configuration to update
-   * @param settings map of settings.
-   */
-  def hconf(sparkConf: SparkConf, settings: Traversable[(String, String)]): Unit = {
-    settings.foreach(e => hconf(sparkConf, e._1, e._2))
-  }
 
   /**
    * Get a sorted list of the FS statistics.
@@ -408,19 +398,17 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   }
 
   /**
-   * Recursive delete. Special feature: waits for the inconsistency delay
-   * both before and after if the fs property has it set to anything
+   * Recursive delete.
    *
-   * @param fs
-   * @param path
-   * @return
+   * @param fs filesystem
+   * @param path path to delete
+   * @return the restult of the delete
    */
   protected def rm(
       fs: FileSystem,
       path: Path): Boolean = {
     try {
-      val r = fs.delete(path, true)
-      r
+      fs.delete(path, true)
     } catch {
       case e: IOException =>
         throw new IOException(s"Failed to delete $path on $fs $e", e)

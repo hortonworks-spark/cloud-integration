@@ -128,8 +128,8 @@ object CloudTestKeys extends S3AConstants {
   val S3A_ENCRYPTION_KEY_2 = "s3a.test.encryption.key.2"
 
   /**
-   * Key defining the Are AWS tests enabled? If set, the user
-   * must have AWS login credentials, defined via the environment
+   * Key defining the Are Azure tests enabled? If set, the user
+   * must have Azure login credentials, defined via the environment
    * or in the XML test configuration file.
    */
   val AZURE_TESTS_ENABLED = "azure.tests.enabled"
@@ -139,6 +139,21 @@ object CloudTestKeys extends S3AConstants {
    * Data in this bucket under the test directory will be deleted during test suite teardowns;
    */
   val AZURE_TEST_URI = "azure.test.uri"
+
+
+  /**
+   * Key defining the Are ADL tests enabled? If set, the user
+   * must have ADL login credentials, defined via the environment
+   * or in the XML test configuration file.
+   */
+  val ADL_TESTS_ENABLED = "adl.tests.enabled"
+
+  /**
+   * A test bucket for ADL.
+   * Data in this bucket under the test directory will be deleted during test suite teardowns;
+   */
+  val ADL_TEST_URI = "adl.test.uri"
+
 
   /**
    * Are swift tests enabled?

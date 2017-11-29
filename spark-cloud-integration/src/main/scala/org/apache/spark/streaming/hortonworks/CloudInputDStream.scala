@@ -38,6 +38,8 @@ import org.apache.spark.util.Utils
  * Hadoop FS APIs. Although it can work with any filesystem, it is
  * optimized for the object stores.
  *
+ * Derived from : `org.apache.spark.streaming.dstream.FileInputDStream`.
+ *
  * It's housed under `org.apache.streaming` so as to be able to subclass
  * classes which are scoped to that package.
  *

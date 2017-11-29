@@ -80,7 +80,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
     val srcPath = new Path(srcURI)
 
     applyObjectStoreConfigurationOptions(sparkConf, false)
-    hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, FAST_UPLOAD, true)
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
 

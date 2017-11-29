@@ -255,7 +255,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
     hconf(sparkConf, READAHEAD_RANGE, 128 * 1024)
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
-    hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, FAST_UPLOAD, true)
     hconf(sparkConf, FAST_UPLOAD_BUFFER, FAST_UPLOAD_BUFFER_ARRAY)
   }
 

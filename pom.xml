@@ -281,6 +281,27 @@
           </exclusion>
         </exclusions>
       </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-common</artifactId>
+        <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-app</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-aws</artifactId>
@@ -324,6 +345,38 @@
       <dependency>
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-azure</artifactId>
+        <version>${hadoop.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-common</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-azure-datalake</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
           <exclusion>
@@ -440,7 +493,6 @@
         <artifactId>spark-streaming_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
       </dependency>
-<!--
       <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
@@ -461,7 +513,6 @@
           </exclusion>
         </exclusions>
       </dependency>
--->
       <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-hive_${scala.binary.version}</artifactId>
@@ -774,7 +825,7 @@
     <profile>
       <id>hadoop-2.8</id>
       <properties>
-        <required.hadoop.version>2.8.1</required.hadoop.version>
+        <required.hadoop.version>2.8.2</required.hadoop.version>
       </properties>
     </profile>
 
@@ -795,6 +846,15 @@
     </profile>
 
     <profile>
+      <id>spark-2.2</id>
+      <properties>
+        <spark.version>2.2.0</spark.version>
+        <!-- pull in a random module -->
+        <spark.cloud.module.name>spark-repl</spark.cloud.module.name>
+      </properties>
+    </profile>
+
+    <profile>
       <id>dev</id>
       <properties>
         <build.version>2.6.3.0-SNAPSHOT</build.version>
@@ -806,8 +866,17 @@
       </properties>
     </profile>
 
+    <profile>
+      <id>2.6-M10</id>
+      <properties>
+        <build.version>2.6.1.0-129</build.version>
+        <!-- These examples use the version of Hadoop which Spark was built with-->
+        <spark.version>2.1.1.${build.version}</spark.version>
 
-
+        <!-- needed to pick up the new stuff-->
+        <hadoop.version>2.7.3.${build.version}</hadoop.version>
+      </properties>
+    </profile>
 
     <profile>
       <id>declare-http-components</id>
@@ -829,6 +898,11 @@
 
     <profile>
       <id>scale</id>
+      <activation>
+        <property>
+          <name>scale</name>
+        </property>
+      </activation>
       <properties>
         <scale.test.enabled>true</scale.test.enabled>
       </properties>

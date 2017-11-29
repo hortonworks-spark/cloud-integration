@@ -103,7 +103,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
 
     sparkConf.set("spark.default.parallelism", "4")
     applyObjectStoreConfigurationOptions(sparkConf, false)
-    hconf(sparkConf, FAST_UPLOAD, "true")
+    hconf(sparkConf, FAST_UPLOAD, true)
     hconf(sparkConf, INPUT_FADVISE, RANDOM_IO)
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
