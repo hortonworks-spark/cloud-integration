@@ -26,7 +26,7 @@ import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
- * Trait for Azure tests.
+ * Trait for Azure  ADL tests.
  *
  * This trait supports CSV data source by copying over the data from S3A if
  * it isn't already in a WASB URL
@@ -65,9 +65,9 @@ trait AzureTestSetup extends CloudSuite with CsvDatasourceSupport {
    */
   override def sourceCSVFilePath: Option[Path] = S3A_CSV_TESTFILE
 
-  private var testCSVFile: Option[Path] = None
+  protected var testCSVFile: Option[Path] = None
 
-  private var deleteTestCSVFile = false
+  protected var deleteTestCSVFile = false
 
   /**
    * Path to the CSV file used in the tests themselves; may differ from
