@@ -15,11 +15,31 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.utils
+package com.hortonworks.spark.cloud.integration
 
-/**
-  *
-  */
-trait CloudLogging {
+import com.hortonworks.spark.cloud.utils.HConf
+import org.apache.hadoop.conf.Configuration
+import org.scalatest.FunSuite
 
+import org.apache.spark.SparkConf
+
+class GeneratorSuite extends FunSuite with HConf {
+
+
+  test("create generator") {
+    val conf = new SparkConf()
+    val generator = new Generator()
+    assert(-2 === generator.action(conf, List[String]()))
+  }
+
+
+  test("dump ASL constants") {
+    val conf = new Configuration()
+    dumpConfigOptions(conf, "fs.adl")
+  }
+
+  test("dump s3a constants") {
+    val conf = new Configuration()
+    dumpConfigOptions(conf, "fs.s3a")
+  }
 }

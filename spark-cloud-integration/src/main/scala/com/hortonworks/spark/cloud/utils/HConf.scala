@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.utils
 
 import org.apache.spark.SparkConf
 
@@ -79,8 +79,8 @@ trait HConf {
     * @param settings  map of settings.
     */
   def hconf(sparkConf: SparkConf,
-    settings: Traversable[(String, String)]): SparkConf = {
-    settings.foreach(e => hconf(sparkConf, e._1, e._2))
+    settings: Traversable[(String, Object)]): SparkConf = {
+    settings.foreach(e => hconf(sparkConf, e._1, e._2.toString))
     sparkConf
   }
 

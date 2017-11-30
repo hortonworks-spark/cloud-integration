@@ -106,6 +106,7 @@ trait AzureTestSetup extends CloudSuite with CsvDatasourceSupport {
           toCopy = true
         } else {
           logInfo(s"Datafile exists; no copy needed: $status")
+          toCopy = false
         }
       } catch {
         case _ : FileNotFoundException =>

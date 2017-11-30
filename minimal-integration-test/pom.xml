@@ -26,19 +26,18 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hortonworks-spark-cloud-integration</artifactId>
-  <name>Spark Cloud Integration</name>
+  <artifactId>minimal-integration-test</artifactId>
+  <name>minimal-integration-test</name>
   <packaging>jar</packaging>
 
   <description>
-    Cloud integration.
+    Minimal cloud infra integration test designed to work with Spark 2.1+, so doing nothing clever.
 
-    Uses unstable internal APIs from Hadoop 3.x, and so must be kept in tight
-    sync with the hadoop version with which it was built.
-    Uses the cloud-examples modules for testing.
+    One problem with the main integration is that as bits of spark have jittered between public/private
+    (hello Logging!) its near-impossible to build libraries which work across Spark 2.x and which
+    can be run with spark-submit everywhere.
 
-    This committer does not export any of its dependencies; applications
-    using the committer must do this.
+    This JAR handles that by not using anything clever and doing its own logging.
   </description>
 
   <properties>
@@ -63,43 +62,44 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.spark</groupId>
-      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-azure</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-streaming_${scala.binary.version}</artifactId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
       <scope>provided</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.binary.version}</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
     <plugins>
-      <!--read in a build.properties file if defined-->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>${maven.properties.version}</version>
-        <executions>
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <quiet>true</quiet>
-              <files>
-                <file>build.properties</file>
-                <file>../build.properties</file>
-              </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
+
 
       <!--
             <plugin>
@@ -178,7 +178,11 @@
           </javacArgs>
         </configuration>
       </plugin>
-
+      <!-- Scalatest runs all Scala tests -->
+      <plugin>
+        <groupId>org.scalatest</groupId>
+        <artifactId>scalatest-maven-plugin</artifactId>
+      </plugin>
     </plugins>
 
   </build>
