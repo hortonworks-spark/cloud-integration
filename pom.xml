@@ -41,6 +41,7 @@
     <module>cloud-examples</module>
     <module>spark-cloud-integration</module>
     <module>check-cp</module>
+    <module>minimal-integration-test</module>
   </modules>
 
   <properties>
@@ -63,6 +64,9 @@
      is all that is needed here -->
 
     <guava.version>19.0</guava.version>
+
+    <slf4j.version>1.7.16</slf4j.version>
+    <log4j.version>1.2.17</log4j.version>
 
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
     <test.build.data>${test.build.dir}</test.build.data>
@@ -549,7 +553,12 @@
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
-        <version>1.7.16</version>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>log4j</groupId>
+        <artifactId>log4j</artifactId>
+        <version>${log4j.version}</version>
       </dependency>
       <dependency>
         <groupId>com.google.guava</groupId>
@@ -850,6 +859,30 @@
       </properties>
     </profile>
 
+    <profile>
+      <id>dev</id>
+      <properties>
+        <build.version>2.6.3.0-SNAPSHOT</build.version>
+        <!-- These examples use the version of Hadoop which Spark was built with-->
+        <spark.version>2.2.0.${build.version}</spark.version>
+
+        <!-- needed to pick up the new stuff-->
+        <hadoop.version>2.7.3.${build.version}</hadoop.version>
+      </properties>
+    </profile>
+
+    <!-- This is an HDP release. -->
+    <profile>
+      <id>2.6-M10</id>
+      <properties>
+        <build.version>2.6.1.0-129</build.version>
+        <!-- These examples use the version of Hadoop which Spark was built with-->
+        <spark.version>2.1.1.${build.version}</spark.version>
+
+        <!-- needed to pick up the new stuff-->
+        <hadoop.version>2.7.3.${build.version}</hadoop.version>
+      </properties>
+    </profile>
 
     <profile>
       <id>declare-http-components</id>

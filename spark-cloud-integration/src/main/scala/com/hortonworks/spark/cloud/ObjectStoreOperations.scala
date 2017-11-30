@@ -29,6 +29,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
 import com.hortonworks.spark.cloud.utils.TimeOperations
+import com.hortonworks.spark.cloud.utils.{HConf, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
