@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.HConf
+import com.hortonworks.spark.cloud.utils.HConf
 import com.hortonworks.spark.cloud.commit.CommitterConstants
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.commit.CommitConstants
