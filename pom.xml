@@ -272,6 +272,10 @@
             <artifactId>*</artifactId>
           </exclusion>
           <exclusion>
+            <groupId>net.java.dev</groupId>
+            <artifactId>jets3t</artifactId>
+          </exclusion>
+          <exclusion>
             <groupId>com.sun.jersey.jersey-test-framework</groupId>
             <artifactId>*</artifactId>
           </exclusion>
@@ -286,25 +290,51 @@
         <groupId>org.apache.hadoop</groupId>
         <artifactId>hadoop-common</artifactId>
         <version>${hadoop.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>org.apache.hadoop</groupId>
+        <artifactId>hadoop-aws</artifactId>
+        <version>${hadoop.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-app</artifactId>
+            <artifactId>hadoop-common</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-core</artifactId>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
           </exclusion>
           <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-jobclient</artifactId>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-mapper-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.codehaus.jackson</groupId>
+            <artifactId>jackson-core-asl</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-cbor</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
 
       <dependency>
         <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-aws</artifactId>
+        <artifactId>hadoop-mapreduce-client-core</artifactId>
         <version>${hadoop.version}</version>
         <exclusions>
           <exclusion>
@@ -830,14 +860,24 @@
     <profile>
       <id>hadoop-2.8</id>
       <properties>
-        <required.hadoop.version>2.8.2</required.hadoop.version>
+        <hadoop.version>2.8.2</hadoop.version>
+        <required.hadoop.version>${hadoop.version}</required.hadoop.version>
       </properties>
     </profile>
 
     <profile>
       <id>branch-2</id>
       <properties>
-        <required.hadoop.version>2.9.0</required.hadoop.version>
+        <hadoop.version>2.10.0-SNAPSHOT</hadoop.version>
+        <required.hadoop.version>${hadoop.version}</required.hadoop.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-2.9</id>
+      <properties>
+        <hadoop.version>2.9.0</hadoop.version>
+        <required.hadoop.version>${hadoop.version}</required.hadoop.version>
       </properties>
     </profile>
 
