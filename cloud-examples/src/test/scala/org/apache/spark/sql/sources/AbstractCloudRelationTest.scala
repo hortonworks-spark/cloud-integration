@@ -19,16 +19,18 @@ package org.apache.spark.sql.sources
 
 import java.io.File
 
+import scala.concurrent.duration._
 import scala.util.Random
 
 import com.hortonworks.spark.cloud.CloudSuiteTrait
 import org.apache.hadoop.fs.Path
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.Eventually
 
+import org.apache.spark.sql._
 import org.apache.spark.sql.hive.test.TestHiveSingleton
 import org.apache.spark.sql.test.SQLTestUtils
 import org.apache.spark.sql.types._
-import org.apache.spark.sql.{RandomDataGenerator, _}
 import org.apache.spark.util.Utils
 
 
@@ -38,6 +40,7 @@ import org.apache.spark.util.Utils
  * See: org.apache.spark.sql.sources.HadoopFsRelationTest
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
+  with Eventually
   with TestHiveSingleton with CloudSuiteTrait with BeforeAndAfterAll {
 
   import spark.implicits._
@@ -62,7 +65,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   /**
    * Datatype mapping is for ORC; other formats may override this.
- *
+   *
    * @param dataType
    * @return
    */
@@ -109,8 +112,20 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
       f(dir)
     } finally {
       // wait for all tasks to finish before deleting files
-      waitForTasksToFinish()
+      waitForCompletion()
       deleteQuietly(dir)
+    }
+  }
+
+  /**
+   * Waits for all tasks on all executors to be finished.
+   * This is just `waitForTasksToFinish()` copied over for cross-spark
+   * compatibility.
+   */
+  protected def waitForCompletion(): Unit = {
+    eventually(timeout(10.seconds)) {
+      assert(spark.sparkContext.statusTracker
+        .getExecutorInfos.map(_.numRunningTasks()).sum == 0)
     }
   }
 
@@ -125,15 +140,16 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
       f(dir)
     } finally {
       // wait for all tasks to finish before deleting files
-      waitForTasksToFinish()
+      waitForCompletion()
       deleteQuietly(dir)
     }
   }
 
 
   /**
-   * Generates a temporary path without creating the actual file/directory, then pass it to `f`. If
-   * a file/directory is created there by `f`, it will be delete after `f` returns.
+   * Generates a temporary path without creating the actual file/directory, then pass it to `f`.
+   * If
+   * a file/directory is created there by `f`, it will be deleted after `f` returns.
    *
    * @todo Probably this method should be moved to a more general place
    */
@@ -230,11 +246,13 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   for (dataType <- supportedDataTypes) {
     for (parquetDictionaryEncodingEnabled <- Seq(true, false)) {
-      ctest(s"test all data types - $dataType with parquet.enable.dictionary = " +
-        s"$parquetDictionaryEncodingEnabled", "", false) {
+      ctest(
+        s"test all data types - $dataType with parquet.enable.dictionary = " +
+          s"$parquetDictionaryEncodingEnabled", "", false) {
 
         val extraOptions = Map[String, String](
-          "parquet.enable.dictionary" -> parquetDictionaryEncodingEnabled.toString
+          "parquet.enable.dictionary" ->
+            parquetDictionaryEncodingEnabled.toString
         )
 
         withTempPath { file =>
@@ -254,8 +272,10 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
             .add("index", IntegerType, nullable = false)
             .add("col", dataType, nullable = true)
           val rdd =
-            spark.sparkContext.parallelize((1 to 10).map(i => Row(i, dataGenerator())))
-          val df = spark.createDataFrame(rdd, schema).orderBy("index").coalesce(1)
+            spark.sparkContext
+              .parallelize((1 to 10).map(i => Row(i, dataGenerator())))
+          val df = spark.createDataFrame(rdd, schema).orderBy("index")
+            .coalesce(1)
 
           df.write
             .mode("overwrite")

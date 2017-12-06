@@ -22,8 +22,8 @@
 # https://github.com/apache/spark/pull/12980
 
 # 1. Choose OS (Ubuntu 14.04.3 LTS Server Edition 64bit, ~2 CORE, 7.5GB RAM)
-sudo: required
-dist: trusty
+%sudo: required
+%dist: trusty
 
 # 2. Choose language and target JDKs for parallel builds.
 language: java

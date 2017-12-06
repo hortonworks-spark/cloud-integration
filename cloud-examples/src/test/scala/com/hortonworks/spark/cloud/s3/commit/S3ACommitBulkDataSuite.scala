@@ -398,7 +398,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     * @return success data
     */
   def writeDS[T](
-    dest: Path,
+    @transient dest: Path,
     source: Dataset[T],
     summary: String = "",
     format: String = Orc,
