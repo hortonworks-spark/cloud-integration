@@ -51,7 +51,7 @@ filesystem schemas (here: `s3a://`)
 1. Declare any configuration options supported by the committer
 1. Declare any Spark SQL options needed to support the new committer
 
-### Identify the Committer.
+### Identify the Committer
 
 ### FileSystem Level configuration
 
@@ -90,7 +90,7 @@ best to set it for all jobs, irrespective of output formats.
 
 
 
-# Choosng a committer
+# Choosing a committer
 
 There are now three S3A-specific committers available
 
