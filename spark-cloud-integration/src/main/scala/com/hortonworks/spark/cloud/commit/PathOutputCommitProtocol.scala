@@ -118,7 +118,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
   }
 
   /**
-   * Absolute files are still renamed into place for now.
+   * Absolute files are still renamed into place with a warning.
    * @param taskContext task
    * @param absoluteDir destination dir
    * @param ext extension
@@ -129,7 +129,7 @@ class PathOutputCommitProtocol(jobId: String, destination: String)
       absoluteDir: String,
       ext: String): String = {
     val file = super.newTaskTempFileAbsPath(taskContext, absoluteDir, ext)
-    logWarning(s"Temp file with absolute path for dir $absoluteDir with ext $ext is $file")
+    logWarning(s"Creating temporary file $file for absolute path for dir $absoluteDir")
     file
   }
 
