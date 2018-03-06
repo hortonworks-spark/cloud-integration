@@ -53,26 +53,6 @@
       <artifactId>hadoop-client</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-aws</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-azure</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-azure-datalake</artifactId>
-    </dependency>
-
-    <!--
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-openstack</artifactId>
-    </dependency>
-    -->
-
-    <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_${scala.binary.version}</artifactId>
     </dependency>
@@ -109,7 +89,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
+      <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>

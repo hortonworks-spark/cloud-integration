@@ -17,11 +17,11 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
+import org.apache.spark.internal.io.cloud.{PathCommitterConstants, PathOutputCommitProtocol}
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
@@ -104,7 +104,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     hconf(sparkConf, PathOutputCommitProtocol.REJECT_FILE_OUTPUT, true)
 
     // force failfast
-    hconf(sparkConf, CommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)
+    hconf(sparkConf, PathCommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)
 
 
 

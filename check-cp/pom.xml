@@ -45,15 +45,15 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-aws</artifactId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.scalatest</groupId>
       <artifactId>scalatest_${scala.binary.version}</artifactId>

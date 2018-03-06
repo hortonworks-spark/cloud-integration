@@ -33,9 +33,7 @@
   <description>
     Cloud integration.
 
-    Uses unstable internal APIs from Hadoop 3.x, and so must be kept in tight
-    sync with the hadoop version with which it was built.
-    Uses the cloud-examples modules for testing.
+    Uses APIs from Hadoop 3.0.2+
 
     This committer does not export any of its dependencies; applications
     using the committer must do this.
@@ -54,23 +52,17 @@
     </dependency>
     <dependency>
       <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-common</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-mapreduce-client-core</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-aws</artifactId>
+      <artifactId>hadoop-client</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-sql_${scala.binary.version}</artifactId>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>

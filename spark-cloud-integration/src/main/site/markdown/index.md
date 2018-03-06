@@ -80,8 +80,8 @@ mechanism.
 classes. 
 
 ```properties
-spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol
-spark.sql.parquet.output.committer.class=org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter
+spark.sql.sources.commitProtocolClass=org.apache.spark.internal.io.cloud.PathOutputCommitProtocol
+spark.sql.parquet.output.committer.class=.BindingPathOutputCommitter
 ```
 
 You do not need an equivalent of the Parquet committer option for other formats

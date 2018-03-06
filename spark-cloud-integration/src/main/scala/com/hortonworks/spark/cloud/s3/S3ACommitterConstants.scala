@@ -18,7 +18,7 @@
 package com.hortonworks.spark.cloud.s3
 
 import com.hortonworks.spark.cloud.utils.HConf
-import com.hortonworks.spark.cloud.commit.CommitterConstants
+import org.apache.spark.internal.io.cloud.PathCommitterConstants
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.commit.CommitConstants
 
@@ -32,7 +32,7 @@ import org.apache.spark.SparkConf
 object S3ACommitterConstants {
 
   val S3A_SCHEME_COMMITTER_FACTORY: String = String.format(
-    CommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
+    PathCommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
     "s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
   val S3A_COMMITTER_FACTORY: String = CommitConstants.S3A_COMMITTER_FACTORY
@@ -66,7 +66,7 @@ object S3ACommitterConstants {
     STAGING -> CommitterInfo(STAGING, S3A_COMMITTER_FACTORY, false),
     DIRECTORY -> CommitterInfo(DIRECTORY, S3A_COMMITTER_FACTORY, false),
     PARTITIONED -> CommitterInfo(PARTITIONED, S3A_COMMITTER_FACTORY, false),
-    FILE -> CommitterInfo("", CommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
+    FILE -> CommitterInfo("", PathCommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
   )
 
 }

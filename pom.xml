@@ -50,10 +50,10 @@
     <scala.binary.version>2.11</scala.binary.version>
 
     <!-- These examples use the version of Hadoop which Spark was built with-->
-    <spark.version>2.3.0-SNAPSHOT</spark.version>
+    <spark.version>2.4.0-SNAPSHOT</spark.version>
 
     <!-- needed to pick up the new stuff-->
-    <hadoop.version>3.1.0-SNAPSHOT</hadoop.version>
+    <hadoop.version>3.2.0-SNAPSHOT</hadoop.version>
 
     <scala.version.tools>${scala.version}</scala.version.tools>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -292,117 +292,7 @@
         <version>${hadoop.version}</version>
       </dependency>
 
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-aws</artifactId>
-        <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-cbor</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-mapreduce-client-core</artifactId>
-        <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-core-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-cbor</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-azure</artifactId>
-        <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
+<!--
 
       <dependency>
         <groupId>org.apache.hadoop</groupId>
@@ -435,38 +325,7 @@
           </exclusion>
         </exclusions>
       </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-openstack</artifactId>
-        <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
+-->
 
       <dependency>
         <groupId>org.apache.spark</groupId>
@@ -498,12 +357,24 @@
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-sql_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-sql_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
         <type>test-jar</type>
+        <exclusions>
+          <exclusion>
+            <groupId>org.apache.hadoop</groupId>
+            <artifactId>hadoop-mapreduce-client-core</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
 
       <dependency>
@@ -525,23 +396,8 @@
       </dependency>
       <dependency>
         <groupId>org.apache.spark</groupId>
-        <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
+        <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
-        <type>jar</type>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-aws</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-azure</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-openstack</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.apache.spark</groupId>
@@ -840,115 +696,13 @@
     </profile>
 
     <profile>
-      <id>oldjar</id>
-      <properties>
-        <spark.cloud.module.name>spark-cloud</spark.cloud.module.name>
-      </properties>
-    </profile>
-<!--
-
-    <profile>
-      <id>s3a-tests</id>
-      <properties>
-        <cloud.test.configuration.file>
-          ../../cloud-test-configs/s3a.xml
-        </cloud.test.configuration.file>
-      </properties>
-    </profile>
--->
-
-    <profile>
-      <id>hadoop-2.8</id>
-      <properties>
-        <hadoop.version>2.8.2</hadoop.version>
-        <required.hadoop.version>${hadoop.version}</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>branch-2</id>
-      <properties>
-        <hadoop.version>2.10.0-SNAPSHOT</hadoop.version>
-        <required.hadoop.version>${hadoop.version}</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>hadoop-2.9</id>
-      <properties>
-        <hadoop.version>2.9.0</hadoop.version>
-        <required.hadoop.version>${hadoop.version}</required.hadoop.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>hadoop-3.0</id>
+      <id>spark-2.3</id>
       <properties>
         <!--<required.hadoop.version>3.0.0-alpha4-SNAPSHOT</required.hadoop.version>-->
         <required.hadoop.version>2.11</required.hadoop.version>
-        <guava.version>21.0</guava.version>
+        <guava.version>11.0.2</guava.version>
+        <spark.version>2.3.0</spark.version>
       </properties>
-    </profile>
-
-    <profile>
-      <id>spark-2.1</id>
-      <properties>
-        <spark.version>2.2.0</spark.version>
-        <!-- pull in a random module -->
-        <spark.cloud.module.name>spark-repl</spark.cloud.module.name>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>spark-2.2</id>
-      <properties>
-        <spark.version>2.2.0</spark.version>
-        <!-- pull in a random module -->
-        <spark.cloud.module.name>spark-repl</spark.cloud.module.name>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>dev</id>
-      <properties>
-        <build.version>2.6.3.0-SNAPSHOT</build.version>
-        <!-- These examples use the version of Hadoop which Spark was built with-->
-        <spark.version>2.2.0.${build.version}</spark.version>
-
-        <!-- needed to pick up the new stuff-->
-        <hadoop.version>2.7.3.${build.version}</hadoop.version>
-      </properties>
-    </profile>
-
-    <!-- This is an HDP release. -->
-    <profile>
-      <id>2.6-M10</id>
-      <properties>
-        <build.version>2.6.1.0-129</build.version>
-        <!-- These examples use the version of Hadoop which Spark was built with-->
-        <spark.version>2.1.1.${build.version}</spark.version>
-
-        <!-- needed to pick up the new stuff-->
-        <hadoop.version>2.7.3.${build.version}</hadoop.version>
-      </properties>
-    </profile>
-
-    <profile>
-      <id>declare-http-components</id>
-      <dependencies>
-        <!--Explicit declaration to force in Spark version into transitive dependencies -->
-        <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpclient</artifactId>
-          <version>4.5.2</version>
-        </dependency>
-        <!--Explicit declaration to force in Spark version into transitive dependencies -->
-        <dependency>
-          <groupId>org.apache.httpcomponents</groupId>
-          <artifactId>httpcore</artifactId>
-          <version>4.4.4</version>
-        </dependency>
-      </dependencies>
     </profile>
 
     <profile>

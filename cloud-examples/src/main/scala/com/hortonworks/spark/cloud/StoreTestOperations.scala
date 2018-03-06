@@ -20,12 +20,12 @@ package com.hortonworks.spark.cloud
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
-import com.hortonworks.spark.cloud.commit.CommitterConstants._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path}
 import org.scalatest.concurrent.Eventually
 import org.scalatest.time.Span
 
+import org.apache.spark.internal.io.cloud.PathCommitterConstants
 import org.apache.spark.sql._
 
 /**
@@ -102,7 +102,7 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually
       srcFormat: String,
       rowCount: Long): Long = {
     waitForConsistency(fs)
-    val success = new Path(source, SUCCESS_FILE_NAME)
+    val success = new Path(source, PathCommitterConstants.SUCCESS_FILE_NAME)
     val status = eventuallyGetFileStatus(fs, success)
     assert(status.isDirectory || status.getBlockSize > 0,
       s"Block size 0 in $status")

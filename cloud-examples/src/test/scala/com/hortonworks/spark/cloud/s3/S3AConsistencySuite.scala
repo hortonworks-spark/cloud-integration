@@ -47,7 +47,7 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     fs.delete(file, false)
     val fd = fs.create(file, false)
     fd.writeChars("hello")
-    fd.close();
+    fd.close()
     val files = eventuallyListStatus(fs, dir)
     require(1 == files.length)
     val in = fs.open(file)
@@ -64,7 +64,7 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     val file = new Path(dir, "file.txt")
     val fd = fs.create(file, false)
     fd.writeChars("hello")
-    fd.close();
+    fd.close()
     val files = eventuallyListStatus(fs, dir)
     require(1 === files.length)
     require(file === files(0).getPath)
@@ -106,7 +106,7 @@ import org.apache.hadoop.conf.Configuration
     fs.mkdirs(task00)
     val out = fs.create(new Path(task00, "part-00"), false)
     out.writeChars("hello")
-    out.close();
+    out.close()
     waitForConsistency(fs)
 
     fs.listStatus(task00).foreach(stat =>

@@ -22,11 +22,12 @@ import java.io.FileNotFoundException
 import scala.collection.JavaConverters._
 
 import com.hortonworks.spark.cloud.StoreTestOperations
-import com.hortonworks.spark.cloud.commit.CommitterConstants
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
+
+import org.apache.spark.internal.io.cloud.PathCommitterConstants
 
 /**
  * General S3A operations against a filesystem.
@@ -61,7 +62,7 @@ class S3AOperations(sourceFs: FileSystem)
       text: String,
       requireNonEmpty: Boolean = true): Option[SuccessData] = {
 
-    val successFile = new Path(destDir, CommitterConstants.SUCCESS_FILE_NAME)
+    val successFile = new Path(destDir, PathCommitterConstants.SUCCESS_FILE_NAME)
 
     var status = try {
       eventuallyGetFileStatus(fs, successFile)
