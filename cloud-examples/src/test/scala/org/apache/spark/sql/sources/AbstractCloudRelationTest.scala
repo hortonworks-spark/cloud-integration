@@ -23,12 +23,14 @@ import scala.concurrent.duration._
 import scala.util.Random
 
 import com.hortonworks.spark.cloud.CloudSuiteTrait
+import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 import org.apache.hadoop.fs.Path
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
 
+import org.apache.spark.SparkContext
 import org.apache.spark.sql._
-import org.apache.spark.sql.hive.test.TestHiveSingleton
+import org.apache.spark.sql.hive.test.{TestHive, TestHiveSingleton}
 import org.apache.spark.sql.test.SQLTestUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.util.Utils
@@ -41,11 +43,17 @@ import org.apache.spark.util.Utils
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   with Eventually
-  with TestHiveSingleton with CloudSuiteTrait with BeforeAndAfterAll {
+  with TestHiveSingleton
+  with CloudSuiteTrait with BeforeAndAfterAll {
 
   import spark.implicits._
 
   val dataSourceName: String
+
+  protected override def beforeAll(): Unit = {
+    super.beforeAll()
+//    COMMITTERS_BY_NAME(DIRECTORY).bind()
+  }
 
   protected override def afterAll(): Unit = {
     try {
@@ -61,6 +69,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   def assertSparkRunning(): Unit = {
     assert(spark != null, "No spark context")
+    SparkContext.getActive.getOrElse(fail("No active spark context"))
   }
 
   /**
