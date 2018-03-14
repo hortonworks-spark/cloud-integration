@@ -123,6 +123,8 @@
     <s3a.committer.test.enabled>false</s3a.committer.test.enabled>
 
     <fs.s3a.committer.name>unset</fs.s3a.committer.name>
+    <!-- JVM args for scalatest -->
+    <scalatest.jvmargs>-ea</scalatest.jvmargs>
 
 
     <!-- plugins -->
@@ -151,8 +153,6 @@
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <checkstyle.version>7.5.1</checkstyle.version>
     <dependency-check-maven.version>1.4.3</dependency-check-maven.version>
-
-
   </properties>
 
   <repositories>
@@ -335,6 +335,10 @@
           <exclusion>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>net.java.dev.jets3t</groupId>
+            <artifactId>jets3t</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -583,7 +587,7 @@
             <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
             <junitxml>.</junitxml>
             <filereports>SparkTestSuite.txt</filereports>
-            <argLine>-ea</argLine>
+            <argLine>${scalatest.jvmargs}</argLine>
             <stderr/>
             <environmentVariables>
             </environmentVariables>
@@ -768,10 +772,10 @@
 
     <!-- Switch to dynamo DB for s3guard. Has no effect unless s3guard is enabled -->
     <profile>
-      <id>dynamo</id>
+      <id>dynamodb</id>
       <activation>
         <property>
-          <name>dynamo</name>
+          <name>dynamodb</name>
         </property>
       </activation>
       <properties>
@@ -847,6 +851,28 @@
         </dependency>
       </dependencies>
     </profile>
+
+    <!--
+     Switch scalatest to JVM debug.
+     This blocks the process and lets you attach
+      -->
+    <profile>
+      <id>debug</id>
+      <activation>
+        <property>
+          <name>debug</name>
+        </property>
+      </activation>
+      <properties>
+        <!-- JVM args for scalatest -->
+        <scalatest.jvmargs>-ea -agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5005</scalatest.jvmargs>
+<!--
+        <scalatest.jvmargs>-ea -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=4000,server=y,suspend=n</scalatest.jvmargs>
+-->
+      </properties>
+    </profile>
+
   </profiles>
+
 
 </project>  

@@ -17,6 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
+import com.hortonworks.spark.cloud.ObjectStoreConfigurations
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -111,7 +112,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     // validate the conf by asserting that the spark conf is bonded
     // to the partitioned committer.
     assert(
-      PARQUET_COMMITTER_CLASS ===
+      ObjectStoreConfigurations.PARQUET_COMMITTER_CLASS ===
       sparkConf.get(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key),
       s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
 

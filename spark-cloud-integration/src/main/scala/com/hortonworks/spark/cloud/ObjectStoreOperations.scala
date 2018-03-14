@@ -28,7 +28,6 @@ import scala.reflect.ClassTag
 import com.fasterxml.jackson.databind.JsonNode
 import org.apache.spark.internal.io.cloud.PathCommitterConstants._
 import org.apache.spark.internal.io.cloud.{PathCommitterConstants, PathOutputCommitProtocol}
-import com.hortonworks.spark.cloud.utils.TimeOperations
 import com.hortonworks.spark.cloud.utils.{HConf, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
@@ -246,63 +245,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     Option(this.getClass.getClassLoader.getResource(resource))
   }
 
-  /**
-   * General spark options
-   */
-  val GENERAL_SPARK_OPTIONS = Map(
-    "spark.ui.enabled" -> "false",
-    "spark.driver.allowMultipleContexts" -> "true"
-  )
 
-  val ORC_OPTIONS = Map(
-    "spark.hadoop.orc.splits.include.file.footer" -> "true",
-    "spark.hadoop.orc.cache.stripe.details.size" -> "1000",
-    "spark.hadoop.orc.filterPushdown" -> "true")
-
-  val PARQUET_OPTIONS = Map(
-    "spark.sql.parquet.mergeSchema" -> "false",
-    "spark.sql.parquet.filterPushdown" -> "true"
-  )
-
-  /**
-   * The name of the committer to use for Parquet.
-   */
-  val PARQUET_COMMITTER_CLASS : String =
-    PathCommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
-//    CommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
-
-  /**
-   * Options for file output committer: algorithm 2 & skip cleanup.
-   */
-  val FILE_COMMITTER_OPTIONS = Map(
-    hkey(FILEOUTPUTCOMMITTER_ALGORITHM_VERSION) -> "2",
-    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
-
-
-  /**
-   * Options for committer setup.
-   * 1. Set the commit algorithm to 3 to force failures if the classic
-   * committer was ever somehow picked up.
-   * 2. Switch parquet to the parquet committer subclass which will
-   * then bind to the factory committer.
-   */
-  val COMMITTER_OPTIONS = Map(
-    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true",
-    SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
-      PARQUET_COMMITTER_CLASS,
-    SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key ->
-      classOf[PathOutputCommitProtocol].getCanonicalName,
-    hkey(Constants.PURGE_EXISTING_MULTIPART) -> "true",
-    hkey(Constants.PURGE_EXISTING_MULTIPART_AGE) ->
-      (60 * 1000 * 10).toString
-    )
-
-
-  val HIVE_TEST_SETUP_OPTIONS = Map(
-    "spark.sql.test" -> "",
-    "spark.sql.shuffle.partitions" -> "5",
-    "spark.sql.hive.metastore.barrierPrefixes" -> "org.apache.spark.sql.hive.execution.PairSerDe"
-  )
 
   /**
    * Create the JVM's temp dir, and return its path.
@@ -445,9 +388,9 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       sparkConf: SparkConf,
       randomIO: Boolean): Unit = {
     // commit with v2 algorithm
-    sparkConf.setAll(FILE_COMMITTER_OPTIONS)
-    sparkConf.setAll(ORC_OPTIONS)
-    sparkConf.setAll(PARQUET_OPTIONS)
+    sparkConf.setAll(ObjectStoreConfigurations.FILE_COMMITTER_OPTIONS)
+    sparkConf.setAll(ObjectStoreConfigurations.ORC_OPTIONS)
+    sparkConf.setAll(ObjectStoreConfigurations.PARQUET_OPTIONS)
     if (!sparkConf.contains("spark.master")) {
       sparkConf.set("spark.master", "local")
     }
@@ -465,3 +408,83 @@ class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Ite
   def next: T = source.next()
 }
 
+
+object ObjectStoreConfigurations  extends HConf {
+
+  /**
+   * General spark options
+   */
+  val GENERAL_SPARK_OPTIONS: Map[String, String] = Map(
+    "spark.ui.enabled" -> "false",
+    "spark.driver.allowMultipleContexts" -> "true"
+  )
+
+  /**
+   * Options for ORC.
+   */
+  val ORC_OPTIONS: Map[String, String] = Map(
+    "spark.hadoop.orc.splits.include.file.footer" -> "true",
+    "spark.hadoop.orc.cache.stripe.details.size" -> "1000",
+    "spark.hadoop.orc.filterPushdown" -> "true")
+
+  /**
+   * Options for Parquet.
+   */
+  val PARQUET_OPTIONS: Map[String, String] = Map(
+    "spark.sql.parquet.mergeSchema" -> "false",
+    "spark.sql.parquet.filterPushdown" -> "true"
+  )
+
+  val ALL_READ_OPTIONS: Map[String, String] =
+    GENERAL_SPARK_OPTIONS ++ ORC_OPTIONS ++ PARQUET_OPTIONS
+
+
+  /**
+   * The name of the committer to use for Parquet.
+   */
+  val PARQUET_COMMITTER_CLASS: String =
+    PathCommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
+
+  /**
+   * Options for file output committer: algorithm 2 & skip cleanup.
+   */
+  val FILE_COMMITTER_OPTIONS: Map[String, String] = Map(
+    hkey(FILEOUTPUTCOMMITTER_ALGORITHM_VERSION) -> "2",
+    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
+
+  val PATH_OUTPUT_COMMITTER_NAME: String = classOf[PathOutputCommitProtocol].getCanonicalName
+
+  /**
+   * Options for committer setup.
+   * 1. Set the commit algorithm to 3 to force failures if the classic
+   * committer was ever somehow picked up.
+   * 2. Switch parquet to the parquet committer subclass which will
+   * then bind to the factory committer.
+   * 3.Set spark.sql.sources.commitProtocolClass to  PathOutputCommitProtocol
+   */
+  val COMMITTER_OPTIONS: Map[String, String] = Map(
+    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true",
+    SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
+      PARQUET_COMMITTER_CLASS,
+    SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key ->
+      PATH_OUTPUT_COMMITTER_NAME
+  )
+
+  /**
+   * Extra options for testing with hive.
+   */
+  val HIVE_TEST_SETUP_OPTIONS: Map[String, String] = Map(
+    "spark.sql.test" -> "",
+    "spark.sql.shuffle.partitions" -> "5",
+    "spark.sql.hive.metastore.barrierPrefixes" ->
+      "org.apache.spark.sql.hive.execution.PairSerDe"
+  )
+
+
+  /**
+   * Everything needed for tests.
+   */
+  val RW_TEST_OPTIONS: Map[String, String] =
+    ALL_READ_OPTIONS ++ COMMITTER_OPTIONS ++ HIVE_TEST_SETUP_OPTIONS
+
+}

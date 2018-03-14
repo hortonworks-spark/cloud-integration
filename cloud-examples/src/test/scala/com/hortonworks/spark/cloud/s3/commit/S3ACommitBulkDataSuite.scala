@@ -51,7 +51,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
   override def enabled: Boolean = super.enabled &&
     hasCSVTestFile // && isScaleTestEnabled
 
-  val paralellism = 8
+  val parallelism = 8
 
 
   private val destFS = filesystemOption.orNull.asInstanceOf[S3AFileSystem]
@@ -142,7 +142,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val committer = "partitioned"
     val sparkSession = newSparkSession(committer, "replace",
       Map(
-        "spark.default.parallelism" -> paralellism.toString
+        "spark.default.parallelism" -> parallelism.toString
       )
     )
 

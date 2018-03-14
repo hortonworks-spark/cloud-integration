@@ -26,7 +26,7 @@ import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 
 /**
- * All the tests from the orginal spark suite reworked to take a Hadoop path
+ * All the tests from the original spark suite reworked to take a Hadoop path
  * rather than a local FS path.
  */
 abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
@@ -657,20 +657,20 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       "fs.file.impl" -> classOf[LocalityTestFileSystem].getName,
       "fs.file.impl.disable.cache" -> "true"
     )
-    withTempPath { dir =>
-      val path = dir.toURI.toString
+    withTempPathDir("locality") { dir =>
+      val pathname = dir.toUri.toString
       val df1 = spark.range(4)
       df1.coalesce(1).write.mode("overwrite").options(options)
-        .format(dataSourceName).save(path)
+        .format(dataSourceName).save(pathname)
       df1.coalesce(1).write.mode("append").options(options)
-        .format(dataSourceName).save(path)
+        .format(dataSourceName).save(pathname)
 
       def checkLocality(): Unit = {
         val df2 = spark.read
           .format(dataSourceName)
           .option("dataSchema", df1.schema.json)
           .options(options)
-          .load(path)
+          .load(pathname)
 
         val Some(fileScanRDD) = df2.queryExecution.executedPlan.collectFirst {
           case scan: DataSourceScanExec if scan.inputRDDs().head

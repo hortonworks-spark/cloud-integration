@@ -18,6 +18,7 @@
 package com.hortonworks.spark.cloud.s3.commit
 
 
+import com.hortonworks.spark.cloud.ObjectStoreConfigurations
 import org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
 import org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
 import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory, PartitionedStagingCommitterFactory}
@@ -46,7 +47,7 @@ class S3ACommitterFactorySuite extends AbstractCommitterSuite {
    */
   override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     super.addSuiteConfigurationOptions(sparkConf)
-    sparkConf.setAll(COMMITTER_OPTIONS)
+    sparkConf.setAll(ObjectStoreConfigurations.COMMITTER_OPTIONS)
   }
 
   ctest("DirectoryStagingCommitterFactory on CP") {

@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.{CloudSuite, ObjectStoreConfigurations}
 import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
 import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
@@ -44,7 +44,7 @@ abstract class AbstractCommitterSuite extends CloudSuite with S3ATestSetup {
   override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     super.addSuiteConfigurationOptions(sparkConf)
     logDebug("Patching spark conf with s3a committer bindings")
-    sparkConf.setAll(COMMITTER_OPTIONS)
+    sparkConf.setAll(ObjectStoreConfigurations.COMMITTER_OPTIONS)
     addTransientDerbySettings(sparkConf)
   }
 

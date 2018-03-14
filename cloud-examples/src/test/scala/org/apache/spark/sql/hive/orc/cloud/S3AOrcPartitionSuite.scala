@@ -19,10 +19,9 @@ package org.apache.spark.sql.hive.orc.cloud
 
 import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.sql.sources.CloudRelationBasicSuite
-import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}
+import org.apache.spark.sql.sources.CloudPartitionSuite
 
-class S3AParquetRelationSuite extends CloudRelationBasicSuite with S3ATestSetup {
+class S3AOrcPartitionSuite extends CloudPartitionSuite with S3ATestSetup {
 
   init()
 
@@ -33,13 +32,6 @@ class S3AParquetRelationSuite extends CloudRelationBasicSuite with S3ATestSetup 
     }
   }
 
-  override val dataSourceName: String = "parquet"
+  override val dataSourceName: String = "orc"
 
-  // Parquet does not play well with NullType.
-  override protected def supportsDataType(
-    dataType: DataType): Boolean = dataType match {
-    case _: NullType => false
-    case _: CalendarIntervalType => false
-    case _ => true
-  }
 }

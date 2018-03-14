@@ -235,6 +235,8 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
     v != null && !v.isEmpty
   }
 
+  import com.hortonworks.spark.cloud.ObjectStoreConfigurations._
+
   /**
    * Override point for suites: a method which is called
    * in all the `newSparkConf()` methods.
