@@ -21,8 +21,8 @@ import java.io.File
 
 import scala.concurrent.duration._
 
-import com.hortonworks.spark.cloud.{CloudSuiteTrait, ObjectStoreConfigurations}
-import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
+import com.hortonworks.spark.cloud.{CloudSuiteTrait, CloudTestKeys, ObjectStoreConfigurations}
+import org.apache.hadoop.fs.{FileStatus, Path}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
 
@@ -46,11 +46,25 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   import spark.implicits._
 
+  /**
+   * Name of the data source: this must be declared.
+   */
   val dataSourceName: String
+
+
+  /**
+   * Skip these tests if the hive tests have been disabled; stops
+   * the unreliability of their bulk execution generating false
+   * failures in jenkins.
+   * @return true if the test suite is enabled.
+   */
+  override protected def enabled: Boolean = {
+    super.enabled &&
+      !getConf.getBoolean(CloudTestKeys.HIVE_TESTS_DISABLED, false)
+  }
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()
-
 
     // validate the conf by asserting that the spark conf is bonded
     // to the partitioned committer.

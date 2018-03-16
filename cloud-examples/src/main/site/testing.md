@@ -377,8 +377,8 @@ and are best executed within the appropriate cloud infrastructure.
 
 They are skipped unless the test run explicitly enables them
 
-```
--Dscale
+```bash
+mvn test $CONF -Dscale
 ```
 
 
@@ -387,6 +387,23 @@ option `scale.tests.enabled` to true
 
 The XML configuration option `scale.test.size.factor` can be used to scale up some of the tests in terms of
 file size and number of operations; the default value is "100". Few tests use this.
+
+
+### Disabling hive tests
+
+
+The tests which run hive services in the JVM seem to be the ones most prone to failing in bulk tests.
+They do work when run individually.
+
+To keep jenkins happy, they can be disabled in the bulk tests.
+
+```bash
+mvn test $CONF -DskipHiveTests
+```
+
+Setting the XML option `hive.tests.disabled` to true will have the same effect.
+
+For completeness, the individual tests should still be executed in isolation.
 
 
 ## Analyzing the Results
@@ -499,7 +516,7 @@ These aren't very important tests; all they do is make sure that the encryption 
 
 
 
-## Testing with S3Guard o
+## Testing with S3Guard 
 
 
 If the object store has S3Guard enabled, then you get the consistent view which it offers.
@@ -582,7 +599,7 @@ enable inconsistent listings with `-Dinconsistent` the reason becomes obvious
 
 
 
-## Adding new tests
+## Adding New Tests
 
 Tests in a cloud suite must be conditional on the specific filesystem being available; every
 test suite must implement a method `enabled: Boolean` to determine this. The tests are then
@@ -601,7 +618,7 @@ For example, here is the test `NewHadoopAPI`.
   }
 ```
 
-### Best Practices for Adding a New Test case
+### Best Practices for Adding a  Test Case
 
 1. Use `ctest()` to define a test case conditional on the suite being enabled.
 1. Keep the test time down through small values such as: numbers of files, dataset sizes, operations.
@@ -615,7 +632,7 @@ though command line arguments.
 wait for object store changes to become visible.
 1. Have a long enough timeout that remote tests over slower connections will not timeout.
 
-### Best Practices for Adding a New Test Suite
+### Best Practices for Adding a  Test Suite
 
 1. Extend `CloudSuite`
 1. Have an `after {}` clause which cleans up all object stores —this keeps costs down.

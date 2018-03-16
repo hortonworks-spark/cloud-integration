@@ -97,6 +97,7 @@
 
     <!-- are scale tests enabled ? -->
     <scale.test.enabled>unset</scale.test.enabled>
+    <hive.tests.disabled>unset</hive.tests.disabled>
 
     <!-- Size in MB of huge files. -->
     <s3a.scale.test.huge.filesize>unset</s3a.scale.test.huge.filesize>
@@ -468,6 +469,7 @@
 
               <fs.s3a.metadatastore.authoritative>${fs.s3a.metadatastore.authoritative}</fs.s3a.metadatastore.authoritative>
               <fs.s3a.metadatastore.impl>${fs.s3a.metadatastore.impl}</fs.s3a.metadatastore.impl>
+              <hive.tests.disabled>${hive.tests.disabled}</hive.tests.disabled>
             </systemProperties>
           </configuration>
           <executions>
@@ -572,6 +574,19 @@
       </properties>
     </profile>
 
+
+    <!--turn off the hive tests-->
+    <profile>
+      <id>skipHiveTests</id>
+      <activation>
+        <property>
+          <name>skipHiveTests</name>
+        </property>
+      </activation>
+      <properties>
+        <hive.tests.disabled>true</hive.tests.disabled>
+      </properties>
+    </profile>
 
     <profile>
       <id>staging</id>

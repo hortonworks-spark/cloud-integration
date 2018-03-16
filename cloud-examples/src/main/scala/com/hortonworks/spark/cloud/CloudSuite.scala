@@ -20,8 +20,8 @@ package com.hortonworks.spark.cloud
 import java.io.{File, FileNotFoundException}
 
 import com.hortonworks.spark.cloud.CloudTestKeys._
-import com.hortonworks.spark.cloud.s3.S3AConstants
 import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
+import com.hortonworks.spark.cloud.s3.S3AConstants
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
 import org.scalatest.{BeforeAndAfter, FunSuite}
@@ -71,17 +71,18 @@ object CloudSuite extends Logging with S3AConstants
     overlayConfiguration(
       config,
       Seq(
-        REQUIRED_HADOOP_VERSION,
-        S3A_COMMITTER_TEST_ENABLED,
-        S3GUARD_TEST_ENABLED,
-        S3_CLIENT_FACTORY_IMPL,
-        S3GUARD_IMPLEMENTATION,
-        S3_METADATA_STORE_IMPL,
+        HIVE_TESTS_DISABLED,
         METADATASTORE_AUTHORITATIVE,
+        REQUIRED_HADOOP_VERSION,
         SCALE_TEST_ENABLED,
         SCALE_TEST_SIZE_FACTOR,
+        S3A_CLIENT_FACTORY_IMPL,
+        S3A_COMMITTER_TEST_ENABLED,
         S3A_ENCRYPTION_KEY_1,
-        S3A_ENCRYPTION_KEY_2
+        S3A_ENCRYPTION_KEY_2,
+        S3A_METADATA_STORE_IMPL,
+        S3GUARD_IMPLEMENTATION,
+        S3GUARD_TEST_ENABLED
       )
     )
 

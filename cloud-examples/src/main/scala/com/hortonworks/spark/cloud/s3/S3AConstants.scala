@@ -100,9 +100,9 @@ trait S3AConstants {
 
   val S3A_COMMITTER_NAME = "fs.s3a.committer.name"
 
-  val S3_CLIENT_FACTORY_IMPL = "fs.s3a.s3.client.factory.impl"
-  val DEFAULT_S3_CLIENT_FACTORY = "org.apache.hadoop.fs.s3a.DefaultS3ClientFactory"
-  val INCONSISTENT_S3_CLIENT_FACTORY_IMPL =
+  val S3A_CLIENT_FACTORY_IMPL = "fs.s3a.s3.client.factory.impl"
+  val DEFAULT_S3A_CLIENT_FACTORY = "org.apache.hadoop.fs.s3a.DefaultS3ClientFactory"
+  val INCONSISTENT_S3A_CLIENT_FACTORY_IMPL =
     "org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory"
 
   /**
@@ -127,7 +127,7 @@ trait S3AConstants {
   val METADATASTORE_AUTHORITATIVE = "fs.s3a.metadatastore.authoritative"
   val DEFAULT_METADATASTORE_AUTHORITATIVE = false
 
-  val S3_METADATA_STORE_IMPL = "fs.s3a.metadatastore.impl"
+  val S3A_METADATA_STORE_IMPL = "fs.s3a.metadatastore.impl"
   /**
    * The region of the DynamoDB service.
    *

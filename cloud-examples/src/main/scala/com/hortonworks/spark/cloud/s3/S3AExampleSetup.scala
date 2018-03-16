@@ -60,7 +60,7 @@ trait S3AExampleSetup extends StoreTestOperations with S3AConstants {
    * @return delay in millis; 0 is default.
    */
   override def consistencyDelay(c: Configuration): Int = {
-    if (c.getTrimmed(S3_CLIENT_FACTORY_IMPL, "") != "") {
+    if (c.getTrimmed(S3A_CLIENT_FACTORY_IMPL, "") != "") {
       DEFAULT_DELAY_KEY_MSEC
     } else {
       0

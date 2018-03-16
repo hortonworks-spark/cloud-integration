@@ -205,6 +205,8 @@ object CloudTestKeys extends S3AConstants {
   val S3GUARD_IMPLEMENTATION_NONE = "none"
 
 
+  /** hive tests disabled? */
+  val HIVE_TESTS_DISABLED: String = "hive.tests.disabled"
 }
 
 

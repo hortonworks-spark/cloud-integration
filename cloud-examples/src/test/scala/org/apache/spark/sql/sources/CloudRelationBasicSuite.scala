@@ -23,7 +23,7 @@ import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
+import org.apache.spark.sql.types.{IntegerType, StructType}
 
 /**
  * Basic suite of cloud relations; speed over coverage.
