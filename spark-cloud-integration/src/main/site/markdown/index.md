@@ -47,8 +47,8 @@ To use a committer you need to do a number of things
 
 1. Perform any filesystem-level setup/configuration required by the committer.
 1. Declare the Hadoop-level options to use the the new committer for the target
-filesystem schemas (here: `s3a://`)
-1. Declare any configuration options supported by the committer
+filesystem schemas (here: `s3a://`).
+1. Declare any configuration options supported by the committer.
 1. Declare any Spark SQL options needed to support the new committer
 
 ### Identify the Committer
@@ -60,7 +60,29 @@ documents.
 
 ### Declare the Hadoop bindings
 
-The underlying Hadoop FileOutputFormat needs to be configured to use an S3-specific
+The underlying Hadoop `FileOutputFormat` needs to be configured to use a specific
+committer factory for the target filesystem, such as "s3a". 
+
+
+This is done by setting the hadoop property `mapreduce.outputcommitter.factory.scheme.SCHEME`
+to the name of a "committer factory" for that filesystem.
+This is already done for the S3A filesystem. For backwards compatibility
+this factory creates the classic (slow and potentially unsafe) 
+
+
+```xml
+<property>
+  <name>mapreduce.outputcommitter.factory.scheme.s3a</name>
+  <value>org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory</value>
+  <description>
+    The committer factory to use when writing data to S3A filesystems.
+    If mapreduce.outputcommitter.factory.class is set, it will
+    override this property.
+  </description>
+</property>
+```
+
+an S3-specific
 factory of committers, one which will then let us choose which S3A committer to
 use:
 
@@ -82,15 +104,17 @@ classes.
 ```properties
 spark.sql.sources.commitProtocolClass=org.apache.spark.internal.io.cloud.PathOutputCommitProtocol
 spark.sql.parquet.output.committer.class=.BindingPathOutputCommitter
-```
+spark.hadoop.fs.s3a.committer.name=partition
 
+```
+cccc
 You do not need an equivalent of the Parquet committer option for other formats
 (ORC, Avro, CSV, etc); as there is no harm in setting it when not used, it is 
 best to set it for all jobs, irrespective of output formats.
 
 
 
-# Choosing a committer
+# For S3A: choose a committer
 
 There are now three S3A-specific committers available
 

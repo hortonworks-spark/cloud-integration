@@ -19,6 +19,7 @@ package org.apache.spark.sql.sources
 
 import scala.util.Random
 
+import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
@@ -149,7 +150,8 @@ import testImplicits._
         .format(dataSourceName)
         .mode(SaveMode.Overwrite)
         .save(subdir.toString)
-
+      // TODO: check for non zero success file in subdir
+      assertSuccessFileExists(subdir)
       // Inferring schema should throw error as it should not find any file to infer
       val e = intercept[Exception] {
         spark.read.format(dataSourceName).load(dir.toString)
@@ -166,7 +168,7 @@ import testImplicits._
         // This is needed for SimpleTextHadoopFsRelationSuite as SimpleTextSource needs schema
 
         case _ =>
-          fail("Unexpected error trying to infer schema from empty dir", e)
+          fail(s"Unexpected error trying to infer schema from empty dir $e", e)
       }
 
       /** Test whether data is read with the given path matches the expected answer */
@@ -186,12 +188,17 @@ import testImplicits._
 
       testWithPath(dir, Seq.empty)
 
+      logInfo("Appending data to base directory")
       // Verify that if there is data in dir, then reading by path 'dir/' reads only dataInDir
+
       dataInDir.write
         .format(dataSourceName)
         .mode(SaveMode.Append) // append to prevent subdir from being deleted
+        .option(S3ACommitterConstants.CONFLICT_MODE,
+        S3ACommitterConstants.CONFLICT_MODE_APPEND)   // and for s3 committers
         .save(dir.toString)
       assertDirHasFiles(dir)
+      assertSuccessFileExists(dir)
 
       require(ls(subdir, true).exists(!_.isDirectory))
       assertDirHasFiles(subdir)
@@ -199,30 +206,4 @@ import testImplicits._
     }
   }
 
-  ctest(
-    "save-load-partitioned-part-columns-in-data",
-    "Save sets of files in explicitly set up partition tree; read") {
-    withTempPathDir("part-columns", None) { path =>
-      for (p1 <- 1 to 2; p2 <- Seq("foo", "bar")) {
-        val partitionDir = new Path(path, s"p1=$p1/p2=$p2")
-        sparkContext
-          .parallelize(for (i <- 1 to 3) yield (i, s"val_$i", p1))
-          .toDF("a", "b", "p1")
-          .write
-          .format(dataSourceName)
-          .mode(SaveMode.ErrorIfExists)
-          .save(partitionDir.toString)
-      }
-
-      val dataSchemaWithPartition =
-        StructType(
-          dataSchema.fields :+ StructField("p1", IntegerType, nullable = true))
-
-      checkQueries(
-        spark.read.options(Map(
-          "path" -> path.toString,
-          "dataSchema" -> dataSchemaWithPartition.json)).format(dataSourceName)
-          .load())
-    }
-  }
 }

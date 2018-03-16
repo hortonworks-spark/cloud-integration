@@ -199,143 +199,10 @@
     <dependencies>
 
       <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-client</artifactId>
-        <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.ow2.asm</groupId>
-            <artifactId>asm</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.dataformat</groupId>
-            <artifactId>jackson-dataformat-cbor</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.module</groupId>
-            <artifactId>jackson-module-jaxb-annotations</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.jboss.netty</groupId>
-            <artifactId>netty</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>commons-logging</groupId>
-            <artifactId>commons-logging</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.mortbay.jetty</groupId>
-            <artifactId>servlet-api-2.5</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.sun.jersey</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>net.java.dev</groupId>
-            <artifactId>jets3t</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.sun.jersey.jersey-test-framework</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.sun.jersey.contribs</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-common</artifactId>
-        <version>${hadoop.version}</version>
-      </dependency>
-
-<!--
-
-      <dependency>
-        <groupId>org.apache.hadoop</groupId>
-        <artifactId>hadoop-azure-datalake</artifactId>
-        <version>${hadoop.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-common</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.codehaus.jackson</groupId>
-            <artifactId>jackson-mapper-asl</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-core</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-annotations</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>com.google.guava</groupId>
-            <artifactId>guava</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
--->
-
-      <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-core_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
         <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-          </exclusion>
           <exclusion>
             <groupId>net.java.dev.jets3t</groupId>
             <artifactId>jets3t</artifactId>
@@ -349,36 +216,19 @@
         <artifactId>spark-core_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
         <type>test-jar</type>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-client</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-sql_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-core</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
+     </dependency>
+
       <dependency>
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-sql_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
         <type>test-jar</type>
-        <exclusions>
-          <exclusion>
-            <groupId>org.apache.hadoop</groupId>
-            <artifactId>hadoop-mapreduce-client-core</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <dependency>
@@ -425,7 +275,7 @@
         <artifactId>scalatest_${scala.binary.version}</artifactId>
         <version>3.0.3</version>
       </dependency>
-    <dependency>
+      <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
         <version>1.9.5</version>
@@ -605,6 +455,7 @@
               <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
               <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
               <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
+              <scale.test.enabled>${scale.test.enabled}</scale.test.enabled>
 
               <s3a.committer.test.enabled>${s3a.committer.test.enabled}</s3a.committer.test.enabled>
               <fs.s3a.committer.name>${fs.s3a.committer.name}</fs.s3a.committer.name>
@@ -724,8 +575,12 @@
 
     <profile>
       <id>staging</id>
+      <activation>
+        <property>
+          <name>staging</name>
+        </property>
+      </activation>
       <properties>
-        <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.name>staging</fs.s3a.committer.name>
@@ -737,6 +592,7 @@
 
     <profile>
       <id>directory</id>
+      <activation><activeByDefault>true</activeByDefault></activation>
       <properties>
         <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
@@ -748,23 +604,46 @@
 
     <profile>
       <id>partition</id>
+      <activation>
+        <property>
+          <name>partition</name>
+        </property>
+      </activation>
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
-        <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.committer.name>partitioned</fs.s3a.committer.name>
+      </properties>
+    </profile>
+
+    <!-- this just turns off things -->
+    <profile>
+      <id>uncommitted</id>
+      <activation>
+        <property>
+          <name>uncommitted</name>
+        </property>
+      </activation>
+      <properties>
+        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
+        <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
+        <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
+        <fs.s3a.committer.name>unset</fs.s3a.committer.name>
       </properties>
     </profile>
 
     <profile>
       <id>magic</id>
+      <activation>
+        <property>
+          <name>magic</name>
+        </property>
+      </activation>
       <properties>
         <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
-
         <s3a.committer.test.enabled>true</s3a.committer.test.enabled>
-        <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.committer.name>magic</fs.s3a.committer.name>
       </properties>
     </profile>
@@ -772,31 +651,16 @@
 
     <!-- Switch to dynamo DB for s3guard. Has no effect unless s3guard is enabled -->
     <profile>
-      <id>dynamodb</id>
+      <id>s3guard</id>
       <activation>
         <property>
-          <name>dynamodb</name>
+          <name>s3guard</name>
         </property>
       </activation>
       <properties>
         <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore</fs.s3a.metadatastore.impl>
         <s3a.s3guard.test.enabled>true</s3a.s3guard.test.enabled>
         <s3a.s3guard.test.implementation>dynamo</s3a.s3guard.test.implementation>
-      </properties>
-    </profile>
-
-    <!-- Enable S3guard against a DynamoDBLocal datastore -->
-    <profile>
-      <id>localdynamodb</id>
-      <activation>
-        <property>
-          <name>localdynamodb</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore</fs.s3a.metadatastore.impl>
-        <s3a.s3guard.test.enabled>true</s3a.s3guard.test.enabled>
-        <s3a.s3guard.test.implementation>localdynamodb</s3a.s3guard.test.implementation>
       </properties>
     </profile>
 
@@ -825,19 +689,6 @@
       </activation>
       <properties>
         <fs.s3a.s3.client.factory.impl>org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory</fs.s3a.s3.client.factory.impl>
-      </properties>
-    </profile>
-
-    <!-- failing S3A client -->
-    <profile>
-      <id>failing</id>
-      <activation>
-        <property>
-          <name>failing</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3.client.factory.impl>com.hortonworks.spark.cloud.s3.FailingS3ClientFactory</fs.s3a.s3.client.factory.impl>
       </properties>
     </profile>
 

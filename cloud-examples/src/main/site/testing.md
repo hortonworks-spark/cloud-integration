@@ -12,15 +12,27 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 
-## <a name="testing"></a>Testing Spark's Cloud Integration
+## Testing Spark Integration with cloud storage through Hadoop's Cloud connectors
 
-This project contains tests which can run against the object stores. These verify
-functionality integration and performance.
+This project contains tests designed to verify that Spark operations work against cloud stores through the hadoop filesystem APIs. None of the tests are particularly complex: they are designed to verify that the stores work as expected, and are not tests of Spark itself.
 
-### Example Configuration for Testing Cloud Data
+Test categories include
+
+* Basic IO operations
+* File IO performance on opened files
+* Using object stores as a destination of RDD writes, and a followon source of reads
+* Store-specific committers
+* Dataframes
+* Basic scale tests.
 
 
-The test runs need a configuration file to declare the (secret) bindings to the cloud infrastructure.
+## Setting up for the tests
+
+
+### Binding to the object stores
+
+
+The testss need a configuration file to declare the (secret) bindings to the cloud infrastructures.
 The configuration used is the Hadoop XML format, because it allows XInclude importing of
 secrets kept out of any source tree.
 
@@ -31,22 +43,43 @@ The file must be declared to the maven test run in the property `cloud.test.conf
 which can be done in the command line
 
 ```bash
-mvn -T 1C test -Dcloud.test.configuration.file=../cloud.xml
+mvn -T 1C test -Dcloud.test.configuration.file=/home/alice/cloud-test-configs/s3a.xml 
 ```
 
-*Important*: keep all credentials out of SCM-managed repositories. Even if `.gitignore`
-or equivalent is used to exclude the file, they may unintenally get bundled and released
-with an application. It is safest to keep the `cloud.xml` files out of the tree,
+This is easiest if you set up an environment variable pointing to the file and refer to it on the command line.
+
+```bash
+export conf="-Dcloud.test.configuration.file=/home/alice/dev/cloud.xml"
+mvn test -T 1C $CONF -DwildcardSuites=com.hortonworks.spark.cloud.s3.S3AConsistencySuite
+````
+
+
+
+### Security
+
+
+It is critical that the credentials used to access object stores are kept secret. Not only can
+they be abused to run up compute charges, they can be used to read and alter private data.
+
+1. Keep the XML Configuration file with any secrets in a secure part of your filesystem.
+1. When using Hadoop 2.8+, consider using Hadoop credential files to store secrets, referencing
+these files in the relevant id/secret properties of the XML configuration file.
+1. Do not execute object store tests as part of automated CI/Jenkins builds, unless the secrets
+are not senstitive -for example, they refer to in-house (test) object stores, authentication is
+done via IAM EC2 VM credentials, or the credentials are short-lived AWS STS-issued credentials
+with a lifespan of minutes and access only to transient test buckets.
+1. Do not keep the credential files in SCM-managed directories to avoid accidentally checking thenm in.
+It is safest to keep the `cloud.xml` files out of the tree,
 and keep the authentication secrets themselves in a single location for all applications
 tested.
 
-Here is an example XML file `/home/developer/aws/cloud.xml` for running the S3A and Azure tests,
-referencing the secret credentials kept in the file `/home/hadoop/aws/auth-keys.xml`.
+Here is an example XML file `/home/alice/dev/cloud.xml` for running the S3A and Azure tests,
+referencing the secret credentials kept in the file `/home/alice/secret/auth-keys.xml`.
 
 ```xml
 <configuration>
   <include xmlns="http://www.w3.org/2001/XInclude"
-    href="file:///home/developer/aws/auth-keys.xml"/>
+    href="file:///home/alice/secret/auth-keys.xml"/>
 
   <property>
     <name>s3a.tests.enabled</name>
@@ -70,12 +103,17 @@ referencing the secret credentials kept in the file `/home/hadoop/aws/auth-keys.
     <name>azure.test.uri</name>
     <value>wasb://MYCONTAINER@TESTACCOUNT.blob.core.windows.net</value>
   </property>
+  
+  <property>
+    <name>scale.tests.enabled.</name>
+    <value>true</value>
+  </property>
 
 </configuration>
 ```
 
 The configuration uses XInclude to pull in the secret credentials for the account
-from the user's `/home/developer/.ssh/auth-keys.xml` file:
+from the user's `/home/alice/secret/auth-keys.xml` file:
 
 ```xml
 <configuration>
@@ -91,6 +129,7 @@ from the user's `/home/developer/.ssh/auth-keys.xml` file:
     <name>fs.azure.account.key.TESTACCOUNT.blob.core.windows.net</name>
     <value>SECRET_AZURE_KEY</value>
   </property>
+   ...
 </configuration>
 ```
 
@@ -101,32 +140,68 @@ Note that the configuration file is used to define the entire Hadoop configurati
 within the Spark Context created; all options for the specific test filesystems may be
 defined, such as endpoints and timeouts.
 
-### S3A Options
 
-<table class="table">
-  <tr><th style="width:21%">Option</th><th>Meaning</th><th>Default</th></tr>
-  <tr>
-    <td><code>s3a.tests.enabled</code></td>
-    <td>
-    Execute tests using the S3A filesystem.
-    </td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>s3a.test.uri</code></td>
-    <td>
-    URI for S3A tests. Required if S3A tests are enabled.
-    </td>
-    <td><code></code></td>
-  </tr>
-  <tr>
-    <td><code>s3a.test.csvfile.path</code></td>
-    <td>
-    Path to a (possibly encrypted) CSV file used in linecount tests.
-    </td>
-    <td><code></code>s3a://landsat-pds/scene_list.gz</td>
-  </tr>
-</table>
+### Azure WASB Test Options
+
+For azur wasb, enable the tests and provider a test URL. Your login credentials are also required.
+
+```xml
+  <property>
+    <name>azure.tests.enabled</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>azure.test.uri</name>
+    <value>wasb://USER@CONTAINER.blob.core.windows.net</value>
+  </property>
+```
+
+### Azure ADL test options
+
+Along with the normal `fs.adl` login options enabme the tests and provide a URI for testing.
+
+```xml
+  <property>
+    <name>adl.tests.enabled</name>
+    <value>true</value>
+  </property>
+
+  <property>
+    <name>adl.test.uri</name>
+    <value>${test.fs.adl.name}</value>
+  </property>
+````
+
+
+### S3 Test Options
+
+There are more of these than the rest because there are more complex tests against S3.
+
+```xml
+
+  <property>
+    <name>s3a.tests.enabled</name>
+    <value>true</value>
+    <description>Flag to enable S3A tests</description>
+  </property>
+
+  <property>
+    <name>s3a.test.uri</name>
+    <value>s3a://testplan1</value>
+    <description>S3A path to a bucket which the test runs are free to write, read and delete
+    data.</description>
+  </property>
+
+  <!-- only needed when testing against private S3 endpoints -->
+  <property>
+    <name>s3a.test.csvfile.path</name>
+    <value>s3a://landsat-pds/scene_list.gz</value>
+    <description>Path to a (possibly encrypted) CSV file used in linecount tests.</description>
+  </property>
+
+  ```
+
 
 When testing against Amazon S3, their [public datasets](https://aws.amazon.com/public-data-sets/)
 are used.
@@ -148,21 +223,20 @@ S3 endpoint using the S3a per-bucket configuration mechanism.
 
 
 ```xml
-  <property>
-    <name>s3a.test.csvfile.path</name>
-    <value>s3a://testdata/landsat.gz</value>
-  </property>
+<property>
+  <name>s3a.test.csvfile.path</name>
+  <value>s3a://testdata/landsat.gz</value>
+</property>
 
-  <property>
-    <name>fs.s3a.endpoint</name>
-    <value>s3server.example.org</value>
-  </property>
+<property>
+  <name>fs.s3a.endpoint</name>
+  <value>s3server.example.org</value>
+</property>
 
-  <property>
-    <name>fs.s3a.bucket.testdata.endpoint</name>
-    <value>${fs.s3a.endpoint}</value>
-  </property>
-
+<property>
+  <name>fs.s3a.bucket.testdata.endpoint</name>
+  <value>${fs.s3a.endpoint}</value>
+</property>
 ```
 
 When testing against an S3 instance which only supports the AWS V4 Authentication
@@ -196,78 +270,63 @@ Finally, the CSV file tests can be skipped entirely by declaring the URL to be "
 </property>
 ```
 
-### Testing S3Guard consistency and committers
+
+## Building the Tests
 
 
-| Profile | Meaning | 
-|--------|---------|
-| `inconsistent` |  use the inconsisent S3 client | 
-| `localdynamo` | S3Guard with a local database |
-| `dynamo` | S3Guard with a remote database |
-| `authoritative` | declare that the dynamo DB is considered authoritative |
-
-
-The `inconsistent` profile enables the inconsistent listing AWS client. Any failing test implies the code being tested (or the test probes) do not work with an inconsistent FS.
-As the test probes are meant to be resilient here, these failures are *probably* in the production codde.
-
+In the base directory of the project (`cloud-integration`)
 
 ```bash
-mvn test  -Dcloud.test.configuration.file=../cloud-test-configs/s3a.xml   -DwildcardSuites=com.hortonworks.spark.cloud.s3 -Dinconsistent
+mvn install -DskipTests
 ```
 
-Enable S3guard against a DynamoDBLocal datastore.
 
-## Azure Test Options
+You can explicitly choose the spark version
+
+```bash
+mvn install -DskipTests -Dspark.version=2.3.1-SNAPSHOT
+```
+
+If you do this, remember to declare it on all test runs
 
 
-<table class="table">
-  <tr><th style="width:21%">Option</th><th>Meaning</th><th>Default</th></tr>
-  <tr>
-    <td><code>azure.tests.enabled</code></td>
-    <td>
-    Execute tests using the Azure WASB filesystem
-    </td>
-    <td><code>false</code></td>
-  </tr>
-  <tr>
-    <td><code>azure.test.uri</code></td>
-    <td>
-    URI for Azure WASB tests. Required if Azure tests are enabled.
-    </td>
-    <td></td>
-  </tr>
-</table>
+## Running all the tests
+
+Change to the subdirectory `cloud-examples` 
+
+Assuming the `CONF` environment variable has been set up to point to the configuration file
+
+```bash
+mvn test $CONF -Dscale
+```
+
+Otherwise, explicitly invoke it. Here is an e
+```bash
+mvn test -Dcloud.test.configuration.file=../private/cloud.xml -Dscale -Dspark.version=2.3.1-SNAPSHOT
+```
+
+You can just run this project from the base directory
+
+```
+mvt $CONF --pl cloud-examples
+```
+
+Use absolute paths for referencing the XML file if you do this.
+
 
 
 ## Running a Single Test Case
 
 Each cloud test takes time, especially if the tests are being run outside of the
 infrastructure of the specific cloud infrastructure provider.
-Accordingly, it is important to be able to work on a single test case at a time
+Accordingly, it is useful to be able to work on a single test case at a time
 when implementing or debugging a test.
-
-Tests in a cloud suite must be conditional on the specific filesystem being available; every
-test suite must implement a method `enabled: Boolean` to determine this. The tests are then
-registered as "conditional tests" via the `ctest()` functino, which, takes a key,
-a detailed description (this is included in logs), and the actual function to execute.
-
-For example, here is the test `NewHadoopAPI`.
-
-```scala
-  ctest("NewHadoopAPI",
-    "Use SparkContext.saveAsNewAPIHadoopFile() to save data to a file") {
-    sc = new SparkContext("local", "test", newSparkConf())
-    val numbers = sc.parallelize(1 to testEntryCount)
-    val example1 = new Path(TestDir, "example1")
-    saveAsTextFile(numbers, example1, sc.hadoopConfiguration)
-  }
-```
 
 This test can be executed as part of the suite `S3aIOSuite`, by setting the `suites` maven property to the classname
 of the test suite:
 
 ```bash
-mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.hortonworks.spark.cloud.s3.S3aIOSuite
+mvn test $CONF -Dsuites=com.hortonworks.spark.cloud.s3.S3aIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -278,7 +337,7 @@ A single test can be explicitly run by including the key in the `suites` propert
 after the suite name
 
 ```bash
-mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml '-Dsuites=com.hortonworks.spark.cloud.s3.S3ABasicIOSuite FileOutput'
+mvn test $CONF '-Dsuites=com.hortonworks.spark.cloud.s3.S3ABasicIOSuite FileOutput'
 ```
 
 This will run all tests in the `S3ABasicIOSuite` suite whose name contains the string `FileOutput`;
@@ -288,8 +347,8 @@ not enable s3a tests.
 To run all tests of a specific infrastructure, use the `wildcardSuites` property to list the package
 under which all test suites should be executed.
 
-```
-mvn -T 1C  test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud`
+```bash
+mvn test $CONF  `-DwildcardSuites=com.hortonworks.spark.cloud`
 ```
 
 Note that an absolute path is used to refer to the test configuration file in these examples.
@@ -305,83 +364,202 @@ scalability.
 |------|----------|------|
 | `com.hortonworks.spark.cloud.examples.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
 | `com.hortonworks.spark.cloud.examples.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
-| `com.hortonworks.spark.cloud.examples.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
-| `com.hortonworks.spark.cloud.s3.examples.S3LineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
-
-## Best Practices for Adding a New Test
-
-1. Use `ctest()` to define a test case conditional on the suite being enabled.
-1. Keep the test time down through small values such as: numbers of files, dataset sizes, operations.
-Avoid slow operations such as: globbing & listing files
-1. Support a command line entry point for integration tests —and allow such tests to scale up
-though command line arguments.
-1. Give the test a unique name which can be used to explicitly execute it from the build via the `suite` property.
-1. Give the test a meaningful description for logs and test reports.
-1. Test against multiple infrastructure instances.
-1. Allow for eventual consistency of deletion and list operations by using `eventually()` to
-wait for object store changes to become visible.
-1. Have a long enough timeout that remote tests over slower connections will not timeout.
-
-## Best Practices for Adding a New Test Suite
-
-1. Extend `CloudSuite`
-1. Have an `after {}` clause which cleans up all object stores —this keeps costs down.
-1. Do not assume that any test has exclusive access to any part of an object store other
-than the specific test directory. This is critical to support parallel test execution.
-1. Share setup costs across test cases, especially for slow directory/file setup operations.
-1. If extra conditions are needed before a test suite can be executed, override the `enabled` method
-to probe for the extra conditions being met.
-
-## Keeping Test Costs Down
-
-Object stores incur charges for storage and for GET operations out of the datacenter where
-the data is stored.
-
-The tests try to keep costs down by not working with large amounts of data, and by deleting
-all data on teardown. If a test run is aborted, data may be retained on the test filesystem.
-While the charges should only be a small amount, period purges of the bucket will keep costs down.
-
-Rerunning the tests to completion again should achieve this.
-
-The large dataset tests read in public data, so storage and bandwidth costs
-are incurred by Amazon and other cloud storage providers themselves.
-
-### Keeping Credentials Safe in Testing
-
-It is critical that the credentials used to access object stores are kept secret. Not only can
-they be abused to run up compute charges, they can be used to read and alter private data.
-
-1. Keep the XML Configuration file with any secrets in a secure part of your filesystem.
-1. When using Hadoop 2.8+, consider using Hadoop credential files to store secrets, referencing
-these files in the relevant id/secret properties of the XML configuration file.
-1. Do not execute object store tests as part of automated CI/Jenkins builds, unless the secrets
-are not senstitive -for example, they refer to in-house (test) object stores, authentication is
-done via IAM EC2 VM credentials, or the credentials are short-lived AWS STS-issued credentials
-with a lifespan of minutes and access only to transient test buckets.
-
-## Test Profiles
+| `com.hortonworks.spark.cloud.examples.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats  |
+| `com.hortonworks.spark.cloud.s3.examples.S3LineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back. |
 
 
-### Scale tests
+
+
+### Scale Tests
+
+The scale tests are those which are considered slower and/or more costly,
+and are best executed within the appropriate cloud infrastructure.
+
+They are skipped unless the test run explicitly enables them
 
 ```
 -Dscale
 ```
 
-Enables the full test suite including bigger and slower tests. 
+
+You can also enable this in the test configuration XML file by setting the
+option `scale.tests.enabled` to true
+
+The XML configuration option `scale.test.size.factor` can be used to scale up some of the tests in terms of
+file size and number of operations; the default value is "100". Few tests use this.
 
 
-### Staging Committer 
+## Analyzing the Results
+
+
+### Generating the HTML test report
+
+The tests will generate a set of XML reports in `target/surefire-reports/`,
+files which can be converted by Jenkins into HTML reports.
+
+The can also be converted at the command line:
 
 ```
--Dstaging
+mvn surefire-report:report-only 
 ```
 
-### Directory Staging Committer 
+This will generate the HTML report `target/site/surefire-report.html`
+
+This appears a low quality HTML page because the site style sheets are missing
+run `mvn -o site:site` to build the full site and set thing up.
+
+### Interpreting Skipped Tests
+
+A lot of tests will be reported as skipped.
+
+This includes
+
+* All tests for filesystems not enabled in the test run.
+  Expect only those tests begining with the test stores to be tested (S3A, Azure, ADL,...).
+* All files with scalatest tess in them but which are not actually instantiable test suites.
+  Expect only files with the suffix `Suite` to be run.
+* Tests in the `Relations` suite which don't work with the formats of the tested filesystem.
+  Those tests are derived from local-fs tests in Spark's own codebase; they've
+  been expanded rather than purged.
+* Scale tests when the `-Dscale` option was not set on the maven command line, or
+`scale.tests.enabled` set in the test configuration XML file.
+
+If scale tests are desired: enable the  `-Dscale` option and rerun.
+
+
+## Debugging Test Failures
+
+The test runner can be configured to block awaiting a debugger to attach
+to the JVM: use the `-Ddebug` command. 
 
 ```
--Ddirectory
+-Ddebug
 ```
+
+You can then connect to the process from a debugger.
+
+(This works better than trying to run tests from within an IDE such as IntelliJ IDEA, which gets upset about
+conflicting Guava versions on the classpath).
+
+
+
+## Intermittent Test Failures
+
+Here are some problems with test execution which are outstanding; seems to be related to the state of the JVM after
+the previous test runs.
+
+
+#### Spark Context Lifetimes in the JVM.
+
+Scalatest doesn't support the one-JVM-per-test class feature of the JUnit test runners;
+the tests do their best to clean up across each suite.
+
+This seems to lead the problems running the relation suites, where when the
+first one to finish closes the active spark context, so the successors fail.
+
+At the same time, if that context is not closed, other tests fail. 
+
+
+#### Observed inconsistency, such as files not being found
+
+Turn S3Guard on for the tests, it's what it fixes.
+
+The test setup code tries to allow for some delays in metadata listings, especially when deleting target directories.
+
+
+
+### "Cannot call methods on a stopped SparkContext. "
+
+This means that some other test has stopped the spark context.
+Try running the test suite in isolation.
+
+
+## Testing S3 SSE-KMS Encryption
+
+A (small) test exists for encryption using SSE-KMS
+, `com.hortonworks.spark.cloud.s3.S3AEncryptionSuite`.
+For it to execute, the XML configuration file needs to contain two encryption
+keys.
+
+```xml
+<property>
+  <name>s3a.test.encryption.key.1</name>
+  <value>>arn:aws:kms:eu-west-1:00000:key/11111</value>
+</property>
+
+<property>
+  <name>s3a.test.encryption.key.2</name>
+  <value>arn:aws:kms:eu-west-1:00000:key/22222</value>
+</property>
+```
+
+These aren't very important tests; all they do is make sure that the encryption options are passed all the way down.
+
+
+
+
+
+## Testing with S3Guard o
+
+
+If the object store has S3Guard enabled, then you get the consistent view which it offers.
+
+You can also turn it on just for these tests, possibly also with the authoritative option.
+
+
+#### `dynamodb`: S3guard with a real dynamo DB connection
+
+Enables dynamo
+
+```
+-Ddynamodb
+```
+
+This can be used to demonstrate how S3Guard addresses inconsistency in
+listings
+
+```
+-Dinconsistent -Ddynamodb -Dauthoritative
+```
+
+
+#### `authoritative`: Make the s3guard dynamo DB authoritative
+
+This declares that the DynamoDB with S3Guard metadata is the source of
+truth regarding directory listings, so operations do not need to look at
+S3 itself. This is faster, but 
+
+
+```
+-Ddynamodb -Dauthoritative
+```
+
+### Turning on Fault injection
+
+S3A has a fault injection option; this can be enabled by configuring the S3A
+client as covered in
+[the "Testing S3A" document](https://github.com/apache/hadoop/blob/trunk/hadoop-tools/hadoop-aws/src/site/markdown/tools/hadoop-aws/testing.md#failure-injection)
+
+
+```
+-Dinconsistent
+```
+
+
+Switches to fault-injecting client with inconsistent listing for S3A paths
+with `DELAY_LISTING_ME` in the path name. This is for both adding and deleting files. 
+
+*Directories used for S3A tests are all under this path, to force the inconsistencies*
+
+The files themselves have the consistency offered by S3; `HEAD`, `GET`
+and `DELETE` will not be made any *worse*, and, in tests, usually
+appear consistent.
+
+
+## Changing the committer for test runs
+
+The default committer is "directory". Currently the most of the tests set this up explicitly, though there is support for declaring
+use of the alternative S3A committers -it's just disabled right now to avoid confusion.
 
 ### Partitioned Staging Committer 
 
@@ -402,73 +580,62 @@ written underneath as uncommitted multipart PUT operations to magic directories.
 **Important** Use a dynamodb profile to enable consistent lookups. If you
 enable inconsistent listings with `-Dinconsistent` the reason becomes obvious
 
-### Inconsistent 
-
-```
--Dinconsistent
-```
 
 
-Switches to inconsisent listing for S3A paths with `DELAY_LISTING_ME` in
-the path name. This is for both adding and deleting files. 
+## Adding new tests
 
-The files themselves have the consistency offered by S3; `HEAD`, `GET`
-and `DELETE` will not be made any *worse*, and, in tests, usually
-appear consistent.
+Tests in a cloud suite must be conditional on the specific filesystem being available; every
+test suite must implement a method `enabled: Boolean` to determine this. The tests are then
+registered as "conditional tests" via the `ctest()` functino, which, takes a key,
+a detailed description (this is included in logs), and the actual function to execute.
 
-### `localdynamo`: S3guard with a local dynamo DB instance
+For example, here is the test `NewHadoopAPI`.
 
-
-```
--Dlocaldynamo
-```
-
-This can be used to demonstrate how S3Guard addresses inconsistency in
-listings
-
-
-```
--Dinconsistent -Dlocaldynamo -Dauthoritative
+```scala
+  ctest("NewHadoopAPI",
+    "Use SparkContext.saveAsNewAPIHadoopFile() to save data to a file") {
+    sc = new SparkContext("local", "test", newSparkConf())
+    val numbers = sc.parallelize(1 to testEntryCount)
+    val example1 = new Path(TestDir, "example1")
+    saveAsTextFile(numbers, example1, sc.hadoopConfiguration)
+  }
 ```
 
+### Best Practices for Adding a New Test case
 
-### `dynamo`: S3guard with a real dynamo DB connection
+1. Use `ctest()` to define a test case conditional on the suite being enabled.
+1. Keep the test time down through small values such as: numbers of files, dataset sizes, operations.
+Avoid slow operations such as: globbing & listing files
+1. Support a command line entry point for integration tests —and allow such tests to scale up
+though command line arguments.
+1. Give the test a unique name which can be used to explicitly execute it from the build via the `suite` property.
+1. Give the test a meaningful description for logs and test reports.
+1. Test against multiple infrastructure instances.
+1. Allow for eventual consistency of deletion and list operations by using `eventually()` to
+wait for object store changes to become visible.
+1. Have a long enough timeout that remote tests over slower connections will not timeout.
 
-Enables dynamo
+### Best Practices for Adding a New Test Suite
 
-```
--Ddynamo
-```
+1. Extend `CloudSuite`
+1. Have an `after {}` clause which cleans up all object stores —this keeps costs down.
+1. Do not assume that any test has exclusive access to any part of an object store other
+than the specific test directory. This is critical to support parallel test execution.
+1. Share setup costs across test cases, especially for slow directory/file setup operations.
+1. If extra conditions are needed before a test suite can be executed, override the `enabled` method
+to probe for the extra conditions being met.
 
-This can be used to demonstrate how S3Guard addresses inconsistency in
-listings
+### Keeping Test Costs Down
 
-```
--Dinconsistent -Ddynamo -Dauthoritative
-```
+Object stores incur charges for storage and for GET operations out of the datacenter where
+the data is stored.
 
+The tests try to keep costs down by not working with large amounts of data, and by deleting
+all data on teardown. If a test run is aborted, data may be retained on the test filesystem.
+While the charges should only be a small amount, period purges of the bucket will keep costs down.
 
-### `authoritative`: Make the s3guard dynamo DB authoritative
+Rerunning the tests to completion again should achieve this.
 
-This declares that the DynamoDB with S3Guard metadata is the source of
-truth regarding directory listings, so operations do not need to look at
-S3 itself. This is faster, but 
-
-
-```
--Dauthoritative
-```
-
-
-
-
-### Failing `failing`
-
-This is a fairly useless profile right now, as it injects failures into
-S3A client setup. It exists more to verify property passdown than
-do any useful test coverage.
-
-```
--Dfailing
-```
+The large dataset tests read in public data, so storage and bandwidth costs
+are incurred by Amazon and other cloud storage providers themselves.
 

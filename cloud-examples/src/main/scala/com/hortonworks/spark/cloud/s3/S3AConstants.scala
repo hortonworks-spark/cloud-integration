@@ -155,6 +155,14 @@ trait S3AConstants {
   val SSE_KMS = "SSE-KMS"
   val SSE_C = "SSE-C"
 
+  /**
+   * Hadoop configuration option.
+   * Fail fast if the committer is using the path output protocol.
+   * This option can be used to catch configuration issues early.
+   *
+   * It's mostly relevant when testing.
+   */
+  val REJECT_FILE_OUTPUT = "pathoutputcommit.reject.fileoutput"
 }
 
 /**

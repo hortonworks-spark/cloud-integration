@@ -17,10 +17,11 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.StoreTestOperations
+import com.hortonworks.spark.cloud.{ObjectStoreConfigurations, StoreTestOperations}
 import org.apache.hadoop.conf.Configuration
 
 import org.apache.spark.SparkConf
+import org.apache.spark.internal.io.cloud.PathOutputCommitProtocol
 
 /**
  * Base Class for examples working with S3.
@@ -47,6 +48,10 @@ trait S3AExampleSetup extends StoreTestOperations with S3AConstants {
     hconf(sparkConf, FAST_UPLOAD, true)
     // shorter delay than the default, for faster tests
     hconf(sparkConf, FAIL_INJECT_INCONSISTENCY_MSEC, DEFAULT_DELAY_KEY_MSEC)
+    // disable file output in the path output committer as s safety check
+    hconf(sparkConf, REJECT_FILE_OUTPUT, true)
+    verifyConfigurationOptions(sparkConf,
+      ObjectStoreConfigurations.COMMITTER_OPTIONS)
   }
 
   /**

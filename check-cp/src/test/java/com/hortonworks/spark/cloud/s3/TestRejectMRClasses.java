@@ -19,6 +19,7 @@
 package com.hortonworks.spark.cloud.s3;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -48,6 +49,7 @@ public class TestRejectMRClasses {
   }
 
   @Test
+  @Ignore
   public void testInstantiated() {
     if (classname.isEmpty()) {
       return;

@@ -24,7 +24,7 @@ import org.apache.hadoop.fs._
 
 /**
  * A suite of tests working with encryption.
- * Needs multiple encryption keys to work with
+ * Needs multiple encryption keys to work with.
  */
 class S3AEncryptionSuite extends CloudSuite with S3ATestSetup {
 
@@ -67,7 +67,7 @@ class S3AEncryptionSuite extends CloudSuite with S3ATestSetup {
     FileSystem.newInstance(filesystemURI, config)
   }
 
-  ctest("TwoKeys", " read and write with two keys") {
+  ctest("TwoKeys", "read and write with two keys") {
     val key1 = filesystem.getConf.get(SERVER_SIDE_ENCRYPTION_KEY)
     logInfo(s"Test key 1 = $key1")
 
@@ -84,7 +84,7 @@ class S3AEncryptionSuite extends CloudSuite with S3ATestSetup {
     val status = fs2.getFileStatus(key1File)
     assert( hello.length === status.getLen, s"wrong length in $status")
 
-    val statuses = fs2.listStatus(dir)
+    fs2.listStatus(dir)
     val data = read(fs2, key1File, 128)
     assert (hello.length === data.length)
     assert (hello === data)

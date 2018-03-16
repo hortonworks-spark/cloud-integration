@@ -22,7 +22,7 @@ import java.io.File
 import scala.concurrent.duration._
 
 import com.hortonworks.spark.cloud.{CloudSuiteTrait, ObjectStoreConfigurations}
-import org.apache.hadoop.fs.{FileStatus, Path}
+import org.apache.hadoop.fs.{FileStatus, FileSystem, Path}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
 
@@ -50,7 +50,6 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   protected override def beforeAll(): Unit = {
     super.beforeAll()
-//    COMMITTERS_BY_NAME(DIRECTORY).bind()
 
 
     // validate the conf by asserting that the spark conf is bonded
@@ -61,21 +60,26 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
       s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
     assert(ObjectStoreConfigurations.PATH_OUTPUT_COMMITTER_NAME ===
         sparkConf.get(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key),
-      s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
+      s"wrong value of ${SQLConf.FILE_COMMIT_PROTOCOL_CLASS}")
   }
 
   protected override def afterAll(): Unit = {
     try {
       super.afterAll()
     } finally {
+/*
       if (spark != null) {
         logInfo("Closing spark context")
         spark.stop()
         spark == null
       }
+*/
     }
   }
 
+  /**
+   * Assert that spark is running.
+   */
   def assertSparkRunning(): Unit = {
     assert(spark != null, "No spark context")
     SparkContext.getActive.getOrElse(fail("No active spark context"))
@@ -168,9 +172,9 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   protected def withPath(name: String,
     validator: Option[Path => Unit] = defaultOutputValidator())
     (fn: Path => Unit): Path = {
-    val d = path(name)
-    filesystem.delete(d, true)
-    withDefinedPath(d, fn, validator)
+    val dir = path(name)
+    rm(filesystem, dir)
+    withDefinedPath(dir, fn, validator)
   }
 
   /**
@@ -221,7 +225,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     deleteAfter: Boolean = true)
     (fn: Path => Unit): Path = {
     val dir = path(name)
-    filesystem.delete(dir, true)
+    rm(filesystem, dir)
     filesystem.mkdirs(dir)
     withDefinedPath(dir, fn, validator, deleteAfter)
   }

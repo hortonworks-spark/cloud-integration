@@ -19,9 +19,9 @@ package org.apache.spark.sql.hive.orc.cloud
 
 import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.sql.sources.CloudPartitionSuite
+import org.apache.spark.sql.sources.CloudPartitionTest
 
-class S3AOrcPartitionSuite extends CloudPartitionSuite with S3ATestSetup {
+class S3AOrcPartitionSuite extends CloudPartitionTest with S3ATestSetup {
 
   init()
 

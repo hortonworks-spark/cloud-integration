@@ -38,7 +38,7 @@ trait S3ATestSetup extends CloudSuiteTrait with RandomIOPolicy with
 
   }
 
-  def consistentFilesystemOnly = false
+  def consistentFilesystemOnly: Boolean = false
 
   def isConsistentFilesystemConfig: Boolean =
     getConf.getTrimmed(S3_CLIENT_FACTORY_IMPL, "") == ""

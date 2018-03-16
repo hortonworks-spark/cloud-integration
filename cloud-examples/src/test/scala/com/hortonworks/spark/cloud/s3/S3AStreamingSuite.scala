@@ -27,7 +27,7 @@ class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
 
   init()
 
-  override def consistentFilesystemOnly = true
+  override def consistentFilesystemOnly = false //true
 
   def init(): Unit = {
     // propagate S3 credentials

@@ -18,12 +18,12 @@
 package com.hortonworks.spark.cloud.s3
 
 
-import com.hortonworks.spark.cloud.common.CSVReadSuite
+import com.hortonworks.spark.cloud.common.CSVReadTests
 
 /**
  * A suite of tests reading in the S3A CSV file.
  */
-class S3ACSVReadSuite extends CSVReadSuite with S3ATestSetup with SequentialIOPolicy {
+class S3ACSVReadSuite extends CSVReadTests with S3ATestSetup with SequentialIOPolicy {
 
   init()
 

@@ -26,13 +26,11 @@ import scala.language.postfixOps
 import scala.reflect.ClassTag
 
 import com.fasterxml.jackson.databind.JsonNode
-import org.apache.spark.internal.io.cloud.PathCommitterConstants._
-import org.apache.spark.internal.io.cloud.{PathCommitterConstants, PathOutputCommitProtocol}
+import com.hortonworks.spark.cloud.GeneralCommitterConstants._
 import com.hortonworks.spark.cloud.utils.{HConf, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
-import org.apache.hadoop.fs.s3a.Constants
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 
@@ -388,13 +386,27 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       sparkConf: SparkConf,
       randomIO: Boolean): Unit = {
     // commit with v2 algorithm
-    sparkConf.setAll(ObjectStoreConfigurations.FILE_COMMITTER_OPTIONS)
-    sparkConf.setAll(ObjectStoreConfigurations.ORC_OPTIONS)
-    sparkConf.setAll(ObjectStoreConfigurations.PARQUET_OPTIONS)
+    sparkConf.setAll(ObjectStoreConfigurations.RW_TEST_OPTIONS)
     if (!sparkConf.contains("spark.master")) {
       sparkConf.set("spark.master", "local")
     }
   }
+
+  protected def verifyConfigurationOption(sparkConf: SparkConf,
+    key: String, expected: String): Unit = {
+
+    val v = sparkConf.get(key)
+    require(v == expected,
+      s"value of configuration option $key is '$v'; expected '$expected'")
+
+  }
+
+  protected def verifyConfigurationOptions(sparkConf: SparkConf,
+    settings: Traversable[(String, String)]): Unit = {
+    settings.foreach(t => verifyConfigurationOption(sparkConf, t._1, t._2))
+
+  }
+
 }
 
 /**
@@ -443,7 +455,7 @@ object ObjectStoreConfigurations  extends HConf {
    * The name of the committer to use for Parquet.
    */
   val PARQUET_COMMITTER_CLASS: String =
-    PathCommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
+    GeneralCommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
 
   /**
    * Options for file output committer: algorithm 2 & skip cleanup.
@@ -452,7 +464,7 @@ object ObjectStoreConfigurations  extends HConf {
     hkey(FILEOUTPUTCOMMITTER_ALGORITHM_VERSION) -> "2",
     hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
 
-  val PATH_OUTPUT_COMMITTER_NAME: String = classOf[PathOutputCommitProtocol].getCanonicalName
+  val PATH_OUTPUT_COMMITTER_NAME: String = "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol"
 
   /**
    * Options for committer setup.

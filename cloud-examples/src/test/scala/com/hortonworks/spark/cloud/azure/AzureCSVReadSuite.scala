@@ -17,9 +17,9 @@
 
 package com.hortonworks.spark.cloud.azure
 
-import com.hortonworks.spark.cloud.common.CSVReadSuite
+import com.hortonworks.spark.cloud.common.CSVReadTests
 
-class AzureCSVReadSuite extends CSVReadSuite with AzureTestSetup {
+class AzureCSVReadSuite extends CSVReadTests with AzureTestSetup {
   init()
 
   /**

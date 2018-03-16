@@ -18,6 +18,7 @@
 
 package com.hortonworks.spark.cloud.s3;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import org.apache.hadoop.fs.s3a.commit.CommitUtils;
@@ -28,6 +29,7 @@ import java.util.ArrayList;
 public class TestStaticMethodResolution {
 
   @Test(expected = NoClassDefFoundError.class)
+  @Ignore
   public void testCommitUtilsWithMR() {
     CommitUtilsWithMR.formatAppAttemptDir(4);
   }

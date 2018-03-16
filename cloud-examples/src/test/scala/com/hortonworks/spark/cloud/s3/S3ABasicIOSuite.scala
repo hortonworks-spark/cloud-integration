@@ -33,6 +33,6 @@ class S3ABasicIOSuite extends BasicIOTests with S3ATestSetup {
     }
   }
 
-  override def consistentFilesystemOnly = true
+  override def consistentFilesystemOnly = false // true
 
 }

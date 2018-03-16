@@ -25,7 +25,7 @@ import org.apache.spark.sql.types.{IntegerType, StructField, StructType}
 /**
  * Test of a single operation; isolated for debugging.
  */
-abstract class CloudPartitionSuite extends AbstractCloudRelationTest {
+abstract class CloudPartitionTest extends AbstractCloudRelationTest {
 
 import testImplicits._
 
