@@ -12,50 +12,14 @@
   limitations under the License. See accompanying LICENSE file.
 -->
 
-# title
-
-
-### <a name="dataframes"></a>Example: DataFrames
-
-DataFrames can be created from and saved to object stores through the `read()` and `write()` methods.
-
-```scala
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.StringType
-
-val spark = SparkSession
-    .builder
-    .appName("DataFrames")
-    .config(sparkConf)
-    .getOrCreate()
-import spark.implicits._
-val numRows = 1000
-
-// generate test data
-val sourceData = spark.range(0, numRows).select($"id".as("l"), $"id".cast(StringType).as("s"))
-
-// define the destination
-val dest = "wasb://yourcontainer@youraccount.blob.core.windows.net/dataframes"
-
-// write the data
-val orcFile = dest + "/data.orc"
-sourceData.write.format("orc").save(orcFile)
-
-// now read it back
-val orcData = spark.read.format("orc").load(orcFile)
-
-// finally, write the data as Parquet
-orcData.write.format("parquet").save(dest + "/data.parquet")
-spark.stop()
-```
+# Using the extra features in these examples
 
 ### <a name="streaming"></a>Example: Spark Streaming and Cloud Storage
 
 Spark Streaming can monitor files added to object stores, by
 creating a `FileInputDStream` DStream monitoring a path under a bucket.
 
-{% highlight scala %}
+```scala
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.streaming._
@@ -71,7 +35,8 @@ try {
 } finally {
   ssc.stop(true)
 }
-{% endhighlight %}
+```
+
 
 1. The time to scan for new files is proportional to the number of files
 under the path —not the number of *new* files, and that it can become a slow operation.
@@ -82,6 +47,4 @@ is no need for a worklow of write-then-rename to ensure that files aren't picked
 while they are still being written. Applications can write straight to the monitored directory.
 
 
-
-#### <a name="checkpointing"></a>Checkpointing Streams to object stores
 

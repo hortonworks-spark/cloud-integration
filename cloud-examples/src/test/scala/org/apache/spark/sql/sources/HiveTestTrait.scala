@@ -23,23 +23,41 @@ import com.hortonworks.spark.cloud.ObjectStoreConfigurations
 import org.scalatest.BeforeAndAfterAll
 
 import org.apache.spark.{SparkConf, SparkContext, SparkFunSuite}
-import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.{SQLContext, SQLImplicits, SparkSession}
 import org.apache.spark.sql.hive.test.TestHiveContext
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.util.Utils
 
 /**
- * A trait for tests which bonds to a hive singleton.
- * After all tests the hive context is reset.
+ * A trait for tests which bonds to a hive context
+ * After all tests the hive context is reset then it and the spark session
+ * closed.
  */
-trait HiveSingletonTrait extends SparkFunSuite with BeforeAndAfterAll {
+trait HiveTestTrait extends SparkFunSuite with BeforeAndAfterAll {
   override protected val enableAutoThreadAudit = false
-  protected val spark: SparkSession = HiveSingleton.sparkSession
-  protected val hiveContext: TestHiveContext = HiveSingleton
+  protected var hiveContext: HiveInstanceForTests = _
+  protected var spark: SparkSession = _
+
+
+  protected override def beforeAll(): Unit = {
+    super.beforeAll()
+    // set up spark and hive context
+    hiveContext = new HiveInstanceForTests()
+    spark = hiveContext.sparkSession
+  }
 
   protected override def afterAll(): Unit = {
     try {
-      hiveContext.reset()
+      SparkSession.clearActiveSession()
+
+      if (hiveContext != null) {
+        hiveContext.reset()
+        hiveContext = null
+      }
+      if (spark != null) {
+        spark.close()
+        spark = null
+      }
     } finally {
       super.afterAll()
     }
@@ -47,23 +65,21 @@ trait HiveSingletonTrait extends SparkFunSuite with BeforeAndAfterAll {
 
 }
 
-object HiveSingleton
+class HiveInstanceForTests
   extends TestHiveContext(
     new SparkContext(
       System.getProperty("spark.sql.test.master", "local[1]"),
       "TestSQLContext",
       new SparkConf()
-        .set("spark.sql.test", "")
-        .set(SQLConf.CODEGEN_FALLBACK.key, "false")
-        .set("spark.sql.hive.metastore.barrierPrefixes",
-          "org.apache.spark.sql.hive.execution.PairSerDe")
+        .setAll(ObjectStoreConfigurations.RW_TEST_OPTIONS)
         .set("spark.sql.warehouse.dir",
           TestSetup.makeWarehouseDir().toURI.getPath)
-        .set("spark.ui.enabled", "false")
-        .set("spark.unsafe.exceptionOnMemoryLeak", "true")
-        .setAll(ObjectStoreConfigurations.RW_TEST_OPTIONS)
     )
-  )
+  ) {
+
+}
+
+
 
 
 object TestSetup {

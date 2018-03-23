@@ -389,10 +389,10 @@ The XML configuration option `scale.test.size.factor` can be used to scale up so
 file size and number of operations; the default value is "100". Few tests use this.
 
 
-### Disabling hive tests
+### Disabling Spark & Hive tests
 
 
-The tests which run hive services in the JVM seem to be the ones most prone to failing in bulk tests.
+The tests which run the Hive services in the JVM seem to be the ones most prone to failing in bulk tests.
 They do work when run individually.
 
 To keep jenkins happy, they can be disabled in the bulk tests.

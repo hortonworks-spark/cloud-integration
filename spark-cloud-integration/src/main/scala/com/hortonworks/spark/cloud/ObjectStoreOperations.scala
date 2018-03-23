@@ -19,6 +19,7 @@ package com.hortonworks.spark.cloud
 
 import java.io.{EOFException, File, IOException}
 import java.net.URL
+import java.nio.charset.Charset
 
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
@@ -38,10 +39,9 @@ import org.apache.spark.SparkConf
 import org.apache.spark.internal.Logging
 import org.apache.spark.rdd.{PairRDDFunctions, RDD}
 import org.apache.spark.sql._
-import org.apache.spark.sql.internal.SQLConf
 
 /**
- * Extra Hadoop operations for object store integration.
+ * Trait for operations to aid object store integration.
  */
 trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   TimeOperations with HConf {
@@ -156,7 +156,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   }
 
   /**
-   * Get a file from a path.
+   * Get a file from a path in the default charset.
    *
    * @param fs filesystem
    * @param path path to file
@@ -165,7 +165,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   def get(fs: FileSystem, path: Path): String = {
     val in = fs.open(path)
     try {
-      val s= IOUtils.toString(in)
+      val s= IOUtils.toString(in, Charset.defaultCharset())
       in.close()
       s
     } finally {
@@ -455,7 +455,7 @@ object ObjectStoreConfigurations  extends HConf {
    * The name of the committer to use for Parquet.
    */
   val PARQUET_COMMITTER_CLASS: String =
-    GeneralCommitterConstants.BINDING_PATH_OUTPUT_COMMITTER_CLASS
+    GeneralCommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
 
   /**
    * Options for file output committer: algorithm 2 & skip cleanup.
@@ -474,24 +474,21 @@ object ObjectStoreConfigurations  extends HConf {
    * then bind to the factory committer.
    * 3.Set spark.sql.sources.commitProtocolClass to  PathOutputCommitProtocol
    */
-  val COMMITTER_OPTIONS: Map[String, String] = Map(
-    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true",
-    SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key ->
-      PARQUET_COMMITTER_CLASS,
-    SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key ->
-      PATH_OUTPUT_COMMITTER_NAME
-  )
+  val COMMITTER_OPTIONS: Map[String, String] =
+    org.apache.spark.internal.io.cloud.COMMITTER_BINDING_OPTIONS
 
   /**
    * Extra options for testing with hive.
    */
   val HIVE_TEST_SETUP_OPTIONS: Map[String, String] = Map(
+    "spark.ui.enabled" -> "false",
     "spark.sql.test" -> "",
+    "spark.sql.codegen.fallback" -> "true",
+    "spark.unsafe.exceptionOnMemoryLeak" -> "true",
     "spark.sql.shuffle.partitions" -> "5",
     "spark.sql.hive.metastore.barrierPrefixes" ->
       "org.apache.spark.sql.hive.execution.PairSerDe"
   )
-
 
   /**
    * Everything needed for tests.

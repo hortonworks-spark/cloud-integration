@@ -60,8 +60,10 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
 
-    <!-- Spark shades its Guava use, so a version compatible with Hadoop
-     is all that is needed here -->
+    <!--
+     Spark shades its Guava use, so a version compatible with Hadoop
+     is all that is needed here
+    -->
 
     <guava.version>19.0</guava.version>
 
@@ -532,8 +534,8 @@
             <enabled>false</enabled>
           </releases>
         </pluginRepository>
-
       </pluginRepositories>
+
       <repositories>
         <repository>
           <id>ASF Staging</id>
@@ -705,17 +707,6 @@
       <properties>
         <fs.s3a.s3.client.factory.impl>org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory</fs.s3a.s3.client.factory.impl>
       </properties>
-    </profile>
-
-    <profile>
-      <id>guava19</id>
-      <dependencies>
-        <dependency>
-          <groupId>com.google.guava</groupId>
-          <artifactId>guava</artifactId>
-          <version>19.0</version>
-        </dependency>
-      </dependencies>
     </profile>
 
     <!--

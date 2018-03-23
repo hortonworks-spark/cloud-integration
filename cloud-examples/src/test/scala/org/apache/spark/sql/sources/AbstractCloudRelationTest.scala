@@ -41,16 +41,29 @@ import org.apache.spark.util.Utils
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   with Eventually
-  with HiveSingletonTrait
+  with HiveTestTrait
   with CloudSuiteTrait with BeforeAndAfterAll {
 
-  import spark.implicits._
+
+  import testImplicits._
 
   /**
    * Name of the data source: this must be declared.
    */
   val dataSourceName: String
 
+  val dataSchema =
+    StructType(
+      Seq(
+        StructField("a", IntegerType, nullable = false),
+        StructField("b", StringType, nullable = false)))
+
+  var testDF: DataFrame = _
+
+  var partitionedTestDF1: DataFrame = _
+  var partitionedTestDF2: DataFrame = _
+
+  protected var partitionedTestDF: DataFrame = _
 
   /**
    * Skip these tests if the hive tests have been disabled; stops
@@ -75,6 +88,21 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     assert(ObjectStoreConfigurations.PATH_OUTPUT_COMMITTER_NAME ===
         sparkConf.get(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key),
       s"wrong value of ${SQLConf.FILE_COMMIT_PROTOCOL_CLASS}")
+
+    testDF = spark.range(1, 3).map(i => (i, s"val_$i")).toDF("a", "b")
+    partitionedTestDF1 = (for {
+      i <- 1 to 3
+      p2 <- Seq("foo", "bar")
+    } yield {
+      (i, s"val_$i", 1, p2)
+    }).toDF("a", "b", "p1", "p2")
+    partitionedTestDF2 = (for {
+      i <- 1 to 3
+      p2 <- Seq("foo", "bar")
+    } yield {
+      (i, s"val_$i", 2, p2)
+    }).toDF("a", "b", "p1", "p2")
+    partitionedTestDF = partitionedTestDF1.union(partitionedTestDF2)
   }
 
   protected override def afterAll(): Unit = {
@@ -112,30 +140,6 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     case _ => true
   }
 
-  val dataSchema =
-    StructType(
-      Seq(
-        StructField("a", IntegerType, nullable = false),
-        StructField("b", StringType, nullable = false)))
-
-  lazy val testDF = spark.range(1, 3).map(i => (i, s"val_$i")).toDF("a", "b")
-
-  lazy val partitionedTestDF1: DataFrame = (for {
-    i <- 1 to 3
-    p2 <- Seq("foo", "bar")
-  } yield {
-    (i, s"val_$i", 1, p2)
-  }).toDF("a", "b", "p1", "p2")
-
-  lazy val partitionedTestDF2: DataFrame = (for {
-    i <- 1 to 3
-    p2 <- Seq("foo", "bar")
-  } yield {
-    (i, s"val_$i", 2, p2)
-  }).toDF("a", "b", "p1", "p2")
-
-  protected lazy val partitionedTestDF: DataFrame =
-    partitionedTestDF1.union(partitionedTestDF2)
 
   /**
    * Get
@@ -261,6 +265,8 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   }
 
   def checkQueries(df: DataFrame): Unit = {
+//    import spark.implicits._
+
     // Selects everything
     checkAnswer(
       df,
