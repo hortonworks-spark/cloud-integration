@@ -20,15 +20,15 @@ package org.apache.spark.sql.sources
 import java.io.File
 
 import scala.concurrent.duration._
-import scala.util.Random
 
-import com.hortonworks.spark.cloud.CloudSuiteTrait
-import org.apache.hadoop.fs.Path
+import com.hortonworks.spark.cloud.{CloudSuiteTrait, CloudTestKeys, ObjectStoreConfigurations}
+import org.apache.hadoop.fs.{FileStatus, Path}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
 
+import org.apache.spark.SparkContext
 import org.apache.spark.sql._
-import org.apache.spark.sql.hive.test.TestHiveSingleton
+import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.test.SQLTestUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.util.Utils
@@ -41,26 +41,90 @@ import org.apache.spark.util.Utils
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   with Eventually
-  with TestHiveSingleton with CloudSuiteTrait with BeforeAndAfterAll {
+  with HiveTestTrait
+  with CloudSuiteTrait with BeforeAndAfterAll {
 
-  import spark.implicits._
 
+  import testImplicits._
+
+  /**
+   * Name of the data source: this must be declared.
+   */
   val dataSourceName: String
+
+  val dataSchema =
+    StructType(
+      Seq(
+        StructField("a", IntegerType, nullable = false),
+        StructField("b", StringType, nullable = false)))
+
+  var testDF: DataFrame = _
+
+  var partitionedTestDF1: DataFrame = _
+  var partitionedTestDF2: DataFrame = _
+
+  protected var partitionedTestDF: DataFrame = _
+
+  /**
+   * Skip these tests if the hive tests have been disabled; stops
+   * the unreliability of their bulk execution generating false
+   * failures in jenkins.
+   * @return true if the test suite is enabled.
+   */
+  override protected def enabled: Boolean = {
+    super.enabled &&
+      !getConf.getBoolean(CloudTestKeys.HIVE_TESTS_DISABLED, false)
+  }
+
+  protected override def beforeAll(): Unit = {
+    super.beforeAll()
+
+    // validate the conf by asserting that the spark conf is bonded
+    // to the partitioned committer.
+    val sparkConf = spark.conf
+    assert(ObjectStoreConfigurations.PARQUET_COMMITTER_CLASS ===
+        sparkConf.get(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key),
+      s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
+    assert(ObjectStoreConfigurations.PATH_OUTPUT_COMMITTER_NAME ===
+        sparkConf.get(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key),
+      s"wrong value of ${SQLConf.FILE_COMMIT_PROTOCOL_CLASS}")
+
+    testDF = spark.range(1, 3).map(i => (i, s"val_$i")).toDF("a", "b")
+    partitionedTestDF1 = (for {
+      i <- 1 to 3
+      p2 <- Seq("foo", "bar")
+    } yield {
+      (i, s"val_$i", 1, p2)
+    }).toDF("a", "b", "p1", "p2")
+    partitionedTestDF2 = (for {
+      i <- 1 to 3
+      p2 <- Seq("foo", "bar")
+    } yield {
+      (i, s"val_$i", 2, p2)
+    }).toDF("a", "b", "p1", "p2")
+    partitionedTestDF = partitionedTestDF1.union(partitionedTestDF2)
+  }
 
   protected override def afterAll(): Unit = {
     try {
       super.afterAll()
     } finally {
+/*
       if (spark != null) {
         logInfo("Closing spark context")
         spark.stop()
         spark == null
       }
+*/
     }
   }
 
+  /**
+   * Assert that spark is running.
+   */
   def assertSparkRunning(): Unit = {
     assert(spark != null, "No spark context")
+    SparkContext.getActive.getOrElse(fail("No active spark context"))
   }
 
   /**
@@ -76,45 +140,85 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     case _ => true
   }
 
-  val dataSchema =
-    StructType(
-      Seq(
-        StructField("a", IntegerType, nullable = false),
-        StructField("b", StringType, nullable = false)))
 
-  lazy val testDF = spark.range(1, 3).map(i => (i, s"val_$i")).toDF("a", "b")
+  /**
+   * Get
+   * @return
+   */
+  protected def defaultOutputValidator(): Option[Path => Unit] = {
+    Some(assertSuccessFileExists)
+  }
 
-  lazy val partitionedTestDF1 = (for {
-    i <- 1 to 3
-    p2 <- Seq("foo", "bar")
-  } yield {
-    (i, s"val_$i", 1, p2)
-  }).toDF("a", "b", "p1", "p2")
+  /**
+   * Verify that the _SUCCESS file exists in a directory.
+   * @param destDir destination dir
+   */
+  protected def assertSuccessFileExists(destDir: Path): Unit = {
+    resolveSuccessFile(destDir, true)
+  }
 
-  lazy val partitionedTestDF2 = (for {
-    i <- 1 to 3
-    p2 <- Seq("foo", "bar")
-  } yield {
-    (i, s"val_$i", 2, p2)
-  }).toDF("a", "b", "p1", "p2")
-
-  lazy val partitionedTestDF = partitionedTestDF1.union(partitionedTestDF2)
+  /**
+   * Get the success file
+   * @param destDir destination of the query
+   * @param requireS3ACommitter is an S3A committer required
+   * @return the status
+   */
+  protected def resolveSuccessFile(destDir: Path, requireS3ACommitter: Boolean): FileStatus = {
+    val fs = getFilesystem(destDir)
+    val success = new Path(destDir, "_SUCCESS")
+    val status = fs.getFileStatus(success)
+    if (status.getLen == 0) {
+      logInfo(s"Status file $success exists and is an empty files")
+      assert(!requireS3ACommitter,
+        s"The committer used to create file $success was not an S3A Committer")
+    } else {
+      logInfo(s"Status file $success is of size ${status.getLen}")
+    }
+    status
+  }
 
   /**
    * Generates a temporary path without creating the actual file/directory, pass
    * it to the function, then cleanup with a deleteQuietly().
+   * A validator function can be supplied to validate the data.
    *
-   * @todo Probably this method should be moved to a more general place
+   * @param name test name, used in path calculation
+   * @param validator optional validator function. The default is that returned by
+   *                  defaultOutputValidator.
+   * @param fn function to evaluate
    */
-  protected def withPath(name: String)(f: Path => Unit): Unit = {
+  protected def withPath(name: String,
+    validator: Option[Path => Unit] = defaultOutputValidator())
+    (fn: Path => Unit): Path = {
     val dir = path(name)
+    rm(filesystem, dir)
+    withDefinedPath(dir, fn, validator)
+  }
+
+  /**
+   * Execute the function within the defined path, which is deleted afterwards.
+   * @param dir directory
+   * @param fn fun to invoke
+   * @param validator validator to run after the operation
+   * @param deleteAfter should the dir be deleted after?
+   * @return the directory
+   */
+  private def withDefinedPath(dir: Path,
+    fn: Path => Unit,
+    validator: Option[Path => Unit],
+    deleteAfter: Boolean = true): Path = {
     try {
-      f(dir)
+      fn(dir)
+      waitForCompletion()
+      validator.foreach(p => p.apply(dir))
     } finally {
       // wait for all tasks to finish before deleting files
       waitForCompletion()
-      deleteQuietly(dir)
+      if (deleteAfter) {
+        deleteQuietly(dir)
+      }
     }
+    dir
   }
 
   /**
@@ -133,37 +237,36 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
    * Creates a temporary directory, which is then passed to `f` and will be deleted after `f`
    * returns.
    */
-  protected def withTempPathDir(name: String)(f: Path => Unit): Unit = {
+  protected def withTempPathDir(
+    name: String,
+    validator: Option[Path => Unit] = defaultOutputValidator(),
+    deleteAfter: Boolean = true)
+    (fn: Path => Unit): Path = {
     val dir = path(name)
+    rm(filesystem, dir)
     filesystem.mkdirs(dir)
-    try {
-      f(dir)
-    } finally {
-      // wait for all tasks to finish before deleting files
-      waitForCompletion()
-      deleteQuietly(dir)
-    }
+    withDefinedPath(dir, fn, validator, deleteAfter)
   }
-
 
   /**
    * Generates a temporary path without creating the actual file/directory, then pass it to `f`.
-   * If
-   * a file/directory is created there by `f`, it will be deleted after `f` returns.
+   * If a file/directory is created there by `f`, it will be deleted after `f` returns.
    *
    * @todo Probably this method should be moved to a more general place
    */
-  protected override def withTempPath(f: File => Unit): Unit = {
+  protected override def withTempPath(fn: File => Unit): Unit = {
     val path = Utils.createTempDir()
     path.delete()
     try {
-      f(path)
+      fn(path)
     } finally {
       Utils.deleteRecursively(path)
     }
   }
 
   def checkQueries(df: DataFrame): Unit = {
+//    import spark.implicits._
+
     // Selects everything
     checkAnswer(
       df,
@@ -216,7 +319,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     }
   }
 
-  private val supportedDataTypes = Seq(
+  protected val parquetDataTypes: Seq[DataType] = Seq(
     StringType, BinaryType,
     NullType, BooleanType,
     ByteType, ShortType, IntegerType, LongType,
@@ -230,7 +333,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     new UDT.MyDenseVectorUDT()
   ).filter(supportsDataType)
 
-  private val orcSupportedDataTypes = Seq(
+  protected val orcSupportedDataTypes: Seq[DataType] = Seq(
     StringType, BinaryType,
     NullType, BooleanType,
     ByteType, ShortType, IntegerType, LongType,
@@ -244,60 +347,6 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     new UDT.MyDenseVectorUDT()
   )
 
-  for (dataType <- supportedDataTypes) {
-    for (parquetDictionaryEncodingEnabled <- Seq(true, false)) {
-      ctest(
-        s"test all data types - $dataType with parquet.enable.dictionary = " +
-          s"$parquetDictionaryEncodingEnabled", "", false) {
-
-        val extraOptions = Map[String, String](
-          "parquet.enable.dictionary" ->
-            parquetDictionaryEncodingEnabled.toString
-        )
-
-        withTempPath { file =>
-          val path = file.toString
-
-          val dataGenerator = RandomDataGenerator.forType(
-            dataType = dataType,
-            nullable = true,
-            new Random(System.nanoTime())
-          ).getOrElse {
-            fail(s"Failed to create data generator for schema $dataType")
-          }
-
-          // Create a DF for the schema with random data. The index field is used to sort the
-          // DataFrame.  This is a workaround for SPARK-10591.
-          val schema = new StructType()
-            .add("index", IntegerType, nullable = false)
-            .add("col", dataType, nullable = true)
-          val rdd =
-            spark.sparkContext
-              .parallelize((1 to 10).map(i => Row(i, dataGenerator())))
-          val df = spark.createDataFrame(rdd, schema).orderBy("index")
-            .coalesce(1)
-
-          df.write
-            .mode("overwrite")
-            .format(dataSourceName)
-            .option("dataSchema", df.schema.json)
-            .options(extraOptions)
-            .save(path)
-
-          val loadedDF = spark
-            .read
-            .format(dataSourceName)
-            .option("dataSchema", df.schema.json)
-            .schema(df.schema)
-            .options(extraOptions)
-            .load(path)
-            .orderBy("index")
-
-          checkAnswer(loadedDF, df)
-        }
-      }
-    }
-  }
 
 
 }

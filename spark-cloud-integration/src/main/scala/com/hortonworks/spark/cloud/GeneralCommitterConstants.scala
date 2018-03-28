@@ -15,12 +15,14 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.commit
+package com.hortonworks.spark.cloud
 
 /**
- * Constants general to all the committers.
+ * Constants in the Hadoop codebase related to committer setup
+ * and configuration.
  */
-object CommitterConstants {
+object GeneralCommitterConstants {
+
 
   /**
    * Scheme prefix for per-filesystem scheme committers.
@@ -36,7 +38,7 @@ object CommitterConstants {
   /**
    * Name of the configuration option used to configure the
    * output committer factory to use unless there is a specific
-   * one for a schema
+   * one for a schema.
    */
   val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class"
 
@@ -45,13 +47,13 @@ object CommitterConstants {
 
   /**
    * The committer which can be directly instantiated and which then delegates
-   * all operations to the factory-created committer it cretes itself.
+   * all operations to the factory-created committer it creates itself.
    */
   val BINDING_PATH_OUTPUT_COMMITTER_CLASS =
     "org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter"
 
   val BINDING_PARQUET_OUTPUT_COMMITTER_CLASS =
-    "com.hortonworks.spark.cloud.commit.BindingParquetOutputCommitter"
+    "org.apache.spark.internal.io.cloud.BindingParquetOutputCommitter"
 
   val SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
   val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
@@ -69,4 +71,8 @@ object CommitterConstants {
    */
   val SUCCESS_FILE_NAME = "_SUCCESS"
 
+  /**
+   * Flag to trigger creation of a marker file on job completion.
+   */
+  val CREATE_SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
 }

@@ -17,6 +17,7 @@
 
 package org.apache.spark.sql.sources
 
+import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
@@ -26,7 +27,7 @@ import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.types._
 
 /**
- * All the tests from the orginal spark suite reworked to take a Hadoop path
+ * All the tests from the original spark suite reworked to take a Hadoop path
  * rather than a local FS path.
  */
 abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
@@ -37,8 +38,18 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     "", true) {
     withPath("non-part-t-append") { path =>
       val name = path.toString
-      testDF.write.mode(SaveMode.Overwrite).format(dataSourceName).save(name)
-      testDF.write.mode(SaveMode.Append).format(dataSourceName).save(name)
+      testDF.write
+        .mode(SaveMode.Overwrite)
+        .format(dataSourceName)
+        .save(name)
+      assertSuccessFileExists(path)
+      testDF.write
+        .mode(SaveMode.Append)
+        .option(S3ACommitterConstants.CONFLICT_MODE,
+          S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+        .format(dataSourceName)
+        .save(name)
+      assertSuccessFileExists(path)
 
       checkAnswer(
         spark.read.format(dataSourceName)
@@ -51,9 +62,10 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("save()/load() - non-partitioned table - ErrorIfExists",
     "",
     true) {
-    withTempPathDir("errorIfExists") { path =>
+    withTempPathDir("errorIfExists", None) { path =>
       intercept[AnalysisException] {
-        testDF.write.format(dataSourceName).mode(SaveMode.ErrorIfExists)
+        testDF.write.format(dataSourceName)
+          .mode(SaveMode.ErrorIfExists)
           .save(path.toString)
       }
     }
@@ -62,11 +74,12 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("save()/load() - non-partitioned table - Ignore",
     "",
     true) {
-    withTempPathDir("nonpartitioned") { path =>
-      testDF.write.mode(SaveMode.Ignore).format(dataSourceName)
+    withTempPathDir("nonpartitioned", None) { path =>
+      testDF.write
+        .mode(SaveMode.Ignore)
+        .format(dataSourceName)
         .save(path.toString)
-      val fs = path.getFileSystem(spark.sessionState.newHadoopConf())
-      assert(fs.listStatus(path).isEmpty)
+      assert(filesystem.listStatus(path).isEmpty)
     }
   }
 
@@ -116,19 +129,23 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("save()/load() - partitioned table - Append",
     "",
     true) {
-    withPath("Append") { path =>
+    withPath("Append", None) { path =>
       val name = path.toString
       partitionedTestDF.write
         .format(dataSourceName)
         .mode(SaveMode.Overwrite)
         .partitionBy("p1", "p2")
         .save(name)
+      assertSuccessFileExists(path)
 
       partitionedTestDF.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
+        .option(S3ACommitterConstants.CONFLICT_MODE,
+          S3ACommitterConstants.CONFLICT_MODE_APPEND) // and for s3 committers
         .partitionBy("p1", "p2")
         .save(name)
+      assertSuccessFileExists(path)
 
       checkAnswer(
         spark.read.format(dataSourceName)
@@ -141,19 +158,22 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("save()/load() - partitioned table - Append - new partition values",
     "",
     true) {
-    withPath("append-new-values") { path =>
+    withPath("append-new-values", None) { path =>
       val name = path.toString
       partitionedTestDF1.write
         .format(dataSourceName)
         .mode(SaveMode.Overwrite)
         .partitionBy("p1", "p2")
         .save(name)
-
+      assertSuccessFileExists(path)
       partitionedTestDF2.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
+        .option(S3ACommitterConstants.CONFLICT_MODE,
+          S3ACommitterConstants.CONFLICT_MODE_APPEND)   /* for s3a committers */
         .partitionBy("p1", "p2")
         .save(name)
+      assertSuccessFileExists(path)
 
       checkAnswer(
         spark.read.format(dataSourceName)
@@ -166,7 +186,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("save()/load() - partitioned table - ErrorIfExists",
     "",
     true) {
-    withTempPathDir("table-ErrorIfExists") { path =>
+    withTempPathDir("table-ErrorIfExists", None) { path =>
       intercept[AnalysisException] {
         partitionedTestDF.write
           .format(dataSourceName)
@@ -180,10 +200,12 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("save()/load() - partitioned table - Ignore",
     "",
     false) {
-    withTempPathDir("ignore-partitioned-table") { path =>
+    withTempPathDir("ignore-partitioned-table", None) { path =>
       val name = path.toString
       partitionedTestDF.write
-        .format(dataSourceName).mode(SaveMode.Ignore).save(name)
+        .format(dataSourceName)
+        .mode(SaveMode.Ignore)
+        .save(name)
 
       assert(filesystem.listStatus(path).isEmpty)
     }
@@ -192,7 +214,9 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("saveAsTable()/load() - non-partitioned table - Overwrite",
     "",
     false) {
-    testDF.write.format(dataSourceName).mode(SaveMode.Overwrite)
+    testDF.write
+      .format(dataSourceName)
+      .mode(SaveMode.Overwrite)
       .option("dataSchema", dataSchema.json)
       .saveAsTable("t")
 
@@ -204,9 +228,16 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("saveAsTable()/load() - non-partitioned table - Append",
     "",
     false) {
-    testDF.write.format(dataSourceName).mode(SaveMode.Overwrite)
+    testDF.write
+      .format(dataSourceName)
+      .mode(SaveMode.Overwrite)
       .saveAsTable("t")
-    testDF.write.format(dataSourceName).mode(SaveMode.Append).saveAsTable("t")
+    testDF.write
+      .format(dataSourceName)
+      .mode(SaveMode.Append)
+      .option(S3ACommitterConstants.CONFLICT_MODE,
+        S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+      .saveAsTable("t")
 
     withTable("t") {
       checkAnswer(spark.table("t"), testDF.union(testDF).orderBy("a").collect())
@@ -219,7 +250,9 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     withTable("t") {
       sql("CREATE TABLE t(i INT) USING parquet")
       intercept[AnalysisException] {
-        testDF.write.format(dataSourceName).mode(SaveMode.ErrorIfExists)
+        testDF.write
+          .format(dataSourceName)
+          .mode(SaveMode.ErrorIfExists)
           .saveAsTable("t")
       }
     }
@@ -230,7 +263,10 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     false) {
     withTable("t") {
       sql("CREATE TABLE t(i INT) USING parquet")
-      testDF.write.format(dataSourceName).mode(SaveMode.Ignore).saveAsTable("t")
+      testDF.write
+        .format(dataSourceName)
+        .mode(SaveMode.Ignore)
+        .saveAsTable("t")
       assert(spark.table("t").collect().isEmpty)
     }
   }
@@ -238,7 +274,9 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("saveAsTable()/load() - partitioned table - simple queries",
     "",
     false) {
-    partitionedTestDF.write.format(dataSourceName)
+    partitionedTestDF
+      .write
+      .format(dataSourceName)
       .mode(SaveMode.Overwrite)
       .option("dataSchema", dataSchema.json)
       .saveAsTable("t")
@@ -253,7 +291,9 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     false) {
     spark.range(2)
       .select('id, ('id % 2 === 0).as("b"))
-      .write.partitionBy("b").saveAsTable("t")
+      .write
+      .partitionBy("b")
+      .saveAsTable("t")
 
     withTable("t") {
       checkAnswer(
@@ -298,6 +338,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     partitionedTestDF.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
+      .option(S3ACommitterConstants.CONFLICT_MODE,
+        S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
       .option("dataSchema", dataSchema.json)
       .partitionBy("p1", "p2")
       .saveAsTable("t")
@@ -322,6 +364,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     partitionedTestDF2.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
+      .option(S3ACommitterConstants.CONFLICT_MODE,
+        S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
       .option("dataSchema", dataSchema.json)
       .partitionBy("p1", "p2")
       .saveAsTable("t")
@@ -347,6 +391,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF2.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
+        .option(S3ACommitterConstants.CONFLICT_MODE,
+          S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
         .option("dataSchema", dataSchema.json)
         .partitionBy("p1")
         .saveAsTable("t")
@@ -390,7 +436,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("Hadoop style globbing - unpartitioned data",
     "",
     true) {
-    withPath("glob-unpartitioned") { path =>
+    withPath("glob-unpartitioned", None) { path =>
       val dir = path.toString
       val subdir = new Path(dir, "subdir")
       val subsubdir = new Path(subdir, "subsubdir")
@@ -405,16 +451,19 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
         .format(dataSourceName)
         .mode(SaveMode.Overwrite)
         .save(subdir.toString)
+      assertSuccessFileExists(subdir)
 
       dataInSubsubdir.write
         .format(dataSourceName)
         .mode(SaveMode.Overwrite)
         .save(subsubdir.toString)
+      assertSuccessFileExists(subsubdir)
 
       dataInAnotherSubsubdir.write
         .format(dataSourceName)
         .mode(SaveMode.Overwrite)
         .save(anotherSubsubdir.toString)
+      assertSuccessFileExists(anotherSubsubdir)
 
       assertDirHasFiles(subdir)
       assertDirHasFiles(subsubdir)
@@ -470,7 +519,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     // - partitions are discovered with globbing and base path set, though more detailed
     //   tests for this is in ParquetPartitionDiscoverySuite
 
-    withPath("globbing-with-schema") { path =>
+    withPath("globbing-with-schema", None) { path =>
       val dir = path.toString
       partitionedTestDF.write
         .format(dataSourceName)
@@ -545,7 +594,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("SPARK-9735",
     "Partition column type casting",
     false) {
-    withPath("SPARK-9735") { file =>
+    withPath("SPARK-9735", None) { file =>
       val df = (for {
         i <- 1 to 3
         p2 <- Seq("foo", "bar")
@@ -573,6 +622,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
           .write
           .format(dataSourceName)
           .mode(SaveMode.Append)
+          .option(S3ACommitterConstants.CONFLICT_MODE,
+            S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
           .partitionBy("ps1", "p2", "pf1", "f")
           .saveAsTable("t")
 
@@ -608,7 +659,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   ctest("SPARK-8406",
     "Avoids name collision while writing files",
     true) {
-    withPath("SPARK-8406") { dir =>
+    withPath("SPARK-8406", None) { dir =>
       val name = dir.toString
       spark
         .range(10000)
@@ -617,6 +668,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
         .mode(SaveMode.Overwrite)
         .format(dataSourceName)
         .save(name)
+      assertSuccessFileExists(dir)
 
       assertResult(10000) {
         spark
@@ -638,9 +690,11 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       (2, "v2", Array(4, 5, 6), Map("k2" -> "v2"), Tuple2(2, "5")),
       (3, "v3", Array(7, 8, 9), Map("k3" -> "v3"), Tuple2(3, "6")))
       .toDF("a", "b", "c", "d", "e")
-    withTempPathDir("SPARK-8887") { path =>
+    withTempPathDir("SPARK-8887", None) { path =>
       intercept[AnalysisException] {
-        df.write.format(dataSourceName).partitionBy("c", "d", "e")
+        df.write
+          .format(dataSourceName)
+          .partitionBy("c", "d", "e")
           .save(path.toString)
       }
     }
@@ -650,58 +704,18 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("Locality support for FileScanRDD",
-    "",
-    false) {
-    val options = Map[String, String](
-      "fs.file.impl" -> classOf[LocalityTestFileSystem].getName,
-      "fs.file.impl.disable.cache" -> "true"
-    )
-    withTempPath { dir =>
-      val path = dir.toURI.toString
-      val df1 = spark.range(4)
-      df1.coalesce(1).write.mode("overwrite").options(options)
-        .format(dataSourceName).save(path)
-      df1.coalesce(1).write.mode("append").options(options)
-        .format(dataSourceName).save(path)
-
-      def checkLocality(): Unit = {
-        val df2 = spark.read
-          .format(dataSourceName)
-          .option("dataSchema", df1.schema.json)
-          .options(options)
-          .load(path)
-
-        val Some(fileScanRDD) = df2.queryExecution.executedPlan.collectFirst {
-          case scan: DataSourceScanExec if scan.inputRDDs().head
-            .isInstanceOf[FileScanRDD] =>
-            scan.inputRDDs().head.asInstanceOf[FileScanRDD]
-        }
-
-        val partitions = fileScanRDD.partitions
-        val preferredLocations = partitions
-          .flatMap(fileScanRDD.preferredLocations)
-
-        assert(preferredLocations.distinct.length == 2)
-      }
-
-      checkLocality()
-
-      withSQLConf(SQLConf.PARALLEL_PARTITION_DISCOVERY_THRESHOLD.key -> "0") {
-        checkLocality()
-      }
-    }
-  }
-
   ctest("SPARK-16975",
     "Partitioned table with the column having '_' should be read correctly",
     true) {
-    withTempPathDir("SPARK-16975") { dir =>
+    withTempPathDir("SPARK-16975", None) { dir =>
       val childDir = new Path(dir, dataSourceName)
       val dataDf = spark.range(10).toDF()
       val df = dataDf.withColumn("_col", $"id")
-      df.write.format(dataSourceName).partitionBy("_col")
+      df.write
+        .format(dataSourceName)
+        .partitionBy("_col")
         .save(childDir.toString)
+      assertSuccessFileExists(childDir)
       val reader = spark.read.format(dataSourceName)
 
       // This is needed for SimpleTextHadoopFsRelationSuite as SimpleTextSource needs schema.

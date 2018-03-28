@@ -38,7 +38,7 @@ abstract class NumbersRddTests extends CloudSuite {
   /**
    * cleanup flag.
    */
-  override protected def cleanFSInTeardownEnabled: Boolean = true;
+  override protected def cleanFSInTeardownEnabled: Boolean = true
 
   ctest("SaveRDD",
     """Generate an RDD and save it. No attempt is made to validate the output, so that

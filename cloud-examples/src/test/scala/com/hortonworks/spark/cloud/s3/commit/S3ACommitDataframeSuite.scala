@@ -52,8 +52,8 @@ class S3ACommitDataframeSuite extends AbstractCommitterSuite {
     MAGIC,
     ""
   )
-  private val s3 = filesystem.asInstanceOf[S3AFileSystem]
-  private val destDir = testPath(s3, "dataframe-committer")
+  private lazy val s3 = filesystem.asInstanceOf[S3AFileSystem]
+  private lazy val destDir = testPath(s3, "dataframe-committer")
   private val isConsistentFS = isConsistentFilesystemConfig
 
   nonEmpty(committers).foreach { committer =>

@@ -15,19 +15,15 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.s3
+package org.apache.spark.sql.hive.orc.cloud
 
-import com.hortonworks.spark.cloud.common.StreamingTests
-import com.hortonworks.spark.cloud.operations.CloudStreaming
+import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-/**
- * Test Streaming against S3A.
- */
-class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
+import org.apache.spark.sql.sources.CloudPartitionTest
+
+class S3AOrcPartitionSuite extends CloudPartitionTest with S3ATestSetup {
 
   init()
-
-  override def consistentFilesystemOnly = false //true
 
   def init(): Unit = {
     // propagate S3 credentials
@@ -36,5 +32,6 @@ class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
     }
   }
 
-  override protected val instance: CloudStreaming = S3AStreaming
+  override val dataSourceName: String = "orc"
+
 }

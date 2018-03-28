@@ -19,13 +19,11 @@ package org.apache.spark.sql.hive.orc.cloud
 
 
 import com.hortonworks.spark.cloud.s3.S3ATestSetup
-import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.hive.orc.OrcFileFormat
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.sources.CloudRelationBasicSuite
-import org.apache.spark.sql.types._
 
 class S3AOrcRelationSuite extends CloudRelationBasicSuite with S3ATestSetup {
 
@@ -41,29 +39,6 @@ import testImplicits._
   }
 
   override val dataSourceName: String = classOf[OrcFileFormat].getCanonicalName
-
-  ctest("save()/load() - partitioned table - simple queries - partition columns in data",
-    "",
-    true) {
-    withTempPathDir("part-colums") { path =>
-      for (p1 <- 1 to 2; p2 <- Seq("foo", "bar")) {
-        val partitionDir = new Path(path, s"p1=$p1/p2=$p2")
-        sparkContext
-          .parallelize(for (i <- 1 to 3) yield (i, s"val_$i", p1))
-          .toDF("a", "b", "p1")
-          .write
-          .orc(partitionDir.toString)
-      }
-
-      val dataSchemaWithPartition =
-        StructType(dataSchema.fields :+ StructField("p1", IntegerType, nullable = true))
-
-      checkQueries(
-        spark.read.options(Map(
-          "path" -> path.toString,
-          "dataSchema" -> dataSchemaWithPartition.json)).format(dataSourceName).load())
-    }
-  }
 
   ctest("SPARK-12218",
     "'Not' is included in ORC filter pushdown", false) {

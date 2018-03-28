@@ -17,11 +17,12 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.commit.{CommitterConstants, PathOutputCommitProtocol}
+import com.hortonworks.spark.cloud.{GeneralCommitterConstants, ObjectStoreConfigurations}
 import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup}
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
+import org.apache.spark.internal.io.cloud.{PathCommitterConstants, PathOutputCommitProtocol}
 import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
 
@@ -101,17 +102,17 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     logInfo(s"Using committer binding $committerInfo with conflict mode $confictMode" +
       s" writing $format data")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
-    hconf(sparkConf, PathOutputCommitProtocol.REJECT_FILE_OUTPUT, true)
+    hconf(sparkConf, REJECT_FILE_OUTPUT, true)
 
     // force failfast
-    hconf(sparkConf, CommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)
+    hconf(sparkConf, GeneralCommitterConstants.FILEOUTPUTCOMMITTER_ALGORITHM_VERSION, 3)
 
 
 
     // validate the conf by asserting that the spark conf is bonded
     // to the partitioned committer.
     assert(
-      PARQUET_COMMITTER_CLASS ===
+      ObjectStoreConfigurations.PARQUET_COMMITTER_CLASS ===
       sparkConf.get(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key),
       s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
 
@@ -139,7 +140,8 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
           .write
           .partitionBy("year", "month")
           .mode(SaveMode.Append)
-          .format(format).save(dest.toString)
+          .format(format)
+          .save(dest.toString)
       }
     }
 

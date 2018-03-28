@@ -15,19 +15,16 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.s3
+package org.apache.spark.sql.hive.orc.cloud
 
-import com.hortonworks.spark.cloud.common.StreamingTests
-import com.hortonworks.spark.cloud.operations.CloudStreaming
+import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-/**
- * Test Streaming against S3A.
- */
-class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
+import org.apache.spark.sql.sources.CloudRelationScaleTest
+import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}
+
+class S3AParquetRelationScaleSuite extends CloudRelationScaleTest with S3ATestSetup {
 
   init()
-
-  override def consistentFilesystemOnly = false //true
 
   def init(): Unit = {
     // propagate S3 credentials
@@ -36,5 +33,16 @@ class S3AStreamingSuite extends StreamingTests with S3ATestSetup {
     }
   }
 
-  override protected val instance: CloudStreaming = S3AStreaming
+  override def enabled: Boolean = super.enabled && isScaleTestEnabled
+
+  override val dataSourceName: String = "parquet"
+
+  // Parquet does not play well with NullType.
+  override protected def supportsDataType(
+    dataType: DataType): Boolean = dataType match {
+    case _: NullType => false
+    case _: CalendarIntervalType => false
+    case _ => true
+  }
+
 }

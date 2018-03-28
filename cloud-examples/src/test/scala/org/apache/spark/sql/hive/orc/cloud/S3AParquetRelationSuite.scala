@@ -15,31 +15,31 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.integration
+package org.apache.spark.sql.hive.orc.cloud
 
-import com.hortonworks.spark.cloud.utils.HConf
-import org.apache.hadoop.conf.Configuration
-import org.scalatest.FunSuite
+import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.SparkConf
+import org.apache.spark.sql.sources.CloudRelationBasicSuite
+import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}
 
-class GeneratorSuite extends FunSuite with HConf {
+class S3AParquetRelationSuite extends CloudRelationBasicSuite with S3ATestSetup {
 
+  init()
 
-  test("create generator") {
-    val conf = new SparkConf()
-    val generator = new Generator()
-    assert(-2 === generator.action(conf, List[String]()))
+  def init(): Unit = {
+    // propagate S3 credentials
+    if (enabled) {
+      initFS()
+    }
   }
 
+  override val dataSourceName: String = "parquet"
 
-  test("dump ASL constants") {
-    val conf = new Configuration()
-    dumpConfigOptions(conf, "fs.adl")
-  }
-
-  test("dump s3a constants") {
-    val conf = new Configuration()
-    dumpConfigOptions(conf, "fs.s3a")
+  // Parquet does not play well with NullType.
+  override protected def supportsDataType(
+    dataType: DataType): Boolean = dataType match {
+    case _: NullType => false
+    case _: CalendarIntervalType => false
+    case _ => true
   }
 }

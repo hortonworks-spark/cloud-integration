@@ -30,7 +30,7 @@ import org.apache.spark.rdd.HadoopRDD
 /**
  * A suite of tests reading in the test CSV file.
  */
-class CSVReadSuite extends CloudSuiteWithCSVDatasource  {
+class CSVReadTests extends CloudSuiteWithCSVDatasource  {
 
   /**
    * Minimum number of lines, very pessimistic

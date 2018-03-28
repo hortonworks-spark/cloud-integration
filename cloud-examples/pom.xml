@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>hortonworks-cloud-examples</artifactId>
-  <name>Hortonworks Spark Cloud Examples</name>
+  <name>Hortonworks Spark Cloud Integration: Examples and Tests</name>
   <packaging>jar</packaging>
 
   <description>
@@ -36,11 +36,6 @@
     and as jobs which can be scaled up to run in test clusters.
   </description>
 
-  <properties>
-
-  </properties>
-
-
   <dependencies>
 
     <dependency>
@@ -48,29 +43,6 @@
       <artifactId>hortonworks-spark-cloud-integration</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-client</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-aws</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-azure</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-azure-datalake</artifactId>
-    </dependency>
-
-    <!--
-    <dependency>
-      <groupId>org.apache.hadoop</groupId>
-      <artifactId>hadoop-openstack</artifactId>
-    </dependency>
-    -->
 
     <dependency>
       <groupId>org.apache.spark</groupId>
@@ -109,7 +81,7 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>${spark.cloud.module.name}_${scala.binary.version}</artifactId>
+      <artifactId>spark-hadoop-cloud_${scala.binary.version}</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -166,28 +138,6 @@
     <testSourceDirectory>src/test/scala</testSourceDirectory>
 -->
     <plugins>
-      <!--read in a build.properties file if defined-->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>${maven.properties.version}</version>
-        <executions>
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <quiet>true</quiet>
-              <files>
-                <file>build.properties</file>
-                <file>../build.properties</file>
-              </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
       <!--
             <plugin>
             <groupId>org.scala-tools</groupId>

@@ -51,7 +51,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
   override def enabled: Boolean = super.enabled &&
     hasCSVTestFile // && isScaleTestEnabled
 
-  val paralellism = 8
+  val parallelism = 8
 
 
   private val destFS = filesystemOption.orNull.asInstanceOf[S3AFileSystem]
@@ -142,7 +142,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val committer = "partitioned"
     val sparkSession = newSparkSession(committer, "replace",
       Map(
-        "spark.default.parallelism" -> paralellism.toString
+        "spark.default.parallelism" -> parallelism.toString
       )
     )
 
@@ -319,7 +319,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     assert(parquetDS2_2 > parquetDS2_1,
       s"Count of dataset $landsatParquetPath2 unchanged at $parquetDS2_1")
 
-    // now append into the same dest dir with a different  year
+    // now append into the same dest dir with a different year
     writeDS(
       summary = "Append to existing parts",
       dest = landsatParquetPath2,
@@ -327,7 +327,6 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
         "year = 2014 AND cloudCover > 50 AND cloudCover < 75"),
       format = Parquet,
       conflict = CONFLICT_MODE_APPEND
-//      conflict = CONFLICT_MODE_FAIL
     )
 
     val (parquetDS2_3, t_countDS2_3) = durationOf {

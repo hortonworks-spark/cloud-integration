@@ -17,9 +17,9 @@
 
 package com.hortonworks.spark.cloud.adl
 
-import com.hortonworks.spark.cloud.common.CSVReadSuite
+import com.hortonworks.spark.cloud.common.CSVReadTests
 
-class AdlCSVReadSuite extends CSVReadSuite with AdlTestSetup {
+class AdlCSVReadSuite extends CSVReadTests with AdlTestSetup {
   init()
 
   /**

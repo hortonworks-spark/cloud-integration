@@ -27,59 +27,8 @@ The artifact is *not* indended to be used in production code, purely in
 
 ## Building a local version of Spark to test with
 
-This module needs a version of Spark with the `spark-cloud` module with it; at the time of
-writing this is not yet in ASF spark.
-
-1. Optional: Build any local Hadoop version which you want to use in these integration tests, 
- using `mvn install -DskipTests` in the `hadoop-trunk` dir. For example: `2.8.0`
-
-1. add repository `https://github.com/steveloughran/spark.git`
-1. check out branch `features/SPARK-7481-cloud` from the `steveloughran` repo
-
-1. Build Spark with the version of Hadoop you built locally.
-
-        mvn install -DskipTests -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.8.0 
-
-    This installs the spark JARs and POMs into the local maven repsitory, where they can be
-    used until midnight. You will need to repeat the spark and hadoop builds every morning.
-    Tip: if you are new to building spark, you can speed up your life by installing zinc via
-    apt-get, yum or homebrew, then launch it for background compilation with: `zinc -start`
-     
-    Once this operation is complete, you can run tests with the spark version set on this build
-    `-Dspark.version=2.x.y` ; the default, `2.1.0-SNAPSHOT` is that of spark's `master` branch
-    at the time of writing.
-    
-1. To do a full spark installation:
-
-        dev/make-distribution.sh -Pyarn,hive,hadoop-2.7,cloud -Dhadoop.version=2.8.0
-
-
-## Building a compatible Hadoop version
-
-
-If you are working with Hadoop 2.7-2.8 you can use the shipping versions.
-
-To work with Hadoop trunk or s3guard branches, you need to build a local version
-of Hadoop with its internal version information set to 2.11, so that the hive 1.2.1
-JAR in Spark doesn't refuse to work with Hadoop
-
-
-```
-mvn -T1C install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11 
-
-```
-
-You may also need to make sure the versions of Guava used are consistent.
-That is left as an exercise for the reader.
-
-There is a test which explicitly checks the Hadoop version matches that passed
-in as `hadoop.required.version`; it implicitly checks that Guava is compatible
-across artifacts.
-
-
-```
-mvn -T1C test -DwildcardSuites=com.hortonworks.spark.cloud.common.HadoopVersionSuite  -Phadoop-3.0
-```
+This module needs a version of Spark with the `spark-cloud` module with it;
+if this is not in the maven repsitory, it needs to be built locally.
 
 ## Test Configuration
 
@@ -97,15 +46,6 @@ which can be done in the command line
 ```bash
 mvn -T1C test -Dcloud.test.configuration.file=../cloud.xml
 ```
-
-As this project looks for, and reads in any `build.properties` file in the project
-directory, the path *may* be declarable in that file:
-
-```properties
-cloud.test.configuration.file=/home/developer/aws/cloud.xml
-```
-
-However, attempts to do this appear to fail. Help welcome.
 
 
 *Important*: keep all credentials out of SCM-managed repositories. Even if `.gitignore`
@@ -149,7 +89,7 @@ referencing the secret credentials kept in the file `/home/hadoop/aws/auth-keys.
 ```
 
 The configuration uses XInclude to pull in the secret credentials for the account
-from the user's `/home/developer/.ssh/auth-keys.xml` file:
+from the user's `/home/developer/.secret/auth-keys.xml` file:
 
 ```xml
 <configuration>
@@ -214,8 +154,6 @@ S3 endpoint
     <name>fs.s3a.endpoint</name>
     <value>s3server.example.org</value>
   </property>
-
-
 ```
 
 When testing against an S3 instance which only supports the AWS V4 Authentication
@@ -398,16 +336,12 @@ In particular: *Do not try to run Datanodes or Namenodes with a JAR numbered thi
 (This is primarily of interest to colleagues testing releases with this code.)
 
 1. To build with a different version of spark, define it in `spark.version`
-1. To use the older artifact name, `spark-cloud`, define `spark.cloud.jar` to this name.
 1. To use a different repository for artifacts, redefine `central.repo`
-1. If the spark cloud POM doesn't declare the Apache httpcomponent versions, you need to
-explicitly list them through `-Pdeclare-http-components`
 
 Example:
 
 ```bash
-mvn -T1C test -T 1C -Dspark.version=2.0.0.2.5.0.14-5 \
-  -Dspark.cloud.jar=spark-cloud \
+mvn -T1C test -T 1C -Dspark.version=2.3.0.2.5.0.14-5 \
   -Dcentral.repo=http://PRIVATE-REPO/nexus/content/ 
 ```
 
@@ -419,8 +353,8 @@ This is the best way to have consistent private repositories across multiple bui
 
 
 Run the s3a tests (assuming the s3a.xml file contained/referenced the s3a binding information),
-with the Spark 2.3.0-SNAPSHOT binaries.
+with the Spark 2.4.0-SNAPSHOT binaries.
 
 ```bash
-mvn -T1C test -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.3.0-SNAPSHOT
+mvn -T1C test -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.4.0-SNAPSHOT
 ```

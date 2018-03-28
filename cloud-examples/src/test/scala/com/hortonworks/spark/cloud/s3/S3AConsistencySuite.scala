@@ -39,7 +39,7 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
   }
 
   ctest("mkdir, mkfile",
-    "Create a dir, a file, read the file", false) {
+    "Create a dir, a file, read the file", true) {
     val fs = filesystem
     val dir = testPath(fs, "mkfile")
     fs.mkdirs(dir)
@@ -47,7 +47,7 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
     fs.delete(file, false)
     val fd = fs.create(file, false)
     fd.writeChars("hello")
-    fd.close();
+    fd.close()
     val files = eventuallyListStatus(fs, dir)
     require(1 == files.length)
     val in = fs.open(file)
@@ -58,20 +58,20 @@ class S3AConsistencySuite extends CloudSuite with S3ATestSetup {
   }
 
   ctest("create & list",
-    "create a file, list it", false) {
+    "create a file, list it", true) {
     val fs = filesystem
     val dir = testPath(fs, "create_and_list")
     val file = new Path(dir, "file.txt")
     val fd = fs.create(file, false)
     fd.writeChars("hello")
-    fd.close();
+    fd.close()
     val files = eventuallyListStatus(fs, dir)
     require(1 === files.length)
     require(file === files(0).getPath)
   }
 
-  ctest("commit",
-    "Test the commit algorithm ") {
+  ctest("rename",
+    "Test the classic commit-by-rename algorithm ") {
     val fs = filesystem
     val work = testPath(fs, "work")
     fs.delete(work, true)
@@ -106,7 +106,7 @@ import org.apache.hadoop.conf.Configuration
     fs.mkdirs(task00)
     val out = fs.create(new Path(task00, "part-00"), false)
     out.writeChars("hello")
-    out.close();
+    out.close()
     waitForConsistency(fs)
 
     fs.listStatus(task00).foreach(stat =>

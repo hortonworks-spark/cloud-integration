@@ -39,7 +39,7 @@ trait CloudSuiteTrait extends FunSuiteLike
     SCALE_TEST_SIZE_FACTOR_DEFAULT)
 
   /**
-   * Subclasses may override this for different or configurable test sizes
+   * Subclasses may override this for different or configurable test sizes.
    * @return the number of entries in parallelized operations.
    */
   protected def testEntryCount: Int = 10 * scaleSizeFactor
@@ -95,19 +95,19 @@ trait CloudSuiteTrait extends FunSuiteLike
 
   /**
    * Overlay a set of system properties to a configuration, unless the key
-   * is "(unset")
+   * is "(unset").
    *
    * @param conf config to patch
    * @param keys list of system properties
    */
-  protected def getTestOption(conf: Configuration, keys: Seq[String]): Unit = {
+  protected def patchTestOption(conf: Configuration, keys: Seq[String]): Unit = {
     keys.foreach(key => getKnownSysprop(key).foreach(v =>
       conf.set(key, v, "system property")))
   }
 
   /**
    * Get a known sysprop, return None if it was not there or it matched the
-   * `unset` value
+   * `unset` value.
    *
    * @param key system property name
    * @return any set value
@@ -123,7 +123,7 @@ trait CloudSuiteTrait extends FunSuiteLike
 
   /**
    * Locate a class/resource as a resource URL.
-   * This does not attempt to load a class, merely verify that it is present
+   * This does not attempt to load a class, merely verify that it is present.
    *
    * @param resource resource or path of class, such as
    * `org/apache/hadoop/fs/azure/AzureException.class`
@@ -135,7 +135,7 @@ trait CloudSuiteTrait extends FunSuiteLike
 
   /**
    * Overlay a set of system properties to a configuration, unless the key
-   * is "(unset")
+   * is "(unset").
    *
    * @param conf config to patch
    * @param keys list of system properties

@@ -69,7 +69,7 @@ class CloudDataFrames extends ObjectStoreExample with StoreTestOperations {
     // Ignore IDE warnings: this import is used
     import spark.implicits._
 
-    implicit val patience = PatienceConfig(Span(30, Seconds))
+    implicit val patience: PatienceConfig = PatienceConfig(Span(30, Seconds))
     val numRows = 1000
 
     try {
@@ -99,6 +99,7 @@ class CloudDataFrames extends ObjectStoreExample with StoreTestOperations {
         validateRowCount(spark, fs, source, srcFormat, rowCount)
       }
 
+      // execute for each format
       val results: Seq[(String, Path, Long, Long)] = formats.map { format =>
         val (written, writeTime) = write(format)
         (format, written, writeTime, validate(written, format))
@@ -114,7 +115,8 @@ class CloudDataFrames extends ObjectStoreExample with StoreTestOperations {
       // now there are some files in the generated directory tree. Enumerate them
       logInfo("scanning binary files")
       val base = generatedBase.toUri.toString
-      val binaries = sc.binaryFiles(s"$base/orc,$base/parquet/*,$base/json,$base/csv")
+      val binaries =
+        sc.binaryFiles(s"$base/orc,$base/parquet/*,$base/json,$base/csv")
       val totalSize = binaries.map(_._2.toArray().length).sum()
       logInfo(s"total size = $totalSize")
 

@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.common
 
-import org.apache.spark.mllib.linalg.Vectors;
+import org.apache.spark.mllib.linalg.Vectors
 
 /**
  * A sample of a read operation.

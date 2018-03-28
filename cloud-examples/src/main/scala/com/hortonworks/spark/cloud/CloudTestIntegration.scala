@@ -120,7 +120,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
    */
   protected def deleteQuietly(p: Path): Unit = {
     try {
-      filesystem.delete(p, true)
+      rm(filesystem, p)
     } catch {
       case e: IOException =>
         logInfo(s"Deleting $p: ${e.getMessage}")
@@ -234,6 +234,8 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations {
     val v = config.getTrimmed(key)
     v != null && !v.isEmpty
   }
+
+  import com.hortonworks.spark.cloud.ObjectStoreConfigurations._
 
   /**
    * Override point for suites: a method which is called
