@@ -26,7 +26,8 @@
   <packaging>pom</packaging>
 
   <description>
-    Cloud integration for Apache Spark. This extends the built in packaging with tests and other modules.
+    Cloud integration for Apache Spark.
+    This extends the built in packaging with tests and some other examples.
   </description>
   <url>https://github.com/hortonworks-spark/cloud-integration/</url>
   <licenses>
@@ -40,8 +41,6 @@
   <modules>
     <module>cloud-examples</module>
     <module>spark-cloud-integration</module>
-    <module>check-cp</module>
-    <module>minimal-integration-test</module>
   </modules>
 
   <properties>

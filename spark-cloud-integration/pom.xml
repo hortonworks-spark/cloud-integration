@@ -27,22 +27,13 @@
   </parent>
 
   <artifactId>hortonworks-spark-cloud-integration</artifactId>
-  <name>Spark Cloud Integration</name>
+  <name>Hortonworks Spark Cloud Integration: Utility Classes</name>
   <packaging>jar</packaging>
 
   <description>
-    Cloud integration.
-
-    Uses APIs from Hadoop 3.0.2+
-
-    This committer does not export any of its dependencies; applications
-    using the committer must do this.
+    This is an optional module containing some utility classes
+    and example applications.
   </description>
-
-  <properties>
-
-  </properties>
-
 
   <dependencies>
     <dependency>
@@ -82,27 +73,6 @@
     </pluginManagement>
 
     <plugins>
-      <!--read in a build.properties file if defined-->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>properties-maven-plugin</artifactId>
-        <version>${maven.properties.version}</version>
-        <executions>
-          <execution>
-            <phase>initialize</phase>
-            <goals>
-              <goal>read-project-properties</goal>
-            </goals>
-            <configuration>
-              <quiet>true</quiet>
-              <files>
-                <file>build.properties</file>
-                <file>../build.properties</file>
-              </files>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
 
       <!--
             <plugin>
@@ -185,7 +155,5 @@
     </plugins>
 
   </build>
-
-
 
 </project>
