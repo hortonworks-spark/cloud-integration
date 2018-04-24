@@ -34,7 +34,7 @@ import org.apache.spark.util.Utils
  * closed.
  */
 trait HiveTestTrait extends SparkFunSuite with BeforeAndAfterAll {
-  override protected val enableAutoThreadAudit = false
+//  override protected val enableAutoThreadAudit = false
   protected var hiveContext: HiveInstanceForTests = _
   protected var spark: SparkSession = _
 

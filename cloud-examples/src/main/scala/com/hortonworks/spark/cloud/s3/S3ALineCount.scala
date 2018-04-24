@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudTestKeys._
+import com.hortonworks.spark.cloud.common.CloudTestKeys._
 import com.hortonworks.spark.cloud.operations.LineCount
 
 import org.apache.spark.SparkConf

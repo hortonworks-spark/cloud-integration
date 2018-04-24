@@ -17,7 +17,6 @@
 
 package com.hortonworks.spark.cloud.common
 
-import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.io.{IntWritable, Text}

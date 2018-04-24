@@ -29,8 +29,16 @@ trait TimeOperations extends Logging {
    * @param durationNanos duration in nanoseconds
    * @return a string describing the time
    */
-  def toHuman(durationNanos: Long): String = {
+  def toNanos(durationNanos: Long): String = {
     "%,d nS".format(durationNanos)
+  }
+  /**
+   * Convert a time in nanoseconds into a human-readable form for logging.
+   * @param durationNanos duration in nanoseconds
+   * @return a string describing the time
+   */
+  def toHuman(durationNanos: Long): String = {
+    toSeconds(durationNanos)
   }
 
   /**

@@ -17,7 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.{ObjectStoreConfigurations, StoreTestOperations}
+import com.hortonworks.spark.cloud.ObjectStoreConfigurations
+import com.hortonworks.spark.cloud.common.StoreTestOperations
 import org.apache.hadoop.conf.Configuration
 
 import org.apache.spark.SparkConf

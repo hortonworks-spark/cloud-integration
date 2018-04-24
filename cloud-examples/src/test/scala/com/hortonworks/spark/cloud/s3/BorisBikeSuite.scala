@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud.s3
 
-import com.hortonworks.spark.cloud.CloudSuite
+import com.hortonworks.spark.cloud.common.CloudSuite
 import org.apache.hadoop.fs._
 
 import org.apache.spark.SparkContext

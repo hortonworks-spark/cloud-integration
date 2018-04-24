@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.common
 
 import java.net.URL
 
-import com.hortonworks.spark.cloud.CloudTestKeys._
+import com.hortonworks.spark.cloud.common.CloudTestKeys._
+
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.FunSuiteLike
 
@@ -148,5 +149,3 @@ trait CloudSuiteTrait extends FunSuiteLike
     })
   }
 }
-
-

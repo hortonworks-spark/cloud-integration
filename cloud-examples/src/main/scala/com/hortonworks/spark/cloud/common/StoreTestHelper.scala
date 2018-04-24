@@ -15,31 +15,11 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.adl
-
-import java.net.URI
-
-import com.hortonworks.spark.cloud.common.CloudTestKeys._
-import com.hortonworks.spark.cloud.azure.AzureTestSetup
-import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
-import org.apache.hadoop.fs.FileSystem
+package com.hortonworks.spark.cloud.common
 
 /**
- * Trait for ADL tests.
- *
- * This trait supports CSV data source by copying over the data from S3A if
- * it isn't already in a ADL URL
+ * Instantiation of StoreTestHelper.
  */
-trait AdlTestSetup extends AzureTestSetup with CsvDatasourceSupport {
-
-  override def enabled: Boolean =  {
-    getConf.getBoolean(ADL_TESTS_ENABLED, false)
-  }
-
-  override def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(ADL_TEST_URI))
-    logDebug(s"Executing Azure tests against $uri")
-    createFilesystem(uri)
-  }
+class StoreTestHelper extends StoreTestOperations {
 
 }

@@ -15,31 +15,18 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.adl
+package com.hortonworks.spark.cloud.utils
 
-import java.net.URI
+import com.github.lalyos.jfiglet.FigletFont
 
-import com.hortonworks.spark.cloud.common.CloudTestKeys._
-import com.hortonworks.spark.cloud.azure.AzureTestSetup
-import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
-import org.apache.hadoop.fs.FileSystem
+object Demo {
 
-/**
- * Trait for ADL tests.
- *
- * This trait supports CSV data source by copying over the data from S3A if
- * it isn't already in a ADL URL
- */
-trait AdlTestSetup extends AzureTestSetup with CsvDatasourceSupport {
-
-  override def enabled: Boolean =  {
-    getConf.getBoolean(ADL_TESTS_ENABLED, false)
-  }
-
-  override def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(ADL_TEST_URI))
-    logDebug(s"Executing Azure tests against $uri")
-    createFilesystem(uri)
+  /**
+   * Uses figlet to render to a string.
+   * see: https://github.com/lalyos/jfiglet
+   */
+  def text(m: String): String = {
+    "\n" + FigletFont.convertOneLine(m)
   }
 
 }

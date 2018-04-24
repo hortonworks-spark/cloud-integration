@@ -69,10 +69,6 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     logInfo(s"Operation Summaries\n$s")
   }
 
-  protected val Parquet = "parquet"
-  protected val Csv = "csv"
-  protected val Orc = "orc"
-
   private val formats = Seq(
     Orc,
     Parquet,
@@ -381,9 +377,6 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
   }
 
-//  val codec = Some("lzo")
-  val codec: Option[String] = None
-
   /**
     * Write a dataset
     * @param dest destination path
@@ -406,23 +399,18 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     conflict: String = CONFLICT_MODE_FAIL,
     extraOps: Map[String, String] = Map()): WriteOutcome[T] = {
 
+    val t = writeDataset(
+      destFS,
+      dest,
+      source,
+      summary,
+      format,
+      parted,
+      committer,
+      conflict,
+      extraOps)
     val text = s"$summary + committer=$committer format $format partitioning: $parted" +
       s" conflict=$conflict"
-    logInfo(s"write to $dest: $text")
-    val t = time {
-      val writer = source.write
-      if(parted) {
-        writer.partitionBy("year", "month")
-      }
-      writer.mode(SaveMode.Append)
-      codec.foreach(writer.option("compression", _))
-      extraOps.foreach(t => writer.option(t._1, t._2))
-      writer.option(S3A_COMMITTER_NAME , committer)
-      writer.option(CONFLICT_MODE, conflict)
-      writer
-        .format(format)
-        .save(dest.toUri.toString)
-    }
     summarize(summary, t)
     val success = operations.maybeVerifyCommitter(dest,
       Some(committer),

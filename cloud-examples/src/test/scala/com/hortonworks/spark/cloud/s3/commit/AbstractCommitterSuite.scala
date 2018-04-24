@@ -17,7 +17,8 @@
 
 package com.hortonworks.spark.cloud.s3.commit
 
-import com.hortonworks.spark.cloud.{CloudSuite, ObjectStoreConfigurations}
+import com.hortonworks.spark.cloud.ObjectStoreConfigurations
+import com.hortonworks.spark.cloud.common.CloudSuite
 import com.hortonworks.spark.cloud.s3.S3ATestSetup
 
 import org.apache.spark.{SparkConf, SparkScopeWorkarounds}

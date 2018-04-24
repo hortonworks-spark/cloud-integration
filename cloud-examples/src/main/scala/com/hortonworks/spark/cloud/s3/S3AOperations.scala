@@ -21,12 +21,12 @@ import java.io.FileNotFoundException
 
 import scala.collection.JavaConverters._
 
-import com.hortonworks.spark.cloud.{GeneralCommitterConstants, StoreTestOperations}
+import com.hortonworks.spark.cloud.common.StoreTestOperations
+import com.hortonworks.spark.cloud.GeneralCommitterConstants
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
-
 
 /**
  * General S3A operations against a filesystem.

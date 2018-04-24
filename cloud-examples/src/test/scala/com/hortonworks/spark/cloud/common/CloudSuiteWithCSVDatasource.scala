@@ -17,7 +17,6 @@
 
 package com.hortonworks.spark.cloud.common
 
-import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 

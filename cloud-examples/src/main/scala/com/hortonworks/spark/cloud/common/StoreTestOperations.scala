@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.common
 
 import scala.concurrent.duration._
 import scala.language.postfixOps
 
+import com.hortonworks.spark.cloud.{GeneralCommitterConstants, ObjectStoreOperations}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileStatus, FileSystem, LocatedFileStatus, Path}
 import org.scalatest.concurrent.Eventually
@@ -31,8 +32,7 @@ import org.apache.spark.sql._
  * Extends ObjectStoreOperations with some extra ones for testing: essentially
  * handling for eventually consistent filesystems through retries.
  */
-trait StoreTestOperations extends ObjectStoreOperations with Eventually
-  {
+trait StoreTestOperations extends ObjectStoreOperations with Eventually {
 
   protected val retryTimeout: Span = 30 seconds
 
@@ -160,11 +160,4 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually
     waitForConsistency(fs)
     r
   }
-}
-
-/**
- * Instantiation of StoreTestHelper.
- */
-class StoreTestHelper extends StoreTestOperations {
-
 }

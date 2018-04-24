@@ -23,8 +23,8 @@ import java.util.Collections
 import scala.collection.JavaConverters._
 import scala.collection.immutable._
 
-import com.hortonworks.spark.cloud.CloudSuite._
-import com.hortonworks.spark.cloud.CloudTestKeys._
+import CloudSuite._
+import CloudTestKeys._
 import org.apache.hadoop.util.VersionInfo
 import org.scalatest.{FunSuite, Matchers}
 

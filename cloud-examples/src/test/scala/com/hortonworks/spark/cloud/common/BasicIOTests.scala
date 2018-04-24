@@ -19,7 +19,6 @@ package com.hortonworks.spark.cloud.common
 
 import java.io.FileNotFoundException
 
-import com.hortonworks.spark.cloud.CloudSuite
 import org.apache.hadoop.fs.CommonConfigurationKeysPublic
 import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.TextInputFormat

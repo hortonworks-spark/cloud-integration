@@ -15,35 +15,11 @@
  * limitations under the License.
  */
 
-package org.apache.hadoop.service.launcher
+package com.hortonworks.spark.cloud.utils
 
-import java.util.concurrent.atomic.AtomicLong
+/**
+ * A class to instantiate for all the general utils
+ */
+class IntegrationUtils extends TimeOperations with HConf {
 
-import org.apache.hadoop.util.ExitUtil
-
-import org.apache.spark.internal.Logging
-
-class ControlCBlock(limit: Long) extends IrqHandler.Interrupted with Logging {
-  val counter = new AtomicLong(0)
-  @Override def interrupted(interruptData: IrqHandler.InterruptData): Unit = {
-    val c = counter.addAndGet(1)
-    if (c < limit) {
-      logWarning(s"Ignoring interrupt #$c")
-    } else {
-      logError("Reached interrupt limit; existing")
-      ExitUtil.terminate(1, "Interrupted")
-    }
-
-  }
 }
-
-
-object ControlCBlock {
-
-  def bind(): IrqHandler = {
-    val controlC = new IrqHandler("INT", new ControlCBlock(5))
-    controlC.bind()
-    controlC
-  }
-}
-

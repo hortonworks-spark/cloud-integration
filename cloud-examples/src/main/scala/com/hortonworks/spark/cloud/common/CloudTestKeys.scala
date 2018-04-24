@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud
+package com.hortonworks.spark.cloud.common
 
 import com.hortonworks.spark.cloud.s3.S3AConstants
 
@@ -208,5 +208,3 @@ object CloudTestKeys extends S3AConstants {
   /** hive tests disabled? */
   val HIVE_TESTS_DISABLED: String = "hive.tests.disabled"
 }
-
-

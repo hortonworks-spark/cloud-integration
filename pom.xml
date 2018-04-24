@@ -307,6 +307,12 @@
         <artifactId>guava</artifactId>
         <version>${guava.version}</version>
       </dependency>
+      <!-- figlet is here for some demo only -->
+      <dependency>
+        <groupId>com.github.lalyos</groupId>
+        <artifactId>jfiglet</artifactId>
+        <version>0.0.8</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 

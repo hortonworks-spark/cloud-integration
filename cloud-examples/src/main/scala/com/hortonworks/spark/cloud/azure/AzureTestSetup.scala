@@ -20,9 +20,8 @@ package com.hortonworks.spark.cloud.azure
 import java.io.{EOFException, FileNotFoundException}
 import java.net.URI
 
-import com.hortonworks.spark.cloud.CloudSuite
-import com.hortonworks.spark.cloud.CloudTestKeys._
-import com.hortonworks.spark.cloud.common.CsvDatasourceSupport
+import com.hortonworks.spark.cloud.common.CloudTestKeys._
+import com.hortonworks.spark.cloud.common.{CloudSuite, CsvDatasourceSupport}
 import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**

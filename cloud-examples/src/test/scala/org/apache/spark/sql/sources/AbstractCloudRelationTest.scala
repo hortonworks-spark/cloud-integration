@@ -21,7 +21,8 @@ import java.io.File
 
 import scala.concurrent.duration._
 
-import com.hortonworks.spark.cloud.{CloudSuiteTrait, CloudTestKeys, ObjectStoreConfigurations}
+import com.hortonworks.spark.cloud.common.{CloudSuiteTrait, CloudTestKeys}
+import com.hortonworks.spark.cloud.ObjectStoreConfigurations
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually

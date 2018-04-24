@@ -17,7 +17,6 @@
 
 package com.hortonworks.spark.cloud.common
 
-import com.hortonworks.spark.cloud.CloudSuite
 import com.hortonworks.spark.cloud.operations.CloudFileGenerator
 import org.apache.hadoop.fs.Path
 

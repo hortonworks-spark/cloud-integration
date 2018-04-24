@@ -17,7 +17,7 @@
 
 package com.hortonworks.spark.cloud
 
-import java.io.{EOFException, File, IOException}
+import java.io.{EOFException, File, FileNotFoundException, IOException}
 import java.net.URL
 import java.nio.charset.Charset
 
@@ -32,6 +32,7 @@ import com.hortonworks.spark.cloud.utils.{HConf, TimeOperations}
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
+import com.hortonworks.spark.cloud.s3.S3ACommitterConstants._
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 
@@ -286,13 +287,18 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
 
   /**
    * Dump the storage stats; logs nothing if there are none
-   * @param stats statistics instance
    */
   def dumpFileSystemStatistics(stats: StorageStatistics) : Unit = {
     for (entry <- stats.getLongStatistics) {
       logInfo(s" ${entry.getName} = ${entry.getValue}")
     }
   }
+/*
+
+  def dumpFileSystemStatistics(): Unit = {
+
+  }
+*/
 
   /**
    * Copy a file across filesystems, through the local machine.
@@ -307,10 +313,22 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       src: Path,
       dest: Path,
       conf: Configuration,
-      overwrite: Boolean): Unit = {
+      overwrite: Boolean): Boolean = {
     val srcFS = src.getFileSystem(conf)
     val sourceStatus = srcFS.getFileStatus(src)
     require(sourceStatus.isFile, s"Not a file $src")
+    if (!overwrite) {
+      val destFS = dest.getFileSystem(conf)
+      try {
+        val destStatus = destFS.getFileStatus(dest)
+        if (destStatus.isFile) {
+          logInfo(s"Destinaion $dest exists")
+          return false;
+        }
+      } catch {
+        case _: FileNotFoundException =>
+      }
+    }
     val sizeKB = sourceStatus.getLen / 1024
     logInfo(s"Copying $src to $dest (${sizeKB} KB)")
     val (outcome, time) = durationOf {
@@ -322,8 +340,9 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     }
     val durationS = time / (1e9)
     logInfo(s"Copy Duration = $durationS seconds")
-    val bandwidth = time / sizeKB
-    logInfo(s"Effective copy bandwidth = $bandwidth KB/s")
+    val bandwidth =  sizeKB / durationS
+    logInfo(s"Effective copy bandwidth = $bandwidth KiB/s")
+    return true;
   }
 
   /**
@@ -407,6 +426,52 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
 
   }
 
+  val Parquet = "parquet"
+  val Csv = "csv"
+  val Orc = "orc"
+
+  /**
+   * Write a dataset
+   *
+   * @param dest      destination path
+   * @param source    source DS
+   * @param format    format
+   * @param parted    should the DS be parted by year & month?
+   * @param committer name of committer
+   * @param conflict  conflict policy
+   * @param extraOps  extra operations to pass to the committer/context
+   * @tparam T type of returned DS
+   * @return success data
+   */
+  def writeDataset[T](
+    @transient destFS: FileSystem,
+    @transient dest: Path,
+    source: Dataset[T],
+    summary: String = "",
+    format: String = Orc,
+    parted: Boolean = true,
+    committer: String = PARTITIONED,
+    conflict: String = CONFLICT_MODE_FAIL,
+    extraOps: Map[String, String] = Map()): Long = {
+
+    val text =
+      s"$summary + committer=$committer format $format partitioning: $parted" +
+        s" conflict=$conflict"
+    val (_, t) = logDuration2(s"write to $dest: $text") {
+      val writer = source.write
+      if (parted) {
+        writer.partitionBy("year", "month")
+      }
+      writer.mode(SaveMode.Append)
+      extraOps.foreach(t => writer.option(t._1, t._2))
+      writer.option(S3A_COMMITTER_NAME, committer)
+      writer.option(CONFLICT_MODE, conflict)
+      writer
+        .format(format)
+        .save(dest.toUri.toString)
+    }
+    t
+  }
 }
 
 /**
@@ -420,6 +485,13 @@ class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Ite
   def next: T = source.next()
 }
 
+
+/**
+ * A referenceable instance
+ */
+object ObjectStoreOperations extends ObjectStoreOperations {
+
+}
 
 object ObjectStoreConfigurations  extends HConf {
 
