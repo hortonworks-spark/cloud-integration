@@ -32,30 +32,6 @@ import org.apache.spark.internal.Logging
 
 class HadoopVersionSuite extends FunSuite with Logging with Matchers {
 
-  test("Check Hadoop version") {
-    val configuration = loadConfiguration()
-
-    overlayConfiguration(
-      configuration,
-      Seq(REQUIRED_HADOOP_VERSION)
-    )
-
-    logInfo( s"""
-       | build = ${VersionInfo.getBuildVersion}
-       | build date = ${VersionInfo.getDate}
-       | built by ${VersionInfo.getUser}
-    """.stripMargin)
-    val v = configuration.get(REQUIRED_HADOOP_VERSION, UNSET_PROPERTY)
-
-    val version = VersionInfo.getVersion()
-    logInfo(s"Hadoop declared version is ${version}")
-    if (v == UNSET_PROPERTY)  {
-      logWarning(s"Unset property ${REQUIRED_HADOOP_VERSION}")
-    } else {
-      assert(v == version)
-    }
-  }
-
   test("Sysprops") {
     val props = System.getProperties
     val list = new util.ArrayList[String](props.stringPropertyNames())
