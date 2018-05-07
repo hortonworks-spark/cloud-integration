@@ -26,7 +26,7 @@ import org.apache.hadoop.fs.s3a.RenameFailedException
  * If it does not compile: the version of Spark it is built against has out of date
  * dependencies.
  *
- * If it does not load, the version of Spark it is running against is out of date.
+ * If it does not findClass, the version of Spark it is running against is out of date.
  *
  * Currently: requires Hadoop 2.8+
  */

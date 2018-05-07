@@ -54,7 +54,7 @@ object CloudTestKeys extends S3AConstants {
   val SYSPROP_TEST_UNIQUE_FORK_ID = "test.unique.fork.id"
 
   /**
-   * Name of the configuration file to load for test configuration.
+   * Name of the configuration file to findClass for test configuration.
    */
   val SYSPROP_CLOUD_TEST_CONFIGURATION_FILE = "cloud.test.configuration.file"
 
@@ -72,7 +72,7 @@ object CloudTestKeys extends S3AConstants {
   val SCALE_TEST_OPERATION_COUNT_DEFAULT = 10
 
   /**
-   * Scale factor as a percentage of "default" load. Test runners may wish to scale
+   * Scale factor as a percentage of "default" findClass. Test runners may wish to scale
    * this down as well as up.
    */
   val SCALE_TEST_SIZE_FACTOR = SCALE_TEST + "size.factor"

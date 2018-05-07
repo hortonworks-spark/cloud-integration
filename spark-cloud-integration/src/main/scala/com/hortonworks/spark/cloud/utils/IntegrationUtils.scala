@@ -17,9 +17,27 @@
 
 package com.hortonworks.spark.cloud.utils
 
+import java.net.URL
+
+import org.apache.hadoop.util.ExitUtil
+
 /**
  * A class to instantiate for all the general utils
  */
 class IntegrationUtils extends TimeOperations with HConf {
+  private val E_NO_CLASS = 11
 
+  def findClass(src: String, classname: String): (String, String, URL, Class[_]) = {
+    try {
+      val loader = this.getClass.getClassLoader
+      val res = classname.replaceAll("\\.", "/") + ".class"
+      val url = loader.getResource(res)
+      val clazz = loader.loadClass(classname)
+      (src, classname, url, clazz)
+    } catch {
+      case e: Exception =>
+        throw new ExitUtil.ExitException(E_NO_CLASS,
+          s"Failed to findClass Class $classname from $src").initCause(e)
+    }
+  }
 }

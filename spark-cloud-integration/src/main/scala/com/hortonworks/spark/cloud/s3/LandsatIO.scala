@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.examples
+package com.hortonworks.spark.cloud.s3
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
@@ -66,7 +66,7 @@ object LandsatIO {
   /**
    * CSV parsing options: does not include type inference.
    */
-  val CsvOptions = Map(
+  val CsvOptions: Map[String, String] = Map(
     "header" -> "true",
     "ignoreLeadingWhiteSpace" -> "true",
     "ignoreTrailingWhiteSpace" -> "true",
@@ -78,7 +78,7 @@ object LandsatIO {
   /**
    * Headers in order
    */
-  val Headers = Seq(
+  val Headers: Seq[String] = Seq(
     "entityId",
     "acquisitionDate",
     "cloudCover",

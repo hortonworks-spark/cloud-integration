@@ -19,8 +19,7 @@ package com.hortonworks.spark.cloud.s3.commit
 
 import scala.collection.mutable
 
-import com.hortonworks.spark.cloud.examples.{LandsatIO, LandsatImage}
-import com.hortonworks.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
+import com.hortonworks.spark.cloud.s3.{LandsatIO, LandsatImage, S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
 import com.hortonworks.spark.cloud.utils.StatisticsTracker
 import org.apache.hadoop.fs.{Path, PathExistsException}
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
@@ -166,7 +165,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val csvSchema = LandsatIO.buildCsvSchema()
     logInfo("CSV Schema:")
     csvSchema.printTreeString()
-    val (rawCsvData, tBuildRDD) = logDuration2("set up initial .csv load") {
+    val (rawCsvData, tBuildRDD) = logDuration2("set up initial .csv findClass") {
       spark.read.options(LandsatIO.CsvOptions)
         .schema(csvSchema)
         .csv(csvPath.toUri.toString)

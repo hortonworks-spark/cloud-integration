@@ -111,7 +111,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       val landsatOrcPath = new Path(landsatPath, "orc")
       val landsatParqetPath = new Path(landsatPath, "parquet")
       val landsatParqet = landsatParqetPath.toString
-      // load this FS instance into memory with random
+      // findClass this FS instance into memory with random
       val destFS = destPath.getFileSystem(config)
       rm(destFS, landsatPath)
 

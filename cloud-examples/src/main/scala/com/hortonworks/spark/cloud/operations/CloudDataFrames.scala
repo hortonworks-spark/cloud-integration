@@ -94,7 +94,7 @@ class CloudDataFrames extends ObjectStoreExample with StoreTestOperations {
         d
       }
 
-      // load a DF and verify it has the expected number of rows
+      // findClass a DF and verify it has the expected number of rows
       // return how long it took
       def validate(source: Path, srcFormat: String): Long = {
         validateRowCount(spark, fs, source, srcFormat, rowCount)

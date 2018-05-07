@@ -140,7 +140,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
 
       val config = new Configuration(sc.hadoopConfiguration)
       config.set(INPUT_FADVISE, RANDOM_IO)
-      // load this FS instance into memory with random
+      // findClass this FS instance into memory with random
       val destFS = destPath.getFileSystem(config)
       try {
         destFS.listStatus(destPath)
@@ -171,8 +171,8 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
       srcPath: Path,
       destPath: Path): Unit = {
     val config = new Configuration(sc.hadoopConfiguration)
-    config.set(INPUT_FADVISE, RANDOM_IO)
-    // load this FS instance into memory with random
+    config.set(INPUT_FADVISE, SEQUENTIAL_IO)
+    // findClass this FS instance into memory with random
     val destFS = destPath.getFileSystem(config)
     rm(destFS, destPath)
 

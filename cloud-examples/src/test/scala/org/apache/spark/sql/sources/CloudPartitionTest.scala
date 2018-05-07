@@ -30,7 +30,7 @@ abstract class CloudPartitionTest extends AbstractCloudRelationTest {
 import testImplicits._
 
   ctest(
-    "save-load-partitioned-part-columns-in-data",
+    "save-findClass-partitioned-part-columns-in-data",
     "Save sets of files in explicitly set up partition tree; read") {
     withTempPathDir("part-columns", None) { path =>
       for (p1 <- 1 to 2; p2 <- Seq("foo", "bar")) {

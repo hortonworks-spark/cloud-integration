@@ -17,6 +17,8 @@
 
 package com.hortonworks.spark.cloud
 
+import org.apache.hadoop.util.ExitUtil
+
 import org.apache.spark.SparkConf
 
 /**
@@ -29,12 +31,12 @@ trait ObjectStoreExample extends ObjectStoreOperations with Serializable {
   /**
    * Exit code for a usage error: -2
    */
-  val EXIT_USAGE = -2
+  val EXIT_USAGE: Int = -2
 
   /**
    * Exit code for a general purpose error: -1
    */
-  val EXIT_ERROR = -1
+  val EXIT_ERROR: Int = -1
 
   /**
    * Run the command. This is expected to be invoked by a `main()` call in static companion
@@ -79,6 +81,12 @@ trait ObjectStoreExample extends ObjectStoreOperations with Serializable {
       val conf = new SparkConf()
       exitCode = operation(conf, args)
     } catch {
+      case e: ExitUtil.ExitException =>
+        exitCode = e.getExitCode
+        if (exitCode != 0) {
+          logError(e.toString)
+          logDebug("", e)
+        }
       case e: Exception =>
         logError(s"Failed to execute operation: $e", e)
         // in case this is caused by classpath problems, dump it out @ debug level

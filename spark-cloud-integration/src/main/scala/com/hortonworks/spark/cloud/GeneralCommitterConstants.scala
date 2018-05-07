@@ -27,7 +27,7 @@ object GeneralCommitterConstants {
   /**
    * Scheme prefix for per-filesystem scheme committers.
    */
-  val OUTPUTCOMMITTER_FACTORY_SCHEME = "mapreduce.outputcommitter.factory.scheme"
+  val OUTPUTCOMMITTER_FACTORY_SCHEME: String = "mapreduce.outputcommitter.factory.scheme"
 
   /**
    * String format pattern for per-filesystem scheme committers.
@@ -40,36 +40,36 @@ object GeneralCommitterConstants {
    * output committer factory to use unless there is a specific
    * one for a schema.
    */
-  val OUTPUTCOMMITTER_FACTORY_CLASS = "mapreduce.pathoutputcommitter.factory.class"
+  val OUTPUTCOMMITTER_FACTORY_CLASS: String = "mapreduce.pathoutputcommitter.factory.class"
 
-  val DEFAULT_COMMITTER_FACTORY =
+  val DEFAULT_COMMITTER_FACTORY: String =
     "org.apache.hadoop.mapreduce.lib.output.PathOutputCommitterFactory"
 
   /**
    * The committer which can be directly instantiated and which then delegates
    * all operations to the factory-created committer it creates itself.
    */
-  val BINDING_PATH_OUTPUT_COMMITTER_CLASS =
+  val BINDING_PATH_OUTPUT_COMMITTER_CLASS: String =
     "org.apache.hadoop.mapreduce.lib.output.BindingPathOutputCommitter"
 
-  val BINDING_PARQUET_OUTPUT_COMMITTER_CLASS =
+  val BINDING_PARQUET_OUTPUT_COMMITTER_CLASS: String =
     "org.apache.spark.internal.io.cloud.BindingParquetOutputCommitter"
 
-  val SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
-  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION = "mapreduce.fileoutputcommitter.algorithm.version"
-  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION_DEFAULT = 2
+  val SUCCESSFUL_JOB_OUTPUT_DIR_MARKER: String = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
+  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION: String = "mapreduce.fileoutputcommitter.algorithm.version"
+  val FILEOUTPUTCOMMITTER_ALGORITHM_VERSION_DEFAULT: Int = 2
   // Skip cleanup _temporary folders under job's output directory
-  val FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED = "mapreduce.fileoutputcommitter.cleanup.skipped"
+  val FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED: String = "mapreduce.fileoutputcommitter.cleanup.skipped"
 
   /**
    * This is the "Pending" directory of the FileOutputCommitter;
    * data written here is, in that algorithm, renamed into place.
    */
-  val TEMP_DIR_NAME = "_temporary"
+  val TEMP_DIR_NAME: String = "_temporary"
   /**
    * Marker file to create on success.
    */
-  val SUCCESS_FILE_NAME = "_SUCCESS"
+  val SUCCESS_FILE_NAME: String = "_SUCCESS"
 
   /**
    * Flag to trigger creation of a marker file on job completion.

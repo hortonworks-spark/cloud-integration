@@ -124,7 +124,7 @@ trait CloudSuiteTrait extends FunSuiteLike
 
   /**
    * Locate a class/resource as a resource URL.
-   * This does not attempt to load a class, merely verify that it is present.
+   * This does not attempt to findClass a class, merely verify that it is present.
    *
    * @param resource resource or path of class, such as
    * `org/apache/hadoop/fs/azure/AzureException.class`

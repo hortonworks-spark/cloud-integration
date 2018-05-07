@@ -88,7 +88,7 @@ import testImplicits._
   }
 
 
-  ctest("save()/load() - non-partitioned table - Overwrite",
+  ctest("save()/findClass() - non-partitioned table - Overwrite",
     "write to a non-parted table overwrite=true",
     true) {
     assertSparkRunning()
@@ -108,7 +108,7 @@ import testImplicits._
     }
   }
 
-  ctest("save()/load() - non-partitioned table - ErrorIfExists",
+  ctest("save()/findClass() - non-partitioned table - ErrorIfExists",
     "Expect an error trying to write to a directory which exists",
     true) {
     assertSparkRunning()
@@ -122,7 +122,7 @@ import testImplicits._
     }
   }
 
-  ctest("load() - with directory of unpartitioned data in nested subdirs",
+  ctest("findClass() - with directory of unpartitioned data in nested subdirs",
     "",
     true) {
     assertSparkRunning()

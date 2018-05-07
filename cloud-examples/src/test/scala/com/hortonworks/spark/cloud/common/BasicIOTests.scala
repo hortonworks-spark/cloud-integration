@@ -109,7 +109,7 @@ abstract class BasicIOTests extends CloudSuite {
     sc = new SparkContext("local", "test", newSparkConf())
     val numbers = sc.parallelize(1 to testEntryCount)
     val destFile = testPath(filesystem, "example1")
-    saveTextFile(numbers, destFile)
+    saveAsNewTextFile(numbers, destFile, sc.hadoopConfiguration)
     val basePathStatus = filesystem.getFileStatus(destFile)
     // check blocksize in file status
     val hadoopUtils = new SparkHadoopUtil()

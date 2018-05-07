@@ -35,7 +35,7 @@ import org.apache.spark.sql.SparkSession
   * 1. Uses `listFiles(recursive=true)` call for fast tree listing
   * of object store sources.
   * 1. Shuffles source list for better randomness of execution, hence spreading
-  * load across shards in the store.
+  * findClass across shards in the store.
   * 1. Schedules each upload individually. This is *very* inefficient
   * for small and empty files.
   * 1. Uses source locality for work scheduling
@@ -88,6 +88,8 @@ class CloudCp extends ObjectStoreExample {
     val srcPath = new Path(args(0))
     val destPath = new Path(args(1))
 
+    logInfo(s"cloudCP $srcPath $destPath")
+
     sparkConf.set("spark.default.parallelism", "4")
     applyObjectStoreConfigurationOptions(sparkConf, false)
     //    hconf(sparkConf, S3AConstantsAndKeys.FAST_UPLOAD, "true")
@@ -104,7 +106,7 @@ class CloudCp extends ObjectStoreExample {
       val contextConf = sc.hadoopConfiguration
       val srcFS = srcPath.getFileSystem(contextConf)
       val destConf = new Configuration(contextConf)
-      // load this FS instance into memory with random
+      // findClass this FS instance into memory with random
       val destFS = destPath.getFileSystem(destConf)
       logInfo(s"Listing $srcPath for upload to $destPath")
 

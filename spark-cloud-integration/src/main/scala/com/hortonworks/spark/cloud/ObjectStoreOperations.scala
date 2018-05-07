@@ -53,49 +53,49 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   }
 
   /**
-   * Save this RDD as a text file, using string representations of elements.
+   * Save this RDD as a text file, using string representations of elements
+   * and the via the Hadoop mapreduce API, rather than the older mapred API.
    *
    * There's a bit of convoluted-ness here, as this supports writing to any Hadoop FS,
    * rather than the default one in the configuration ... this is addressed by creating a
    * new configuration. Spark makes a bit too much of the RDD private, so the key
    * and value of the RDD needs to be restated
    *
-   * *Important*: this doesn't work.
    * @param rdd RDD to save
-   * @param keyClass key of RDD
-   * @param valueClass value of RDD
    * @param path path
    * @param conf config
    * @tparam T type of RDD
    */
-  def saveAsTextFile[T](rdd: RDD[T],
+  def saveAsNewTextFile[T](rdd: RDD[T],
       path: Path,
-      conf: Configuration,
-      keyClass: Class[_],
-      valueClass: Class[_]): Unit = {
-    val nullWritableClassTag = implicitly[ClassTag[NullWritable]]
-    val textClassTag = implicitly[ClassTag[Text]]
-    val r = rdd.mapPartitions { iter =>
+      conf: Configuration): Unit = {
+    val textRdd = rdd.mapPartitions { iter =>
       val text = new Text()
       iter.map { x =>
         text.set(x.toString)
         (NullWritable.get(), text)
       }
     }
-    val pairOps = new PairRDDFunctions(r)
+    val pairOps = new PairRDDFunctions(textRdd)(
+      implicitly[ClassTag[NullWritable]],
+      implicitly[ClassTag[Text]],
+      null)
     pairOps.saveAsNewAPIHadoopFile(
       path.toUri.toString,
-      keyClass, valueClass,
+      classOf[NullWritable],
+      classOf[Text],
       classOf[TextOutputFormat[NullWritable, Text]],
       conf)
   }
 
   /**
    * Take a predicate, generate a path filter from it.
+   *
    * @param filterPredicate predicate
    * @return a filter which uses the predicate to decide whether to accept a file or not
    */
   def pathFilter(filterPredicate: Path => Boolean): PathFilter = {
+    // ignore IDEA if it suggests simplifying this...it won't compile.
     new PathFilter {
       def accept(path: Path): Boolean = filterPredicate(path)
     }
@@ -172,6 +172,18 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     } finally {
       IOUtils.closeQuietly(in)
     }
+  }
+
+  /**
+   * Get a file from a path in the default charset.
+   * This is here to ease spark-shell use
+   * @param p path string.
+   * @param conf configuration for the FS
+   * @return the contents of the path
+   */
+  def get(p: String, conf: Configuration): String = {
+    val path = new Path(p)
+    get(path.getFileSystem(conf), path)
   }
 
   /**
@@ -493,6 +505,9 @@ object ObjectStoreOperations extends ObjectStoreOperations {
 
 }
 
+/**
+ * An object store configurations to play with.
+ */
 object ObjectStoreConfigurations  extends HConf {
 
   /**

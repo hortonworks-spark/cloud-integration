@@ -34,7 +34,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
 
   import testImplicits._
 
-  ctest("save()/load() - non-partitioned table - Append",
+  ctest("save()/findClass() - non-partitioned table - Append",
     "", true) {
     withPath("non-part-t-append") { path =>
       val name = path.toString
@@ -59,7 +59,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - non-partitioned table - ErrorIfExists",
+  ctest("save()/findClass() - non-partitioned table - ErrorIfExists",
     "",
     true) {
     withTempPathDir("errorIfExists", None) { path =>
@@ -71,7 +71,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - non-partitioned table - Ignore",
+  ctest("save()/findClass() - non-partitioned table - Ignore",
     "",
     true) {
     withTempPathDir("nonpartitioned", None) { path =>
@@ -83,7 +83,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - partitioned table - simple queries",
+  ctest("save()/findClass() - partitioned table - simple queries",
     "",
     true) {
     withPath("simple-query") { path =>
@@ -101,7 +101,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - partitioned table - Overwrite",
+  ctest("save()/findClass() - partitioned table - Overwrite",
     "",
     true) {
     withPath("Overwrite") { path =>
@@ -126,7 +126,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - partitioned table - Append",
+  ctest("save()/findClass() - partitioned table - Append",
     "",
     true) {
     withPath("Append", None) { path =>
@@ -155,7 +155,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - partitioned table - Append - new partition values",
+  ctest("save()/findClass() - partitioned table - Append - new partition values",
     "",
     true) {
     withPath("append-new-values", None) { path =>
@@ -183,7 +183,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - partitioned table - ErrorIfExists",
+  ctest("save()/findClass() - partitioned table - ErrorIfExists",
     "",
     true) {
     withTempPathDir("table-ErrorIfExists", None) { path =>
@@ -197,7 +197,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("save()/load() - partitioned table - Ignore",
+  ctest("save()/findClass() - partitioned table - Ignore",
     "",
     false) {
     withTempPathDir("ignore-partitioned-table", None) { path =>
@@ -211,7 +211,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - non-partitioned table - Overwrite",
+  ctest("saveAsTable()/findClass() - non-partitioned table - Overwrite",
     "",
     false) {
     testDF.write
@@ -225,7 +225,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - non-partitioned table - Append",
+  ctest("saveAsTable()/findClass() - non-partitioned table - Append",
     "",
     false) {
     testDF.write
@@ -244,7 +244,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - non-partitioned table - ErrorIfExists",
+  ctest("saveAsTable()/findClass() - non-partitioned table - ErrorIfExists",
     "",
     false) {
     withTable("t") {
@@ -258,7 +258,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - non-partitioned table - Ignore",
+  ctest("saveAsTable()/findClass() - non-partitioned table - Ignore",
     "",
     false) {
     withTable("t") {
@@ -271,7 +271,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - partitioned table - simple queries",
+  ctest("saveAsTable()/findClass() - partitioned table - simple queries",
     "",
     false) {
     partitionedTestDF
@@ -286,7 +286,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - partitioned table - boolean type",
+  ctest("saveAsTable()/findClass() - partitioned table - boolean type",
     "",
     false) {
     spark.range(2)
@@ -303,7 +303,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - partitioned table - Overwrite",
+  ctest("saveAsTable()/findClass() - partitioned table - Overwrite",
     "",
     false) {
     partitionedTestDF.write
@@ -325,7 +325,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - partitioned table - Append",
+  ctest("saveAsTable()/findClass() - partitioned table - Append",
     "",
     false) {
     partitionedTestDF.write
@@ -351,7 +351,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   }
 
   ctest(
-    "saveAsTable()/load() - partitioned table - Append - new partition values",
+    "saveAsTable()/findClass() - partitioned table - Append - new partition values",
     "",
     false) {
     partitionedTestDF1.write
@@ -376,7 +376,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
   }
 
   ctest(
-    "saveAsTable()/load() - partitioned table - Append - mismatched partition columns",
+    "saveAsTable()/findClass() - partitioned table - Append - mismatched partition columns",
     "",
     false) {
     partitionedTestDF1.write
@@ -399,7 +399,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - partitioned table - ErrorIfExists",
+  ctest("saveAsTable()/findClass() - partitioned table - ErrorIfExists",
     "",
     false) {
     Seq.empty[(Int, String)].toDF().createOrReplaceTempView("t")
@@ -416,7 +416,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     }
   }
 
-  ctest("saveAsTable()/load() - partitioned table - Ignore",
+  ctest("saveAsTable()/findClass() - partitioned table - Ignore",
     "",
     true) {
     Seq.empty[(Int, String)].toDF().createOrReplaceTempView("t")

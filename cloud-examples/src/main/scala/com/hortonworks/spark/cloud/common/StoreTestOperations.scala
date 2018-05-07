@@ -85,7 +85,7 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually {
   //
   // return how long it took
   /**
-   * load a DF and verify it has the expected number of rows
+   * findClass a DF and verify it has the expected number of rows
    *
    * @param spark session
    * @param fs filesystem
