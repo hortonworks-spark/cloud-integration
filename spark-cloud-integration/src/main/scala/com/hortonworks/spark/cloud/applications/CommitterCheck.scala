@@ -85,13 +85,13 @@ class CommitterCheck extends ObjectStoreExample {
     val destPath = new Path(args(1))
 */
 
-    def logValue(key: String) = {
+    def logValue(key: String): Unit = {
       val v = sparkConf.getOption(key)
       val result = v.getOrElse("*undefined*")
       println(s"$v = '$result'")
     }
 
-    def validate(key: String, expected: String) = {
+    def validate(key: String, expected: String): Unit = {
       val v = sparkConf.getOption(key).getOrElse {
         throw new ExitUtil.ExitException(E_BAD_CONFIG,
           s"Unset option $key: (expected '$expected')")
@@ -110,20 +110,24 @@ class CommitterCheck extends ObjectStoreExample {
     required.foreach((t) => logValue(t._1))
 
     // now validate
-    required.foreach((t) => validate(t._1, t._2))
+//    required.foreach((t) => validate(t._1, t._2))
 
 
     // try to instantiate the class
     println(s"Classpath =\n${System.getProperty("java.class.path")}")
+/*
     val committerName = sparkConf.get(sqlCommitterKey)
     val parquetCommitter = sparkConf.get(parquetCommitterKey)
+*/
 
     val classLoadMap = Map[String, String](
+/*
       sqlCommitterKey -> committerName,
       parquetCommitterKey -> parquetCommitter,
+*/
       "PathOutputCommitProtocol" ->
         "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol",
-      "BindingParquetOutputC`ommitter" ->
+      "BindingParquetOutputCommitter" ->
         "org.apache.spark.internal.io.cloud.BindingParquetOutputCommitter",
       "StagingCommitter" ->
         "org.apache.hadoop.fs.s3a.commit.staging.StagingCommitter",
@@ -152,14 +156,19 @@ class CommitterCheck extends ObjectStoreExample {
 
     val sc = spark.sparkContext
 
+    val minimalRange = sc.range(0, 1)
+    val classmaps =  minimalRange.map {
+      v => System.getProperty("java.class.path")
+    }.collect()
+    classmaps.foreach{ m => println(m)}
 
     val rdd: RDD[String]= sc.parallelize(classLoadMap.keySet.toSeq)
 
-    rdd.foreach{ key =>
+    rdd.map{ key =>
       val classname = classLoadMap(key)
       val r = new IntegrationUtils().findClass(key, classname)
       (r._1, r._2, r._3)
-    }
+    }.collect()
 
     // done
     0
