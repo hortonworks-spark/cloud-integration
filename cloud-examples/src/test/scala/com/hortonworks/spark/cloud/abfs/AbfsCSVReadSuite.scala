@@ -15,30 +15,20 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.adl
+package com.hortonworks.spark.cloud.abfs
 
-import java.net.URI
+import com.hortonworks.spark.cloud.common.CSVReadTests
 
-import com.hortonworks.spark.cloud.common.CloudTestKeys._
-import com.hortonworks.spark.cloud.common.CopyCsvFileTrait
-import org.apache.hadoop.fs.FileSystem
+class AbfsCSVReadSuite extends CSVReadTests with AbfsTestSetup {
+  init()
 
-/**
- * Trait for ADL tests.
- *
- * This trait supports CSV data source by copying over the data from S3A if
- * it isn't already in a ADL URL
- */
-trait AdlTestSetup extends CopyCsvFileTrait {
-
-  override def enabled: Boolean =  {
-    getConf.getBoolean(ADL_TESTS_ENABLED, false)
+  /**
+   * set up FS if enabled.
+   */
+  def init(): Unit = {
+    if (enabled) {
+      initFS()
+      initDatasources()
+    }
   }
-
-  def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(ADL_TEST_URI))
-    logDebug(s"Executing Azure tests against $uri")
-    createFilesystem(uri)
-  }
-
 }

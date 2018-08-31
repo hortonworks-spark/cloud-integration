@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.azure
+package com.hortonworks.spark.cloud.abfs
 
-import com.hortonworks.spark.cloud.common.BasicIOTests
+import com.hortonworks.spark.cloud.common.DataFrameTests
+
+import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.types.StringType
 
 /**
- * Azure's basic IO operations.
+ * Test Azure and DataFrames
  */
-class AzureBasicIOSuite extends BasicIOTests with AzureTestSetup {
+class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
 
   init()
 

@@ -128,9 +128,9 @@ object CloudTestKeys extends S3AConstants {
   val S3A_ENCRYPTION_KEY_2 = "s3a.test.encryption.key.2"
 
   /**
-   * Key defining the Are Azure tests enabled? If set, the user
-   * must have Azure login credentials, defined via the environment
-   * or in the XML test configuration file.
+   * Key declaring that the Azure WASB tests are enabled.
+   * If set, the user must have Azure login credentials, defined in the XML
+   * test configuration file.
    */
   val AZURE_TESTS_ENABLED = "azure.tests.enabled"
 
@@ -140,11 +140,24 @@ object CloudTestKeys extends S3AConstants {
    */
   val AZURE_TEST_URI = "azure.test.uri"
 
+  /**
+   * Key declaring that the Azure ABFS tests are enabled.
+   * If set, the user must have Azure login credentials, defined in the XML
+   * test configuration file.
+   */
+  val ABFS_TESTS_ENABLED = "abfs.tests.enabled"
 
   /**
-   * Key defining the Are ADL tests enabled? If set, the user
-   * must have ADL login credentials, defined via the environment
-   * or in the XML test configuration file.
+   * A test bucket for Azure ABFS.
+   * Data in this bucket under the test directory will be deleted during test suite teardowns;
+   */
+  val ABFS_TEST_URI = "abfs.test.uri"
+
+
+  /**
+   * Key defining whether ADL tests are enabled? 
+   * If set, the user must have ADL login credentials,
+   * defined in the XML test configuration file.
    */
   val ADL_TESTS_ENABLED = "adl.tests.enabled"
 

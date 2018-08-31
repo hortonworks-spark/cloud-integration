@@ -53,6 +53,13 @@ export conf="-Dcloud.test.configuration.file=/home/alice/dev/cloud.xml"
 mvn test -T 1C $CONF -DwildcardSuites=com.hortonworks.spark.cloud.s3.S3AConsistencySuite
 ````
 
+Or for fish users (here with the hdp3 and scale profiles )
+```bash
+set -gx conf "-Dcloud.test.configuration.file=/home/alice/dev/cloud.xml"
+mvn test -T 1C -Phdp3,scale $CONF -DwildcardSuites=com.hortonworks.spark.cloud.s3.S3AConsistencySuite
+````
+
+
 
 
 ### Security

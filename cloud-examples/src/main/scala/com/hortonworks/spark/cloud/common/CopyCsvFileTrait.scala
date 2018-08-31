@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.hortonworks.spark.cloud.azure
+package com.hortonworks.spark.cloud.common
 
 import java.io.{EOFException, FileNotFoundException}
 import java.net.URI
@@ -24,23 +24,14 @@ import com.hortonworks.spark.cloud.common.CloudTestKeys._
 import com.hortonworks.spark.cloud.common.{CloudSuite, CsvDatasourceSupport}
 import org.apache.hadoop.fs.{FileSystem, Path}
 
+
 /**
- * Trait for Azure  ADL tests.
+ * Trait for CSV setup
  *
  * This trait supports CSV data source by copying over the data from S3A if
- * it isn't already in a WASB URL
+ * it isn't already in the destination FS
  */
-trait AzureTestSetup extends CloudSuite with CsvDatasourceSupport {
-
-  override def enabled: Boolean =  {
-    getConf.getBoolean(AZURE_TESTS_ENABLED, false)
-  }
-
-  def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(AZURE_TEST_URI))
-    logDebug(s"Executing Azure tests against $uri")
-    createFilesystem(uri)
-  }
+trait CopyCsvFileTrait extends CloudSuite with CsvDatasourceSupport {
 
   /**
    * This is the CSV test file on S3A. It is not the FS which is used
@@ -113,8 +104,6 @@ trait AzureTestSetup extends CloudSuite with CsvDatasourceSupport {
       if (toCopy) {
         copyFile(sourceCSVFilePath.get, destFile, getConf, true)
       }
-      // todo? leave or delete?
-
     }
   }
 

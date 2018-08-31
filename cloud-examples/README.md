@@ -352,9 +352,15 @@ This is the best way to have consistent private repositories across multiple bui
 ### Example test runs
 
 
-Run the s3a tests (assuming the s3a.xml file contained/referenced the s3a binding information),
+Run the s3a tests (assuming the `s3a.xml` file contained/referenced the s3a binding information),
 with the Spark 2.4.0-SNAPSHOT binaries.
 
 ```bash
 mvn -T1C test -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.4.0-SNAPSHOT
+```
+
+or here, with the binding set up in an environment variable, and the hdp3 profile
+```bash
+set -gx conf "-Dcloud.test.configuration.file=../../cloud-test-configs/abfs.xml"
+mvn -T1C test $conf -Phdp3
 ```

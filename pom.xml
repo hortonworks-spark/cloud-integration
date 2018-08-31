@@ -734,6 +734,24 @@
       </properties>
     </profile>
 
+    <!-- this is HDP internal release version numbers -->
+    <profile>
+      <id>hdp3</id>
+      <activation>
+        <property>
+          <name>hdp3</name>
+        </property>
+      </activation>
+      <properties>
+
+        <!-- -->
+        <spark.version>2.3.1.3.0.1.0-SNAPSHOT</spark.version>
+
+        <!-- needed to pick up the new stuff-->
+        <hadoop.version>3.2.0-SNAPSHOT</hadoop.version>
+      </properties>
+    </profile>
+    
   </profiles>
 
 
