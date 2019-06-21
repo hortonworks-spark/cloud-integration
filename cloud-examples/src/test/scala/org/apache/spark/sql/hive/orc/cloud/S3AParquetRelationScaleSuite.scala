@@ -17,7 +17,7 @@
 
 package org.apache.spark.sql.hive.orc.cloud
 
-import com.hortonworks.spark.cloud.s3.S3ATestSetup
+import com.cloudera.spark.cloud.s3.S3ATestSetup
 
 import org.apache.spark.sql.sources.CloudRelationScaleTest
 import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}

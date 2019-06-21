@@ -11,4 +11,4 @@ cloud.xml
 cloud-examples/metastore_db
 cloud-examples/derby.log
 cloud-examples/spark-warehouse
-
+cloud-examples/src/scripts

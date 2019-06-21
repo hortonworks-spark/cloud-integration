@@ -19,7 +19,7 @@ package org.apache.spark.sql.sources
 
 import scala.util.Random
 
-import com.hortonworks.spark.cloud.s3.S3ACommitterConstants
+import com.cloudera.spark.cloud.s3.S3ACommitterConstants
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._

@@ -21,8 +21,8 @@ import java.io.File
 
 import scala.concurrent.duration._
 
-import com.hortonworks.spark.cloud.common.{CloudSuiteTrait, CloudTestKeys}
-import com.hortonworks.spark.cloud.ObjectStoreConfigurations
+import com.cloudera.spark.cloud.ObjectStoreConfigurations
+import com.cloudera.spark.cloud.common.{CloudSuiteTrait, CloudTestKeys}
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.concurrent.Eventually
@@ -33,7 +33,6 @@ import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.test.SQLTestUtils
 import org.apache.spark.sql.types._
 import org.apache.spark.util.Utils
-
 
 /**
  * Minimal base class for cloud relation tests.
@@ -330,8 +329,8 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     MapType(StringType, LongType),
     new StructType()
       .add("f1", FloatType, nullable = true)
-      .add("f2", ArrayType(BooleanType, containsNull = true), nullable = true),
-    new UDT.MyDenseVectorUDT()
+      .add("f2", ArrayType(BooleanType, containsNull = true), nullable = true)
+//    new UDT.MyDenseVectorUDT()
   ).filter(supportsDataType)
 
   protected val orcSupportedDataTypes: Seq[DataType] = Seq(
@@ -344,8 +343,8 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     MapType(StringType, LongType),
     new StructType()
       .add("f1", FloatType, nullable = true)
-      .add("f2", ArrayType(BooleanType, containsNull = true), nullable = true),
-    new UDT.MyDenseVectorUDT()
+      .add("f2", ArrayType(BooleanType, containsNull = true), nullable = true)
+//    new UDT.MyDenseVectorUDT()
   )
 
 

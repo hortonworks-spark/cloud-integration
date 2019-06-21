@@ -20,14 +20,14 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.hortonworks.spark</groupId>
+    <groupId>com.cloudera.spark</groupId>
     <version>1.0-SNAPSHOT</version>
-    <artifactId>hortonworks-cloud-integration</artifactId>
+    <artifactId>cloudera-cloud-integration</artifactId>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>hortonworks-spark-cloud-integration</artifactId>
-  <name>Hortonworks Spark Cloud Integration: Utility Classes</name>
+  <artifactId>cloudera-spark-cloud-integration</artifactId>
+  <name>Cloudera Spark Cloud Integration: Utility Classes</name>
   <packaging>jar</packaging>
 
   <description>

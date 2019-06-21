@@ -18,7 +18,7 @@
 package org.apache.spark.sql.hive.orc.cloud
 
 
-import com.hortonworks.spark.cloud.s3.S3ATestSetup
+import com.cloudera.spark.cloud.s3.S3ATestSetup
 
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.hive.orc.OrcFileFormat

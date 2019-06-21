@@ -50,13 +50,13 @@ This is easiest if you set up an environment variable pointing to the file and r
 
 ```bash
 export conf="-Dcloud.test.configuration.file=/home/alice/dev/cloud.xml"
-mvn test -T 1C $CONF -DwildcardSuites=com.hortonworks.spark.cloud.s3.S3AConsistencySuite
+mvn test -T 1C $CONF -DwildcardSuites=S3AConsistencySuite
 ````
 
 Or for fish users (here with the hdp3 and scale profiles )
 ```bash
 set -gx conf "-Dcloud.test.configuration.file=/home/alice/dev/cloud.xml"
-mvn test -T 1C -Phdp3,scale $CONF -DwildcardSuites=com.hortonworks.spark.cloud.s3.S3AConsistencySuite
+mvn test -T 1C -Phdp3,scale $CONF -DwildcardSuites=S3AConsistencySuite
 ````
 
 
@@ -333,7 +333,7 @@ This test can be executed as part of the suite `S3aIOSuite`, by setting the `sui
 of the test suite:
 
 ```bash
-mvn test $CONF -Dsuites=com.hortonworks.spark.cloud.s3.S3aIOSuite
+mvn test $CONF -Dsuites=com.cloudera.spark.cloud.s3.S3aIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -344,7 +344,7 @@ A single test can be explicitly run by including the key in the `suites` propert
 after the suite name
 
 ```bash
-mvn test $CONF '-Dsuites=com.hortonworks.spark.cloud.s3.S3ABasicIOSuite FileOutput'
+mvn test $CONF '-Dsuites=S3ABasicIOSuite FileOutput'
 ```
 
 This will run all tests in the `S3ABasicIOSuite` suite whose name contains the string `FileOutput`;
@@ -501,7 +501,7 @@ Try running the test suite in isolation.
 ## Testing S3 SSE-KMS Encryption
 
 A (small) test exists for encryption using SSE-KMS
-, `com.hortonworks.spark.cloud.s3.S3AEncryptionSuite`.
+, `S3AEncryptionSuite`.
 For it to execute, the XML configuration file needs to contain two encryption
 keys.
 

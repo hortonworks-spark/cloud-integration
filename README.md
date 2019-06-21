@@ -15,7 +15,7 @@ Classes and Tools to make Spark work better in-cloud
 to get a configuration into an RDD method
 * Trait `HConf` to manipulate the hadoop options in a spark config.
 * Anything else which turns out to be useful.
-* Variant of `FileInputStream` for cloud storage, `org.apache.spark.streaming.hortonworks.CloudInputDStream`
+* Variant of `FileInputStream` for cloud storage, `org.apache.spark.streaming.cloudera.CloudInputDStream`
 
 See [Spark Cloud Integration](spark-cloud-integration/src/main/site/markdown/index.md)
 
