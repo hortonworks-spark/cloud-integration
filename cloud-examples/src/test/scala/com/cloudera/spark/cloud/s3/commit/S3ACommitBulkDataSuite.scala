@@ -156,7 +156,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
     // make very sure that the FS is normal IO
     val csvFS = csvPath.getFileSystem(conf).asInstanceOf[S3AFileSystem]
-    assert(csvFS.getInputPolicy === S3AInputPolicy.Normalmvn,
+    assert(csvFS.getInputPolicy === S3AInputPolicy.Normal,
       s"wrong input policy for $csvPath in $csvFS")
 
     // ignore the IDE if it complains: this *is* used.
