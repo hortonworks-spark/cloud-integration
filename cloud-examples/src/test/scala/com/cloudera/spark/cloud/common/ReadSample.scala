@@ -17,7 +17,7 @@
 
 package com.cloudera.spark.cloud.common
 
-import org.apache.spark.mllib.linalg.Vectors
+//import org.apache.spark.mllib.linalg.Vectors
 
 /**
  * A sample of a read operation.
@@ -44,7 +44,7 @@ class ReadSample(
       s" blockSize=$blockSize, bytesRequested=$bytesRequested, bytesRead=$bytesRead)" +
       s" pos=$pos"
 
-  def toVector = {
+/*  def toVector = {
     val a = new Array[Double](8)
     a(0) = started.toDouble
     a(1) = duration.toDouble
@@ -55,6 +55,6 @@ class ReadSample(
     a(6) = perByte.toDouble
     a(7) = delta.toDouble
     Vectors.dense(a)
-  }
+  }*/
 
 }

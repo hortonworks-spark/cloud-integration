@@ -24,11 +24,14 @@ import org.apache.hadoop.io.{LongWritable, Text}
 import org.apache.hadoop.mapred.TextInputFormat
 
 import org.apache.spark.SparkContext
-import org.apache.spark.mllib.stat.{MultivariateStatisticalSummary, Statistics}
+//import org.apache.spark.mllib.stat.{MultivariateStatisticalSummary, Statistics}
 import org.apache.spark.rdd.HadoopRDD
 
 /**
  * A suite of tests reading in the test CSV file.
+ *
+ * There was some MLLib analysis of the statistics, but spark ml-lib was having
+ * trouble building so they've been commented out.
  */
 class CSVReadTests extends CloudSuiteWithCSVDatasource  {
 
@@ -196,6 +199,8 @@ class CSVReadTests extends CloudSuiteWithCSVDatasource  {
     }
 
     // spark analysis
+    // needs mllib which is playing up build-wise right now
+/*
     sc = new SparkContext("local", "test", newSparkConf(source))
 
     val resultsRDD = sc.parallelize(results)
@@ -212,15 +217,16 @@ class CSVReadTests extends CloudSuiteWithCSVDatasource  {
     logInfo(s"Difference between requested and actual ${summary(stats, 7)}")
     logInfo(s"Per byte read time/nS ${summary(stats, 6)}")
     logInfo(s"Filesystem statistics ${fs}")
+*/
   }
 
-  def summary(stats: MultivariateStatisticalSummary, col: Int): String = {
+/*  def summary(stats: MultivariateStatisticalSummary, col: Int): String = {
     val b = new StringBuilder(256)
     b.append(s"min=${stats.min(col)}; ")
     b.append(s"max=${stats.max(col)}; ")
     b.append(s"mean=${stats.mean(col)}; ")
     b.toString()
-  }
+  }*/
 
   ctest("validateCSV",
     "Validate the CSV file by scanning the rows") {

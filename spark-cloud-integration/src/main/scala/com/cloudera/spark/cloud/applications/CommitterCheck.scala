@@ -19,9 +19,8 @@ package com.cloudera.spark.cloud.applications
 
 import java.net.URL
 
-import com.cloudera.spark.cloud.ObjectStoreExample
+import com.cloudera.spark.cloud.{GeneralCommitterConstants, ObjectStoreExample}
 import com.cloudera.spark.cloud.utils.IntegrationUtils
-import org.apache.hadoop.fs.Path
 import org.apache.hadoop.util.ExitUtil
 
 import org.apache.spark.rdd.RDD
@@ -43,17 +42,17 @@ class CommitterCheck extends ObjectStoreExample {
 
 
   def fail(s: String): Int = {
-    println("Failure: " + s)
-    E_BAD_CONFIG;
+    println(s"Failure: $s")
+    E_BAD_CONFIG
   }
 
-  private val bindingParquet = "org.apache.spark.internal.io.cloud.BindingParquetOutputCommitter"
-  private val pathOutput = "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol"
+  private val bindingParquet = GeneralCommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
+  private val pathOutput = GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME
 
   private val parquetCommitterKey: String = SQLConf
     .PARQUET_OUTPUT_COMMITTER_CLASS.key
   private val sqlCommitterKey: String = SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key
-  val required = Map(
+  private val required = Map(
     parquetCommitterKey -> bindingParquet,
     sqlCommitterKey -> pathOutput)
 
@@ -147,7 +146,6 @@ class CommitterCheck extends ObjectStoreExample {
 //    sparkConf.set("spark.default.parallelism", "4")
 
 //    applyObjectStoreConfigurationOptions(sparkConf, false)
-    //    hconf(sparkConf, S3AConstantsAndKeys.FAST_UPLOAD, "true")
     val spark = SparkSession
       .builder
       .appName("CommitterCheck")
@@ -172,12 +170,7 @@ class CommitterCheck extends ObjectStoreExample {
 
     // done
     0
-
   }
-
-
-
-
 }
 
 
@@ -186,6 +179,5 @@ object CommitterCheck {
   def main(args: Array[String]) {
     new CommitterCheck().run(args)
   }
-
 
 }

@@ -62,7 +62,7 @@ object GeneralCommitterConstants {
   val FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED: String = "mapreduce.fileoutputcommitter.cleanup.skipped"
 
   /**
-   * This is the "Pending" directory of the FileOutputCommitter;
+   * This is the "Pending" directory of the FileOutputCommitter
    * data written here is, in that algorithm, renamed into place.
    */
   val TEMP_DIR_NAME: String = "_temporary"
@@ -75,4 +75,7 @@ object GeneralCommitterConstants {
    * Flag to trigger creation of a marker file on job completion.
    */
   val CREATE_SUCCESSFUL_JOB_OUTPUT_DIR_MARKER = "mapreduce.fileoutputcommitter.marksuccessfuljobs"
+
+
+  val PATH_OUTPUT_COMMITTER_NAME: String = "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol"
 }

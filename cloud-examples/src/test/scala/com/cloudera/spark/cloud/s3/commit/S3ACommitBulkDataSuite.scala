@@ -19,10 +19,9 @@ package com.cloudera.spark.cloud.s3.commit
 
 import scala.collection.mutable
 
-import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
+import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
 import com.cloudera.spark.cloud.utils.StatisticsTracker
 import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
-
 import org.apache.hadoop.fs.{Path, PathExistsException}
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}
@@ -35,7 +34,7 @@ import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
  * dataset
  */
 class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
-  with SequentialIOPolicy {
+  with RandomIOPolicy {
 
   init()
 
@@ -50,8 +49,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
   override def enabled: Boolean = super.enabled &&
     hasCSVTestFile // && isScaleTestEnabled
 
-  val parallelism = 8
-
+  private val parallelism = 8
 
   private val destFS = filesystemOption.orNull.asInstanceOf[S3AFileSystem]
 
@@ -102,9 +100,9 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     logInfo(s"Using committer $committerInfo with conflict mode $confictMode")
     hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
 
-    // landsat always uses normal IO
+    // landsat always uses sequential
     hconf(sparkConf,
-      "fs.s3a.bucket.landsat-pds.experimental.fadvise",
+      "fs.s3a.bucket.landsat-pds.experimental.input.fadvise",
       S3AInputPolicy.Sequential.toString)
 
 
@@ -156,7 +154,9 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
     // make very sure that the FS is normal IO
     val csvFS = csvPath.getFileSystem(conf).asInstanceOf[S3AFileSystem]
-    assert(csvFS.getInputPolicy === S3AInputPolicy.Normal,
+    val inputPolicy = csvFS.getInputPolicy
+    assert(inputPolicy === S3AInputPolicy.Normal
+      || inputPolicy === S3AInputPolicy.Sequential,
       s"wrong input policy for $csvPath in $csvFS")
 
     // ignore the IDE if it complains: this *is* used.

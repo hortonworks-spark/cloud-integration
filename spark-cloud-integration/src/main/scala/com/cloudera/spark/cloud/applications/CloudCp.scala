@@ -111,7 +111,7 @@ class CloudCp extends ObjectStoreExample {
       val destFS = destPath.getFileSystem(destConf)
       logInfo(s"Listing $srcPath for upload to $destPath")
 
-      val srcStr = srcPath.toUri.toString;
+      val srcStr = srcPath.toUri.toString
       def stripSource(p: Path): String = {
         p.toUri.toString.substring(srcStr.length)
       }

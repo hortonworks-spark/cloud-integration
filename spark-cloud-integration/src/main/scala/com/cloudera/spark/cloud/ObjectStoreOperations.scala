@@ -21,18 +21,17 @@ import java.io.{EOFException, File, FileNotFoundException, IOException}
 import java.net.URL
 import java.nio.charset.Charset
 
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
+import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
+import com.cloudera.spark.cloud.utils.{HConf, TimeOperations}
+import com.cloudera.spark.cloud.GeneralCommitterConstants._
 import com.fasterxml.jackson.databind.JsonNode
-import GeneralCommitterConstants._
 import org.apache.commons.io.IOUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, FileUtil, LocatedFileStatus, Path, PathFilter, RemoteIterator, StorageStatistics}
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
-import com.cloudera.spark.cloud.utils.{HConf, TimeOperations}
 import org.apache.hadoop.io.{NullWritable, Text}
 import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat
 
@@ -150,7 +149,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       body: String): Unit = {
     val out = fs.create(path, true)
     try {
-      IOUtils.write(body, out)
+      IOUtils.write(body, out, "UTF-8")
     } finally {
       IOUtils.closeQuietly(out)
     }
@@ -301,7 +300,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
    * Dump the storage stats; logs nothing if there are none
    */
   def dumpFileSystemStatistics(stats: StorageStatistics) : Unit = {
-    for (entry <- stats.getLongStatistics) {
+    for (entry <- stats.getLongStatistics.asScala) {
       logInfo(s" ${entry.getName} = ${entry.getValue}")
     }
   }
@@ -335,7 +334,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
         val destStatus = destFS.getFileStatus(dest)
         if (destStatus.isFile) {
           logInfo(s"Destinaion $dest exists")
-          return false;
+          return false
         }
       } catch {
         case _: FileNotFoundException =>
@@ -343,7 +342,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     }
     val sizeKB = sourceStatus.getLen / 1024
     logInfo(s"Copying $src to $dest (${sizeKB} KB)")
-    val (outcome, time) = durationOf {
+    val (_, time) = durationOf {
       FileUtil.copy(srcFS,
         sourceStatus,
         dest.getFileSystem(conf),
@@ -354,7 +353,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     logInfo(s"Copy Duration = $durationS seconds")
     val bandwidth =  sizeKB / durationS
     logInfo(s"Effective copy bandwidth = $bandwidth KiB/s")
-    return true;
+    true
   }
 
   /**
@@ -537,13 +536,6 @@ object ObjectStoreConfigurations  extends HConf {
   val ALL_READ_OPTIONS: Map[String, String] =
     GENERAL_SPARK_OPTIONS ++ ORC_OPTIONS ++ PARQUET_OPTIONS
 
-
-  /**
-   * The name of the committer to use for Parquet.
-   */
-  val PARQUET_COMMITTER_CLASS: String =
-    GeneralCommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS
-
   /**
    * Options for file output committer: algorithm 2 & skip cleanup.
    */
@@ -551,7 +543,6 @@ object ObjectStoreConfigurations  extends HConf {
     hkey(FILEOUTPUTCOMMITTER_ALGORITHM_VERSION) -> "2",
     hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
 
-  val PATH_OUTPUT_COMMITTER_NAME: String = "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol"
 
   /**
    * Options for committer setup.
@@ -561,8 +552,11 @@ object ObjectStoreConfigurations  extends HConf {
    * then bind to the factory committer.
    * 3.Set spark.sql.sources.commitProtocolClass to  PathOutputCommitProtocol
    */
-  val COMMITTER_OPTIONS: Map[String, String] =
-    org.apache.spark.internal.io.cloud.COMMITTER_BINDING_OPTIONS
+  val COMMITTER_OPTIONS: Map[String, String] = Map(
+    "spark.sql.parquet.output.committer.class" ->
+      BINDING_PARQUET_OUTPUT_COMMITTER_CLASS,
+    "spark.sql.sources.commitProtocolClass" ->
+      GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME)
 
   /**
    * Extra options for testing with hive.
@@ -583,4 +577,16 @@ object ObjectStoreConfigurations  extends HConf {
   val RW_TEST_OPTIONS: Map[String, String] =
     ALL_READ_OPTIONS ++ COMMITTER_OPTIONS ++ HIVE_TEST_SETUP_OPTIONS
 
+
+  /**
+   * Set the options defined in [[COMMITTER_OPTIONS]] on the
+   * spark context.
+   *
+   * Warning: this is purely experimental.
+   *
+   * @param sparkConf spark configuration to bind.
+   */
+  def bind(sparkConf: SparkConf): Unit = {
+    sparkConf.setAll(COMMITTER_OPTIONS)
+  }
 }

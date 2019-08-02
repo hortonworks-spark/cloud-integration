@@ -17,15 +17,14 @@
 
 package com.cloudera.spark.cloud.s3.commit
 
-import com.cloudera.spark.cloud.{GeneralCommitterConstants, ObjectStoreConfigurations}
+import com.cloudera.spark.cloud.GeneralCommitterConstants
 import com.cloudera.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup}
+import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
 
-import org.apache.spark.internal.io.cloud.{PathCommitterConstants, PathOutputCommitProtocol}
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.internal.SQLConf
 
 /**
  * Tests around the partitioned committer and its conflict resolution.
@@ -46,7 +45,6 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
       destDir = testPath(destFS, "partitioned-committer")
     }
   }
-
 
   private val formats = Seq(
     "orc",
@@ -76,7 +74,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
   }
 
   /**
-   * Test one write sequence
+   * Test one write sequence.
    * @param destDir destination
    * @param format output format
    * @param committerName committer name to use
@@ -111,7 +109,7 @@ class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSe
     // validate the conf by asserting that the spark conf is bonded
     // to the partitioned committer.
     assert(
-      ObjectStoreConfigurations.PARQUET_COMMITTER_CLASS ===
+      GeneralCommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS ===
       sparkConf.get(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key),
       s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
 

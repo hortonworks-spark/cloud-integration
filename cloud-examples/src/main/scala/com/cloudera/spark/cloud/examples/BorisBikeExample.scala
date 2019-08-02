@@ -205,7 +205,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
     }
 
     // iterate through the dataframw patching its names
-    var df = rawCsv;
+    var df = rawCsv
     schema.foreach {
       (entry) =>
         df = col(df, entry._2._2, entry._1, entry._2._1)
@@ -224,7 +224,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
 
     logInfo(s"Reading ORC from $destPath")
 
-    val orcDF = spark.read.orc(destPath.toString);
+    val orcDF = spark.read.orc(destPath.toString)
     orcDF.show()
     val orcRowCount = orcDF.count()
     val generatedFiles = destFS.listStatus(destPath)
@@ -242,7 +242,7 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
       orcPath: Path,
       outPath: Path): Unit = {
     import spark.implicits._
-    val orcDF = spark.read.orc(orcPath.toString);
+    val orcDF = spark.read.orc(orcPath.toString)
 //    orcDF.show()
     val coreDF = orcDF
       .select(_bike, _time, _startstation_name, _endstation_name)

@@ -21,7 +21,7 @@ import java.io.File
 
 import scala.concurrent.duration._
 
-import com.cloudera.spark.cloud.ObjectStoreConfigurations
+import com.cloudera.spark.cloud.{GeneralCommitterConstants, ObjectStoreConfigurations}
 import com.cloudera.spark.cloud.common.{CloudSuiteTrait, CloudTestKeys}
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.scalatest.BeforeAndAfterAll
@@ -82,10 +82,10 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     // validate the conf by asserting that the spark conf is bonded
     // to the partitioned committer.
     val sparkConf = spark.conf
-    assert(ObjectStoreConfigurations.PARQUET_COMMITTER_CLASS ===
+    assert(GeneralCommitterConstants.BINDING_PARQUET_OUTPUT_COMMITTER_CLASS ===
         sparkConf.get(SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS.key),
       s"wrong value of ${SQLConf.PARQUET_OUTPUT_COMMITTER_CLASS}")
-    assert(ObjectStoreConfigurations.PATH_OUTPUT_COMMITTER_NAME ===
+    assert(GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME ===
         sparkConf.get(SQLConf.FILE_COMMIT_PROTOCOL_CLASS.key),
       s"wrong value of ${SQLConf.FILE_COMMIT_PROTOCOL_CLASS}")
 

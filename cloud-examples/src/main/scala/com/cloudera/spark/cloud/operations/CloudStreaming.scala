@@ -66,9 +66,9 @@ class CloudStreaming extends ObjectStoreExample {
       val destPath = new Path(args(0))
       val streamDir = new Path(destPath, "streaming")
       val streamGlobPath = new Path(streamDir, "sub*")
-      val generatedDir = new Path(destPath, "generated");
-      val generatedSubDir = new Path(generatedDir, "subdir");
-      val renamedSubDir = new Path(streamDir, "subdir");
+      val generatedDir = new Path(destPath, "generated")
+      val generatedSubDir = new Path(generatedDir, "subdir")
+      val renamedSubDir = new Path(streamDir, "subdir")
 
       val sparkContext = ssc.sparkContext
       val hc = sparkContext.hadoopConfiguration

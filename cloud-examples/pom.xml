@@ -96,8 +96,8 @@
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-mllib_${scala.binary.version}</artifactId>
-      <scope>provided</scope>
+      <artifactId>spark-mllib-local_${scala.binary.version}</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!--used in production code too-->
