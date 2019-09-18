@@ -64,7 +64,8 @@
      is all that is needed here
     -->
 
-    <guava.version>19.0</guava.version>
+
+    <guava.version>27.0-jre</guava.version>
 
     <slf4j.version>1.7.16</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
@@ -769,12 +770,23 @@
 
         <!-- -->
         <spark.version>2.3.2.3.0.3.0-SNAPSHOT</spark.version>
-        
         <!-- needed to pick up the new stuff-->
         <hadoop.version>3.1.2-SNAPSHOT</hadoop.version>
+        <guava.version>19.0</guava.version>
       </properties>
     </profile>
-    
+    <profile>
+      <id>oldguava</id>
+      <activation>
+        <property>
+          <name>oldguava</name>
+        </property>
+      </activation>
+      <properties>
+        <guava.version>19.0</guava.version>
+      </properties>
+    </profile>
+
   </profiles>
 
 
