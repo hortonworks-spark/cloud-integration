@@ -32,14 +32,11 @@ As well as running as unit tests, they have CLI entry points which can be used f
 
 ## Module `minimal-integration-test`
 
-This is a minimal JAR for integration tests, intended to work against all versions
-of Spark 2.2. As Spark 2.1 has Spark's Logging class private, it reinstates its own
-log API, `CloudLogging` which is used; then copies in the relevant ops from
-`spark-cloud-integration` with their logging fixed up.
+This is a minimal JAR for integration tests
 
 Usage
 ```bash
-spark-submit --class com.hortonworks.spark.cloud.integration.Generator \
+spark-submit --class com.cloudera.spark.cloud.integration.Generator \
 --master yarn \
 --num-executors 2 \
 --driver-memory 512m \

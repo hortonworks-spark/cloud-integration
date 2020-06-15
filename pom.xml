@@ -52,7 +52,7 @@
     <spark.version>3.0.0-SNAPSHOT</spark.version>
 
     <!-- needed to pick up the new stuff-->
-    <hadoop.version>3.2.0</hadoop.version>
+    <hadoop.version>3.2.1</hadoop.version>
 
     <scala.version.tools>${scala.version}</scala.version.tools>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
