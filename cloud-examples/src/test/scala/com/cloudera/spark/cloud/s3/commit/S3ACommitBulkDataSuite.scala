@@ -93,7 +93,8 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     val local = getLocalFS
 
     val sparkConf = newSparkConf("DataFrames", local.getUri)
-    sparkConf.setAll(settings)
+    //sparkConf.setAll(settings)
+    settings.foreach { case (k, v) => sparkConf.set(k, v) }
     val committerInfo = COMMITTERS_BY_NAME(committerName)
     committerInfo.bind(sparkConf)
 
@@ -334,6 +335,8 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
 
 
     // now do a failing part commit to same dest
+    logWarning("Ignored stack traces in the next section")
+    logWarning("========================================")
     val (_, tFailingPartCommit) = logDuration2("failing part commit") {
       intercept[SparkException] {
         val outcome = writeDS(
@@ -345,6 +348,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
         logWarning(s"Success outcome: ${outcome.success.toString}")
       }
     }
+    logWarning("========================================")
     summarize("Failing Parquet write existing parts to fail", tFailingPartCommit)
 
     // before asserting that a failing part commit where there is no output

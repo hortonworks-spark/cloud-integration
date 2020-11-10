@@ -26,6 +26,7 @@ import com.cloudera.spark.cloud._
 import com.cloudera.spark.cloud.s3._
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
+import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -82,13 +83,12 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
     val srcPath = new Path(srcURI)
 
     applyObjectStoreConfigurationOptions(sparkConf, false)
-    hconf(sparkConf, FAST_UPLOAD, true)
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
 
     val spark = SparkSession
         .builder
-        .appName("S3AIOExample")
+        .appName("S3DataFrameExample")
         .config(sparkConf)
         .config("spark.master", "local")
         .getOrCreate()
@@ -111,8 +111,8 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       config.set(INPUT_FADVISE, RANDOM_IO)
       val landsatPath = new Path(destPath, "landsat")
       val landsatOrcPath = new Path(landsatPath, "orc")
-      val landsatParqetPath = new Path(landsatPath, "parquet")
-      val landsatParqet = landsatParqetPath.toString
+      val landsatParquetPath = new Path(landsatPath, "parquet")
+      val landsatParquet = landsatParquetPath.toString
       // findClass this FS instance into memory with random
       val destFS = destPath.getFileSystem(config)
       rm(destFS, landsatPath)
@@ -159,7 +159,7 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       csvData.cache()
 
 //      val landsat = "s3a://hwdev-stevel-demo/landsat"
-      csvData.write.parquet(landsatParqetPath.toString)
+      csvData.write.parquet(landsatParquetPath.toString)
       csvData.write.orc(landsatOrcPath.toString)
 
       /*
@@ -171,20 +171,31 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       files.foreach(file =>
         print(s"${file.getPath}: [${file.getLen}]")
       )
+
+
       val totalOutputSize = files.map(_.getLen).sum
       // the generated file will be bigger due to snappy vs gzip, and more critically
       // all fields are being described as string...you'd need to parse the timestamp
       // and convert the lat/long values to doubles
       print(s"Input size ${sourceFileStatus.getLen}; output size = $totalOutputSize")
+      print("ORC _SUCCESS")
+      val orcSuccess = new Path(landsatOrcPath, "_SUCCESS")
+      print(SuccessData.load(destFS, orcSuccess).toString)
+      print(get(destFS, orcSuccess))
+
+      print("Parquet _SUCCESS")
+      print(get(destFS, new Path(landsatParquetPath, "_SUCCESS")))
 
       sc.hadoopConfiguration.set("parquet.mergeSchema", "false")
       sparkConf.set("spark.sql.parquet.mergeSchema", "false")
+
+      print("Executing DataSet query")
 
       val df = spark.read
           .option("mergeSchema", "false")
           .option("filterPushdown", "true")
            // filter("cloudCover < 30")
-          .parquet(landsatParqet)
+          .parquet(landsatParquet)
           .where("cloudcover >= 100")
 
 
@@ -192,10 +203,13 @@ class S3DataFrameExample extends ObjectStoreExample with S3AExampleSetup {
       df.describe().show(10, true)
 
       val sqlDF = spark.sql(s"SELECT id, acquisitionDate,cloudCover" +
-          s" FROM parquet.`${landsatParqetPath}`")
+          s" FROM parquet.`${landsatParquetPath}`")
       val negativeClouds = sqlDF.filter("cloudCover < 30")
 //      println(s"${negativeClouds.count()} entries with negative cloud cover")
       negativeClouds.show()
+      val negativecloudPath = new Path(landsatPath, "negativecloud")
+      negativeClouds.write.parquet(negativecloudPath.toString)
+      print(get(destFS, new Path(negativecloudPath, "_SUCCESS")))
 
       // log any published filesystem state
       print(s"\nSource: FS: $srcFS\n")

@@ -44,7 +44,7 @@ The file must be declared to the maven test run in the property `cloud.test.conf
 which can be done in the command line
 
 ```bash
-mvn -T1C test -Dcloud.test.configuration.file=../cloud.xml
+mvn -T 1C test -Dcloud.test.configuration.file=../cloud.xml
 ```
 
 
@@ -219,7 +219,7 @@ This test can be executed as part of the suite `S3aIOSuite`, by setting the `sui
 of the test suite:
 
 ```
-mvn -T1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.hortonworks.sparkspark.cloud.s3.S3AIOSuite
+mvn -T 1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.cloudera.sparkspark.cloud.s3.S3AIOSuite
 ```
 
 If the test configuration in `/home/developer/aws/cloud.xml` does not have the property
@@ -230,7 +230,7 @@ A single test can be explicitly run by including the key in the `suites` propert
 after the suite name
 
 ```
-mvn -T1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-Dsuites=com.hortonworks.spark.cloud.s3.S3AIOSuite NewHadoopAPI`
+mvn -T 1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-Dsuites=com.cloudera.spark.cloud.s3.S3AIOSuite NewHadoopAPI`
 ```
 
 This will run all tests in the `S3AIOSuite` suite whose name contains the string `NewHadoopAPI`;
@@ -241,7 +241,7 @@ To run all tests of a specific infrastructure, use the `wildcardSuites` property
 under which all test suites should be executed.
 
 ```
-mvn -T1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.hortonworks.spark.cloud.s3`
+mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.cloudera.spark.cloud.s3`
 ```
 
 Note that an absolute path is used to refer to the test configuration file in these examples.
@@ -255,10 +255,10 @@ scalability.
 
 | job | arguments | test |
 |------|----------|------|
-| `com.hortonworks.spark.cloud.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
-| `com.hortonworks.spark.cloud.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
-| `com.hortonworks.spark.cloud.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
-| `com.hortonworks.spark.cloud.S3ALineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
+| `com.cloudera.spark.cloud.CloudFileGenerator` | `<dest> <months> <files-per-month> <row-count>` | Parallel generation of files |
+| `com.cloudera.spark.cloud.CloudStreaming` | `<dest> [<rows>]` | Verifies that file streaming works with object store |
+| `com.cloudera.spark.cloud.CloudDataFrames` | `<dest> [<rows>]` | Dataframe IO across multiple formats
+| `com.cloudera.spark.cloud.S3ALineCount` | `[<source>] [<dest>]` | S3A specific: count lines on a file, optionally write back.
 
 ## Best Practices
 
@@ -324,7 +324,7 @@ the version returned by calls to `VersionInfo` will return the value set in `dec
 
 
 ```bash
-mvn -T1C install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11
+mvn install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11
 ```
 
 1. the `-DskipShade` option skips the JAR shading process, which takes a long time and is not needed here.
@@ -341,7 +341,7 @@ In particular: *Do not try to run Datanodes or Namenodes with a JAR numbered thi
 Example:
 
 ```bash
-mvn -T1C test -T 1C -Dspark.version=2.3.0.2.5.0.14-5 \
+mvn test -T 1C -Dspark.version=2.3.0.2.5.0.14-5 \
   -Dcentral.repo=http://PRIVATE-REPO/nexus/content/ 
 ```
 
@@ -356,11 +356,11 @@ Run the s3a tests (assuming the `s3a.xml` file contained/referenced the s3a bind
 with the Spark 2.4.0-SNAPSHOT binaries.
 
 ```bash
-mvn -T1C test -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.4.0-SNAPSHOT
+mvn test -Dcloud.test.configuration.file=../../cloud-test-configs/s3a.xml  -Dspark.version=2.4.0-SNAPSHOT
 ```
 
 or here, with the binding set up in an environment variable, and the hdp3 profile
 ```bash
 set -gx conf "-Dcloud.test.configuration.file=../../cloud-test-configs/abfs.xml"
-mvn -T1C test $conf -Phdp3
+mvn test $conf -Phdp3
 ```

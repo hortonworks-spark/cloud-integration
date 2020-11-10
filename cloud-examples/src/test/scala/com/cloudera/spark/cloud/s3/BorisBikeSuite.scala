@@ -65,7 +65,10 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
   }
 */
 
-  ctest("CSVToORC", "boris bike stuff") {
+  /**
+   * Disabled until steve puts this dataset up somewhere else.
+   */
+  ctest("CSVToORC", "boris bike stuff", false) {
     val bucket = "hwdev-steve-datasets-east"
     val srcDir = s"s3a://$bucket/travel/borisbike/"
     val srcPath = new Path(srcDir)

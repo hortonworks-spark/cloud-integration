@@ -17,7 +17,7 @@
 
 package com.cloudera.spark.cloud
 
-import java.io.{EOFException, File, FileNotFoundException, IOException}
+import java.io.{Closeable, EOFException, File, FileNotFoundException, IOException}
 import java.net.URL
 import java.nio.charset.Charset
 
@@ -151,7 +151,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
     try {
       IOUtils.write(body, out, "UTF-8")
     } finally {
-      IOUtils.closeQuietly(out)
+      closeQuietly(out)
     }
   }
 
@@ -169,10 +169,20 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       in.close()
       s
     } finally {
-      IOUtils.closeQuietly(in)
+      closeQuietly(in)
     }
   }
 
+  def closeQuietly(c: Closeable) = {
+    if (c != null) {
+      try {
+        c.close();
+      } catch {
+        case e: Exception =>
+          logDebug("When closing",  e)
+      }
+    }
+  }
   /**
    * Get a file from a path in the default charset.
    * This is here to ease spark-shell use
@@ -568,7 +578,9 @@ object ObjectStoreConfigurations  extends HConf {
     "spark.unsafe.exceptionOnMemoryLeak" -> "true",
     "spark.sql.shuffle.partitions" -> "5",
     "spark.sql.hive.metastore.barrierPrefixes" ->
-      "org.apache.spark.sql.hive.execution.PairSerDe"
+      "org.apache.spark.sql.hive.execution.PairSerDe",
+    "spark.sql.hive.metastore.sharedPrefixes" ->
+      "com.amazonaws."
   )
 
   /**

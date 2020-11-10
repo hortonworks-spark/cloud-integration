@@ -49,10 +49,18 @@
     <scala.binary.version>2.12</scala.binary.version>
 
     <!-- These examples use the version of Hadoop which Spark was built with-->
-    <spark.version>3.0.0-SNAPSHOT</spark.version>
+<!--
+    <spark.version>3.0.0</spark.version>
+-->
+    <!--
+    Maven is trying to hurt me today
+    -->
+    <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
+    <scala.version>2.11.12</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
 
     <!-- needed to pick up the new stuff-->
-    <hadoop.version>3.2.1</hadoop.version>
+    <hadoop.version>3.3.1</hadoop.version>
 
     <scala.version.tools>${scala.version}</scala.version.tools>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -67,6 +75,7 @@
 
     <guava.version>27.0-jre</guava.version>
 
+    <scalatest.version>3.0.5</scalatest.version>
     <slf4j.version>1.7.16</slf4j.version>
     <log4j.version>1.2.17</log4j.version>
 
@@ -297,7 +306,7 @@
       <dependency>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest_${scala.binary.version}</artifactId>
-        <version>3.0.5</version>
+        <version>${scalatest.version}</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -755,6 +764,53 @@
 <!--
         <scalatest.jvmargs>-ea -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=4000,server=y,suspend=n</scalatest.jvmargs>
 -->
+      </properties>
+    </profile>
+
+
+    <profile>
+      <id>spark-3.1</id>
+      <activation>
+        <property>
+          <name>spark-3.1</name>
+        </property>
+      </activation>
+      <properties>
+
+        <!-- -->
+        <spark.version>3.1.0-SNAPSHOT</spark.version>
+
+        <!-- needed to pick up the new stuff-->
+        <scalatest.version>3.2.0</scalatest.version>
+        <hadoop.version>3.3.1</hadoop.version>
+        <guava.version>19.0</guava.version>
+      </properties>
+    </profile>
+
+    <profile>
+      <id>hadoop-trunk</id>
+      <activation>
+        <property>
+          <name>hadoop-trunk</name>
+        </property>
+      </activation>
+      <properties>
+        <hadoop.version>3.4.0-SNAPSHOT</hadoop.version>
+      </properties>
+    </profile>
+
+    <!-- switch to spark cdpd-master. Doesn't change hadoop settings -->
+    <profile>
+      <id>spark-cdpd-master</id>
+      <activation>
+        <property>
+          <name>spark-cdpd-master</name>
+        </property>
+      </activation>
+      <properties>
+        <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
+        <scala.version>2.11.12</scala.version>
+        <scala.binary.version>2.11</scala.binary.version>
       </properties>
     </profile>
 

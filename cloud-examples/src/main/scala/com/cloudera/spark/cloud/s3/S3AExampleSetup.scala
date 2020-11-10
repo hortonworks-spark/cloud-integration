@@ -45,7 +45,6 @@ trait S3AExampleSetup extends StoreTestOperations with S3AConstants {
     hconf(sparkConf, READAHEAD_RANGE, "128K")
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, INPUT_FADVISE, if (randomIO) RANDOM_IO else NORMAL_IO)
-    hconf(sparkConf, FAST_UPLOAD, true)
     // shorter delay than the default, for faster tests
     hconf(sparkConf, FAIL_INJECT_INCONSISTENCY_MSEC, DEFAULT_DELAY_KEY_MSEC)
     // disable file output in the path output committer as s safety check
