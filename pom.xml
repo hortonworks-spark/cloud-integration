@@ -55,6 +55,10 @@
     <!--
     Maven is trying to hurt me today
     -->
+<!--
+    <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
+    <spark.version>2.4.5.7.2.6.0-SNAPSHOT</spark.version>
+-->
     <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
     <scala.version>2.11.12</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
