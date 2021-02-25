@@ -64,7 +64,7 @@ class S3AOperations(sourceFs: FileSystem)
     val successFile = new Path(destDir, GeneralCommitterConstants.SUCCESS_FILE_NAME)
 
     var status = try {
-      eventuallyGetFileStatus(fs, successFile)
+      fs.getFileStatus(successFile)
     } catch {
       case _: FileNotFoundException =>
         throw new FileNotFoundException(

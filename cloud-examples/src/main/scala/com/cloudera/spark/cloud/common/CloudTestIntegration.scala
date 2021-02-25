@@ -47,8 +47,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations
    * This path does not contain any FS binding.
    */
   protected val testDir: Path = {
-    new Path("/cloud-integration/" + INCONSISTENT_PATH + "/"
-      + this.getClass.getSimpleName)
+    new Path("/cloud-integration/" + this.getClass.getSimpleName)
   }
 
   /**

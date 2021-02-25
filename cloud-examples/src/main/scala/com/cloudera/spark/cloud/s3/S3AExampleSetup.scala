@@ -45,25 +45,10 @@ trait S3AExampleSetup extends StoreTestOperations with S3AConstants {
     hconf(sparkConf, READAHEAD_RANGE, "128K")
     hconf(sparkConf, MIN_MULTIPART_THRESHOLD, MIN_PERMITTED_MULTIPART_SIZE)
     hconf(sparkConf, INPUT_FADVISE, if (randomIO) RANDOM_IO else NORMAL_IO)
-    // shorter delay than the default, for faster tests
-    hconf(sparkConf, FAIL_INJECT_INCONSISTENCY_MSEC, DEFAULT_DELAY_KEY_MSEC)
     // disable file output in the path output committer as s safety check
     hconf(sparkConf, REJECT_FILE_OUTPUT, true)
     verifyConfigurationOptions(sparkConf,
       ObjectStoreConfigurations.COMMITTER_OPTIONS)
-  }
-
-  /**
-   * Any delay for consistency.
-   *
-   * @return delay in millis; 0 is default.
-   */
-  override def consistencyDelay(c: Configuration): Int = {
-    if (c.getTrimmed(S3A_CLIENT_FACTORY_IMPL, "") != "") {
-      DEFAULT_DELAY_KEY_MSEC
-    } else {
-      0
-    }
   }
 
 }

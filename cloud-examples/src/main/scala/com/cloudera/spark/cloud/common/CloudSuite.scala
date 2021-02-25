@@ -22,9 +22,10 @@ import java.io.{File, FileNotFoundException}
 import com.cloudera.spark.cloud.s3.{S3ACommitterConstants, S3AConstants}
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
-import org.scalatest.{BeforeAndAfter, FunSuite}
+//import org.scalatest.{BeforeAndAfter, FunSuite}
+import org.scalatest.BeforeAndAfter
 
-import org.apache.spark.LocalSparkContext
+import org.apache.spark.{LocalSparkContext, SparkFunSuite}
 import org.apache.spark.internal.Logging
 
 /**
@@ -33,7 +34,7 @@ import org.apache.spark.internal.Logging
  * options to enable/disable tests, and a mechanism to conditionally declare tests
  * based on these details
  */
-abstract class CloudSuite extends FunSuite
+abstract class CloudSuite extends SparkFunSuite
     with LocalSparkContext with BeforeAndAfter
     with Eventually with S3AConstants with CloudSuiteTrait {
 }
@@ -69,17 +70,13 @@ object CloudSuite extends Logging with S3AConstants
       config,
       Seq(
         HIVE_TESTS_DISABLED,
-        METADATASTORE_AUTHORITATIVE,
         REQUIRED_HADOOP_VERSION,
         SCALE_TEST_ENABLED,
         SCALE_TEST_SIZE_FACTOR,
         S3A_CLIENT_FACTORY_IMPL,
         S3A_COMMITTER_TEST_ENABLED,
         S3A_ENCRYPTION_KEY_1,
-        S3A_ENCRYPTION_KEY_2,
-        S3A_METADATA_STORE_IMPL,
-        S3GUARD_IMPLEMENTATION,
-        S3GUARD_TEST_ENABLED
+        S3A_ENCRYPTION_KEY_2
       )
     )
 

@@ -24,7 +24,7 @@ import org.apache.spark.sql.types._
  * Reusable landsat assist.
  * s3a://landsat-pds/scene_list.gz
  * http://landsat-pds.s3.aws.com/scene_list.gz
- * 
+ * <pre>
  * entityId,acquisitionDate,cloudCover,processingLevel,path,row,min_lat,min_lon,max_lat,max_lon,download_url
  * LC80101172015002LGN00,2015-01-02 15:49:05.571384,80.81,L1GT,10,117,-79.09923,-139.66082,-77.7544,-125.09297,https://s3-us-west-2.amazonaws.com/landsat-pds/L8/010/117/LC80101172015002LGN00/index.html
  * LC80260392015002LGN00,2015-01-02 16:56:51.399666,90.84,L1GT,26,39,29.23106,-97.48576,31.36421,-95.16029,https://s3-us-west-2.amazonaws.com/landsat-pds/L8/026/039/LC80260392015002LGN00/index.html
@@ -32,6 +32,7 @@ import org.apache.spark.sql.types._
  * LC82270732015002LGN00,2015-01-02 13:52:38.110317,52.29,L1T,227,73,-19.84365,-58.93258,-17.73324,-56.74692,https://s3-us-west-2.amazonaws.com/landsat-pds/L8/227/073/LC82270732015002LGN00/index.html
  * LC82270622015002LGN00,2015-01-02 13:48:14.888002,38.85,L1T,227,62,-3.95294,-55.38896,-1.84491,-53.32906,https://s3-us-west-2.amazonaws.com/landsat-pds/L8/227/062/LC82270622015002LGN00/index.html
  * LC82111152015002LGN00,2015-01-02 12:30:31.546373,22.93,L1GT,211,115,-78.54179,-79.36148,-75.51003,-69.81645,https://s3-us-west-2.amazonaws.com/landsat-pds/L8/211/115/LC82111152015002LGN00/index.html
+ * <pre>
  *
  */
 object LandsatIO {

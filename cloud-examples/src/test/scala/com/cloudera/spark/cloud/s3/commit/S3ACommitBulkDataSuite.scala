@@ -277,6 +277,9 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     // adding year = 2014 with fail MUST fail with directory committer as
     // base dir exists. Expect also: fail fast.
 
+    logInfo("Expect a stack trace")
+    logInfo("====================")
+
     val (_, tFailingDirCommit) = logDuration2("failing directory commit") {
       intercept[PathExistsException] {
         writeDS(
@@ -289,6 +292,7 @@ class S3ACommitBulkDataSuite extends AbstractCommitterSuite with S3ATestSetup
     }
 
     summarize("Failing parquet write 2014 directory+fail ", tFailingDirCommit)
+    logInfo("====================")
 
 
     logInfo("Generated partitions")

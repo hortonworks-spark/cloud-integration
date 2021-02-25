@@ -29,8 +29,7 @@ import org.scalatest.time.Span
 import org.apache.spark.sql._
 
 /**
- * Extends ObjectStoreOperations with some extra ones for testing: essentially
- * handling for eventually consistent filesystems through retries.
+ * Extends ObjectStoreOperations with some extra ones for testing.
  */
 trait StoreTestOperations extends ObjectStoreOperations with Eventually {
 
@@ -46,44 +45,9 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually {
    * @return the result
    */
   def eventuallyGetFileStatus(fs: FileSystem, p: Path): FileStatus = {
-    eventually(timeout(retryTimeout),
-      interval(retryInterval)) {
-      fs.getFileStatus(p)
-    }
+    fs.getFileStatus(p)
   }
 
-  /**
-   * Try to get the directory listing, _eventually_.
-   *
-   * @param fs filesystem
-   * @param p path
-   * @return the result
-   */
-  def eventuallyListStatus(fs: FileSystem, p: Path): Array[FileStatus] = {
-    eventually(timeout(retryTimeout),
-      interval(retryInterval)) {
-      fs.listStatus(p)
-    }
-  }
-
-  /**
-   * Perform a recursive the directory listing, _eventually_.
-   * It does not wait for the directory tree to become consistent,
-   * only for the root path to be listable.
-   *
-   * @param fs filesystem
-   * @param p path
-   * @return the result
-   */
-  def eventuallyListFiles(fs: FileSystem, p: Path): Seq[LocatedFileStatus] = {
-    eventually(timeout(retryTimeout),
-      interval(retryInterval)) {
-      listFiles(fs, p, true)
-    }
-  }
-
-  //
-  // return how long it took
   /**
    * findClass a DF and verify it has the expected number of rows
    *
@@ -100,12 +64,11 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually {
       source: Path,
       srcFormat: String,
       rowCount: Long): Long = {
-    waitForConsistency(fs)
     val success = new Path(source, GeneralCommitterConstants.SUCCESS_FILE_NAME)
-    val status = eventuallyGetFileStatus(fs, success)
+    val status = fs.getFileStatus(success)
     assert(status.isDirectory || status.getBlockSize > 0,
       s"Block size 0 in $status")
-    val files = eventuallyListFiles(fs, source).filter { st =>
+    val files = listFiles(fs, source, true).filter { st =>
       val name = st.getPath.getName
       st.isFile && !name.startsWith(".") && !name.startsWith("_")
     }
@@ -118,46 +81,4 @@ trait StoreTestOperations extends ObjectStoreOperations with Eventually {
     loadTime
   }
 
-  /**
-   * Any delay for consistency
-   *
-   * @return delay in millis; 0 is default.
-   */
-  def consistencyDelay(c: Configuration): Int = 0
-
-  /**
-   * Wait for the FS to be consistent.
-   * If there is no inconsistency, this is a no-op
-   */
-  def waitForConsistency(fs: FileSystem): Unit = {
-    waitForConsistency(fs.getConf)
-  }
-
-  /**
-   * Wait for the FS to be consistent.
-   * If there is no inconsistency, this is a no-op
-   */
-  def waitForConsistency(c: Configuration): Unit = {
-    val delay = consistencyDelay(c)
-    if (delay > 0) {
-      Thread.sleep(delay * 2)
-    }
-  }
-
-  /**
-   * Recursive delete. Special feature: waits for the inconsistency delay
-   * both before and after if the fs property has it set to anything
-   *
-   * @param fs
-   * @param path
-   * @return
-   */
-  protected override def rm(
-      fs: FileSystem,
-      path: Path): Boolean = {
-    waitForConsistency(fs)
-    val r = super.rm(fs, path)
-    waitForConsistency(fs)
-    r
-  }
 }

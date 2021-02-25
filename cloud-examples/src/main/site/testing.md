@@ -484,12 +484,6 @@ first one to finish closes the active spark context, so the successors fail.
 At the same time, if that context is not closed, other tests fail. 
 
 
-#### Observed inconsistency, such as files not being found
-
-Turn S3Guard on for the tests, it's what it fixes.
-
-The test setup code tries to allow for some delays in metadata listings, especially when deleting target directories.
-
 
 
 ### "Cannot call methods on a stopped SparkContext. "
@@ -523,63 +517,6 @@ These aren't very important tests; all they do is make sure that the encryption 
 
 
 
-## Testing with S3Guard 
-
-
-If the object store has S3Guard enabled, then you get the consistent view which it offers.
-
-You can also turn it on just for these tests, possibly also with the authoritative option.
-
-
-#### `dynamodb`: S3guard with a real dynamo DB connection
-
-Enables dynamo
-
-```
--Ddynamodb
-```
-
-This can be used to demonstrate how S3Guard addresses inconsistency in
-listings
-
-```
--Dinconsistent -Ddynamodb -Dauthoritative
-```
-
-
-#### `authoritative`: Make the s3guard dynamo DB authoritative
-
-This declares that the DynamoDB with S3Guard metadata is the source of
-truth regarding directory listings, so operations do not need to look at
-S3 itself. This is faster, but 
-
-
-```
--Ddynamodb -Dauthoritative
-```
-
-### Turning on Fault injection
-
-S3A has a fault injection option; this can be enabled by configuring the S3A
-client as covered in
-[the "Testing S3A" document](https://github.com/apache/hadoop/blob/trunk/hadoop-tools/hadoop-aws/src/site/markdown/tools/hadoop-aws/testing.md#failure-injection)
-
-
-```
--Dinconsistent
-```
-
-
-Switches to fault-injecting client with inconsistent listing for S3A paths
-with `DELAY_LISTING_ME` in the path name. This is for both adding and deleting files. 
-
-*Directories used for S3A tests are all under this path, to force the inconsistencies*
-
-The files themselves have the consistency offered by S3; `HEAD`, `GET`
-and `DELETE` will not be made any *worse*, and, in tests, usually
-appear consistent.
-
-
 ## Changing the committer for test runs
 
 The default committer is "directory". Currently the most of the tests set this up explicitly, though there is support for declaring
@@ -601,8 +538,6 @@ written underneath as uncommitted multipart PUT operations to magic directories.
 -Dmagic
 ```
 
-**Important** Use a dynamodb profile to enable consistent lookups. If you
-enable inconsistent listings with `-Dinconsistent` the reason becomes obvious
 
 
 

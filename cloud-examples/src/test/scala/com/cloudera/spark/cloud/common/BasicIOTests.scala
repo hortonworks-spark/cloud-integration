@@ -65,7 +65,7 @@ abstract class BasicIOTests extends CloudSuite {
     val output = testPath(filesystem, "FileOutput")
     val path = output.toString
     numbers.saveAsTextFile(path)
-    val st = eventuallyGetFileStatus(filesystem, output)
+    val st = filesystem.getFileStatus(output)
     assert(st.isDirectory, s"Not a dir: $st")
 
     // child entries that aren't just the SUCCESS marker

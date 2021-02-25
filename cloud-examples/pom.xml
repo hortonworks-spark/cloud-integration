@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>cloudera-cloud-examples</artifactId>
-  <name>Cloudera Spark Cloud Integration: Examples and Tests</name>
+  <name>Cloudera Spark Cloud Integration: Examples/Tests</name>
   <packaging>jar</packaging>
 
   <description>

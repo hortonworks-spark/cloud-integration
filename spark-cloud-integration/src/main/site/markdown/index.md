@@ -32,12 +32,13 @@ uses that committer for committing the output of the Spark job.
 
 ## Requirements
 
-1. Apache Hadoop built with the HADOOP-13786 committer. Implicitly this
-means that S3Guard is also supported.
+1. Apache Hadoop built with the HADOOP-13786 committer. Hadoop 3.2+
 
 2. A version of Spark compatible with the version this module was build against.
 
 3. The relevant JARs needed to interact with the target filesystem/object store.
+
+1. Spark built with a compatible version of scalatest.
 
 
 ## Enabling the committer
@@ -197,14 +198,10 @@ the staging committers.
 
 Prerequisites: 
 
-1. the Magic committer requires a consistent object store, which, for
-Amazon S3, means that S3Guard must be enabled (in authoritative or non-authoritative modes).
-
 1. The Hadoop S3A client must be configured to recognise "magic" paths.
 
 Here are the options to enable the magic committer support in both the filesystem
-and in the spark committer. This excludes the specific details to enable
-S3Guard for the target bucket.
+and in the spark committer. 
 
 ```properties
 spark.sql.sources.commitProtocolClass=com.hortonworks.spark.cloud.commit.PathOutputCommitProtocol

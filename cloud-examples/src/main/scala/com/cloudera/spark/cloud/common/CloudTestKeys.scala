@@ -192,31 +192,9 @@ trait CloudTestKeyTrait extends S3AConstants {
   val UNSET_PROPERTY = "unset"
 
   /**
-   * Various s3guard tests.
-   */
-
-
-  /**
    * Indicates that any committer tests are enabled
    */
   val S3A_COMMITTER_TEST_ENABLED = "s3a.committer.test.enabled"
-
-  val S3GUARD_TEST_PREFIX = "s3a.s3guard.test"
-
-  /**
-   * Indicates that any s3guard tests are enabled
-   */
-  val S3GUARD_TEST_ENABLED = S3GUARD_TEST_PREFIX + ".enabled"
-
-  val S3GUARD_TEST_AUTHORITATIVE = S3GUARD_TEST_PREFIX + ".authoritative"
-  val S3GUARD_IMPLEMENTATION = S3GUARD_TEST_PREFIX + ".implementation"
-  /** fs.s3a.s3guard.test.inconsistent */
-  val S3GUARD_INCONSISTENT = S3GUARD_TEST_PREFIX + ".inconsistent"
-
-  val S3GUARD_IMPLEMENTATION_LOCAL = "local"
-  val S3GUARD_IMPLEMENTATION_DYNAMO = "dynamo"
-  val S3GUARD_IMPLEMENTATION_NONE = "none"
-
 
   /** hive tests disabled? */
   val HIVE_TESTS_DISABLED: String = "hive.tests.disabled"

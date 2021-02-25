@@ -18,7 +18,7 @@
 package com.cloudera.spark.cloud.s3
 
 /**
- * S3A constants. Different Hadoop versions have an incomplete set of these; keeping them
+ * Some S3A constants. Different Hadoop versions have an incomplete set of these; keeping them
  * in source here ensures that there are no compile/link problems.
  */
 trait S3AConstants {
@@ -102,54 +102,6 @@ trait S3AConstants {
 
   val S3A_CLIENT_FACTORY_IMPL = "fs.s3a.s3.client.factory.impl"
   val DEFAULT_S3A_CLIENT_FACTORY = "org.apache.hadoop.fs.s3a.DefaultS3ClientFactory"
-  val INCONSISTENT_S3A_CLIENT_FACTORY_IMPL =
-    "org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory"
-
-  /**
-   * Inconsistency (visibility delay) injection settings.
-   */
-  val FAIL_INJECT_INCONSISTENCY_KEY = "fs.s3a.failinject.inconsistency.key.substring"
-
-  val FAIL_INJECT_INCONSISTENCY_MSEC = "fs.s3a.failinject.inconsistency.msec"
-
-  val FAIL_INJECT_INCONSISTENCY_PROBABILITY = "fs.s3a.failinject.inconsistency.probability"
-  
-  val INCONSISTENT_PATH = "DELAY_LISTING_ME"
-  /**
-   * How many seconds affected keys will be delayed from appearing in listing.
-   * This should probably be a config value.
-   */
-  val DEFAULT_DELAY_KEY_MSEC= 2 * 1000
-
-  val DEFAULT_DELAY_KEY_PROBABILITY = 1.0f
-
-  /** Whether or not to allow MetadataStore to be source of truth. */
-  val METADATASTORE_AUTHORITATIVE = "fs.s3a.metadatastore.authoritative"
-  val DEFAULT_METADATASTORE_AUTHORITATIVE = false
-
-  val S3A_METADATA_STORE_IMPL = "fs.s3a.metadatastore.impl"
-  /**
-   * The region of the DynamoDB service.
-   *
-   * This config has no default value. If the user does not set this, the
-   * S3Guard will operate table in the associated S3 bucket region.
-   */
-  val S3GUARD_DDB_REGION_KEY = "fs.s3a.s3guard.ddb.region"
-  val S3GUARD_DDB_TABLE_CAPACITY_READ_KEY = "fs.s3a.s3guard.ddb.table.capacity.read"
-  val S3GUARD_DDB_TABLE_CAPACITY_WRITE_KEY = "fs.s3a.s3guard.ddb.table.capacity.write"
-  val S3GUARD_DDB_MAX_RETRIES = "fs.s3a.s3guard.ddb.max.retries"
-  val S3GUARD_METASTORE_NULL = "org.apache.hadoop.fs.s3a.s3guard.NullMetadataStore"
-
-  /**
-   * Use Local memory for the metadata: {@value }.
-   * This is not coherent across processes and must be used for testing only.
-   */
-  val S3GUARD_METASTORE_LOCAL = "org.apache.hadoop.fs.s3a.s3guard.LocalMetadataStore"
-
-  /**
-   * Use DynamoDB for the metadata: {@value }.
-   */
-  val S3GUARD_METASTORE_DYNAMO = "org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore"
 
   val SSE_S3 = "SSE-S3"
   val SSE_KMS = "SSE-KMS"

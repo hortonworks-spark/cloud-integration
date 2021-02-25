@@ -20,7 +20,7 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.cloudera.spark</groupId>
-  <name>cloudera-cloud-integration</name>
+  <name>Cloudera Spark Cloud Integration Modules</name>
   <version>1.0-SNAPSHOT</version>
   <artifactId>cloudera-cloud-integration</artifactId>
   <packaging>pom</packaging>
@@ -59,7 +59,7 @@
     <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
     <spark.version>2.4.5.7.2.6.0-SNAPSHOT</spark.version>
 -->
-    <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
+    <spark.version>2.4.5.7.2.8.0-SNAPSHOT</spark.version>
     <scala.version>2.11.12</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
 
@@ -120,22 +120,9 @@
     <s3a.scale.test.huge.partitionsize>unset</s3a.scale.test.huge.partitionsize>
     <!-- Timeout in seconds for scale tests.-->
     <s3a.scale.test.timeout>3600</s3a.scale.test.timeout>
-    <!-- are s3guard tests enabled ? -->
-    <fs.s3a.metadatastore.impl>unset</fs.s3a.metadatastore.impl>
-    <fs.s3a.metadatastore.authoritative>false</fs.s3a.metadatastore.authoritative>
-
-    <s3a.s3guard.test.enabled>false</s3a.s3guard.test.enabled>
-    <s3a.s3guard.test.authoritative>false</s3a.s3guard.test.authoritative>
-
-    <s3a.s3guard.test.implementation>local</s3a.s3guard.test.implementation>
-    <!-- switch to the inconsistent client -->
-    <fs.s3a.s3.client.factory.impl>unset</fs.s3a.s3.client.factory.impl>
 
 
-    <!-- if this flag is set, the code assumes that s3guard is being used and
-    then loads _SUCCESS as JSON-->
-    <!-- if this flag is set, the code assumes that s3guard is being used and
-    then loads _SUCCESS as JSON-->
+    <!-- if this flag is set, the loads _SUCCESS as JSON-->
     <s3a.committer.test.enabled>false</s3a.committer.test.enabled>
 
     <fs.s3a.committer.name>unset</fs.s3a.committer.name>
@@ -290,13 +277,14 @@
         <artifactId>spark-mllib-local_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
       </dependency>
+      <!-- Junit is included as a compile-scoped dependency by jtransforms, which is
+           a dependency of breeze. -->
+<!--
       <dependency>
         <groupId>org.scalanlp</groupId>
         <artifactId>breeze_${scala.binary.version}</artifactId>
         <version>0.13.2</version>
         <exclusions>
-          <!-- This is included as a compile-scoped dependency by jtransforms, which is
-               a dependency of breeze. -->
           <exclusion>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -307,6 +295,7 @@
           </exclusion>
         </exclusions>
       </dependency>
+-->
       <dependency>
         <groupId>org.scalatest</groupId>
         <artifactId>scalatest_${scala.binary.version}</artifactId>
@@ -505,12 +494,6 @@
 
               <fs.s3a.s3.client.factory.impl>${fs.s3a.s3.client.factory.impl}</fs.s3a.s3.client.factory.impl>
 
-              <s3a.s3guard.test.enabled>${s3a.s3guard.test.enabled}</s3a.s3guard.test.enabled>
-              <s3a.s3guard.test.authoritative>${s3a.s3guard.test.authoritative}</s3a.s3guard.test.authoritative>
-              <s3a.s3guard.test.implementation>${s3a.s3guard.test.implementation}</s3a.s3guard.test.implementation>
-
-              <fs.s3a.metadatastore.authoritative>${fs.s3a.metadatastore.authoritative}</fs.s3a.metadatastore.authoritative>
-              <fs.s3a.metadatastore.impl>${fs.s3a.metadatastore.impl}</fs.s3a.metadatastore.impl>
               <hive.tests.disabled>${hive.tests.disabled}</hive.tests.disabled>
             </systemProperties>
           </configuration>
@@ -640,7 +623,6 @@
         </property>
       </activation>
       <properties>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.name>staging</fs.s3a.committer.name>
 
@@ -654,7 +636,6 @@
       <activation><activeByDefault>true</activeByDefault></activation>
       <properties>
         <required.hadoop.version>2.11</required.hadoop.version>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <fs.s3a.committer.name>directory</fs.s3a.committer.name>
@@ -669,7 +650,6 @@
         </property>
       </activation>
       <properties>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <fs.s3a.committer.name>partitioned</fs.s3a.committer.name>
@@ -685,7 +665,6 @@
         </property>
       </activation>
       <properties>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <fs.s3a.committer.name>unset</fs.s3a.committer.name>
@@ -700,54 +679,9 @@
         </property>
       </activation>
       <properties>
-        <fs.s3a.s3guard.test.enabled>true</fs.s3a.s3guard.test.enabled>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <s3a.committer.test.enabled>true</s3a.committer.test.enabled>
         <fs.s3a.committer.name>magic</fs.s3a.committer.name>
-      </properties>
-    </profile>
-
-
-    <!-- Switch to dynamo DB for s3guard. Has no effect unless s3guard is enabled -->
-    <profile>
-      <id>s3guard</id>
-      <activation>
-        <property>
-          <name>s3guard</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.metadatastore.impl>org.apache.hadoop.fs.s3a.s3guard.DynamoDBMetadataStore</fs.s3a.metadatastore.impl>
-        <s3a.s3guard.test.enabled>true</s3a.s3guard.test.enabled>
-        <s3a.s3guard.test.implementation>dynamo</s3a.s3guard.test.implementation>
-      </properties>
-    </profile>
-
-    <!-- Switch s3guard from Authoritative=false to true
-     Has no effect unless s3guard is enabled -->
-    <profile>
-      <id>authoritative</id>
-      <activation>
-        <property>
-          <name>authoritative</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.metadatastore.authoritative>true</fs.s3a.metadatastore.authoritative>
-      </properties>
-    </profile>
-
-
-    <!-- inconsistent S3A client -->
-    <profile>
-      <id>inconsistent</id>
-      <activation>
-        <property>
-          <name>inconsistent</name>
-        </property>
-      </activation>
-      <properties>
-        <fs.s3a.s3.client.factory.impl>org.apache.hadoop.fs.s3a.InconsistentS3ClientFactory</fs.s3a.s3.client.factory.impl>
       </properties>
     </profile>
 
@@ -791,6 +725,30 @@
       </properties>
     </profile>
 
+
+    <profile>
+      <id>spark-3.2</id>
+      <activation>
+        <property>
+          <name>spark-3.2</name>
+        </property>
+      </activation>
+      <properties>
+
+        <!-- -->
+        <spark.version>3.2.0-SNAPSHOT</spark.version>
+        <scala.version>2.12.10</scala.version>
+        <scala.binary.version>2.12</scala.binary.version>
+        <!-- needed to pick up the new stuff-->
+        <scalatest.version>3.2.0</scalatest.version>
+        <!--
+                <scalatest.version>3.1.4</scalatest.version>
+        -->
+        <hadoop.version>3.3.1</hadoop.version>
+        <guava.version>19.0</guava.version>
+      </properties>
+    </profile>
+
     <profile>
       <id>hadoop-trunk</id>
       <activation>
@@ -812,7 +770,7 @@
         </property>
       </activation>
       <properties>
-        <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
+        <spark.version>2.4.7.7.2.9.0-SNAPSHOT</spark.version>
         <scala.version>2.11.12</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
       </properties>

@@ -27,7 +27,7 @@
   </parent>
 
   <artifactId>cloudera-spark-cloud-integration</artifactId>
-  <name>Cloudera Spark Cloud Integration: Utility Classes</name>
+  <name>Cloudera Spark Cloud Integration: Tools and applications</name>
   <packaging>jar</packaging>
 
   <description>

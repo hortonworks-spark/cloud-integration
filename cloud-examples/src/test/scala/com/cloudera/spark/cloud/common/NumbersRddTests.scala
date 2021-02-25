@@ -81,8 +81,6 @@ abstract class NumbersRddTests extends CloudSuite {
     var size = 0L
     var files = 0
     var dirs = 0
-    // wait for there to be files under the listing
-    eventuallyListStatus(filesystem, dest)
     val listing = listFiles(filesystem, dest, true).map{ s =>
       size += s.getLen
       if (s.isFile) {

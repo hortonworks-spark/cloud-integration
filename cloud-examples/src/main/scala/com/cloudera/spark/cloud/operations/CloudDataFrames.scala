@@ -90,7 +90,6 @@ class CloudDataFrames extends ObjectStoreExample with StoreTestOperations {
         val path = new Path(generatedBase, format)
         rm(fs, path)
         val d = durationOf(saveDF(sourceData, path, format))
-        eventuallyListStatus(fs, path)
         d
       }
 
