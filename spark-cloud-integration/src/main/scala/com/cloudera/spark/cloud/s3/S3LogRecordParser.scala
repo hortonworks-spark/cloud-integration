@@ -19,6 +19,8 @@
 
 package com.cloudera.spark.cloud.s3
 
+import java.util.regex.Pattern
+
 import scala.util.matching.Regex
 /*
 83c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:53:49 +0000] 109.157.193.10 arn:aws:sts::152813717728:assumed-role/stevel-assumed-role/test B5CD03A97884701C REST.HEAD.OBJECT fork-0001/test/restricted/__magic/magic2 "HEAD /fork-0001/test/restricted/__magic/magic2 HTTP/1.1" 404 NoSuchKey 311 - 10 - "https://hadoop.apache.org/audit/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46/s/00000005/op/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46?principal=stevel&op=op_rename&path=s3a://stevel-london/fork-0001/test/restricted/__magic/testMarkerFileRename&path2=s3a://stevel-london/fork-0001/test/restricted/__magic/magic2" "Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK" - Mv4hQWa0/RaBNZjvczmMMtbeNdEmnKHwWyqCMR4DlA0leAIDcKDtd5HND4g0EBygr4qjZROJXo4= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2
@@ -31,16 +33,67 @@ import scala.util.matching.Regex
 183c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:54:09 +0000] 109.157.193.10 arn:aws:iam::152813717728:user/stevel-dev 039450FC77B1F9B1 BATCH.DELETE.OBJECT fork-0001/test/ - 204 - - - - - - - - do8tYo9l/uQgU21o7i6s5vAWN9yjKUBqHtPGP9j0rCjnyfybLVPVcau5baOVyW8KvmswujgyG2o= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2
 183c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:54:09 +0000] 109.157.193.10 arn:aws:iam::152813717728:user/stevel-dev 039450FC77B1F9B1 REST.POST.MULTI_OBJECT_DELETE - "POST /?delete HTTP/1.1" 200 - 116 - 91 - "https://hadoop.apache.org/audit/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.54.02/s/00000005/op/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.54.02?principal=stevel&op=op_delete&path=s3a://stevel-london/fork-0001/test" "Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK" - do8tYo9l/uQgU21o7i6s5vAWN9yjKUBqHtPGP9j0rCjnyfybLVPVcau5baOVyW8KvmswujgyG2o= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2
 
+
+  'input.regex'=
+  ([^ ]*) ([^ ]*) \\[(.*?)\\] ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (\"[^\"]*\"|-)
+   (-|[0-9]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) (\"[^\"]*\"|-) ([^ ]*)(?: ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*) ([^ ]*))?.*$
  */
 /**
  * see https://docs.aws.amazon.com/AmazonS3/latest/userguide/LogFormat.html
  */
 object S3LogRecordParser {
+  protected val SIMPLE = "([^ ]*)"
+  private val DATETIME = "\\[(.*?)\\]"
+  val NUMBER = "(-|[0-9]*)"
+
+  // simple entry
+  private def e(s: String, v: String) = v +  " "
+
+
+  // simple entry
+  private def e(s: String): String = e(s, SIMPLE)
+
+  // quoted
+  private def Q(s: String): String = e(s, "(\"[^\"]*\"|-)")
+
+
+  val PATTERN = (
+                e("owner")
+                  + e("bucket")
+                  + e("time", DATETIME)
+                  + e("remote ip")
+                  + e("requester")
+                  + e("requestid")
+                  + e("operation")
+                  + e("key")
+                  + Q("request_uri")
+                  + e("http", NUMBER)
+                  + e("errorcode")
+                  + e("bytessent")
+                  + e("objectsize")
+                  + e("totaltime")
+                  + e("turnaroundtime")
+                  + Q("referrer")
+                  + Q("UA")
+                  + e("version")
+                  + e("hostid")
+                  + e("sigv")
+                  + e("cypher")
+                  + e("auth")
+                  + e("endpoint")
+                  + SIMPLE // TLS
+                  + "*$"
+                )
+
+
+  val RECORD: Regex = PATTERN.r
+
+  val COLUMNS = 14
 
   /**
    * Regular expression from the AWS Documentation
    */
-  val RECORD: Regex =
+  val RECORD2 =
         // upo to referrer and
        ("([^ ]*)" +       // owner
         " ([^ ]*)" +      // bucket
@@ -65,7 +118,7 @@ object S3LogRecordParser {
         " ([^ ]*)" +      // sigv
         " ([^ ]*)" +      // ciphersuite
         " ([^ ]*)" +      // authtype
-        " ([^ ]*))?.*$").r;
+        " ([^ ]*))?.*$");
   /*
   CREATE EXTERNAL TABLE `s3_access_logs_db.mybucket_logs`(
   `bucketowner` STRING,
@@ -95,9 +148,13 @@ object S3LogRecordParser {
 
    */
 
+  val javaRegexp = Pattern.compile(PATTERN)
+
+
+
   def parse(source: String): LogRecord = {
 
-    val m = RECORD.findAllIn(source)
+    val m = split(source)
 
     LogRecord(
       bucketowner = m.group(1),
@@ -125,6 +182,14 @@ object S3LogRecordParser {
       endpoint = m.group(23),
       tlsversion = m.group(24)
     )
+
+  }
+
+  def split(source: String) = {
+    RECORD.findAllIn(source)
+  }
+
+  def splitj(source: String) = {
 
   }
 

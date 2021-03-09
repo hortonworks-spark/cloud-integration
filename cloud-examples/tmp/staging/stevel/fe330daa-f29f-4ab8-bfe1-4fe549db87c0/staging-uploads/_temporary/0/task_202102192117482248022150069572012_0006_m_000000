@@ -1,0 +1,60 @@
+{
+  "version" : 3,
+  "jobId" : "",
+  "commits" : [ {
+    "version" : 2,
+    "filename" : null,
+    "uri" : "s3a://stevel-london/cloud-integration/S3APartitionedCommitterSuite/partitioned-committer/parquet/replace/parquet/year=2017/month=2/part-00000-a6531c10-19dc-4d65-8fd3-1e20d7fd97e3.c000.snappy.parquet",
+    "uploadId" : "kCxEWeaZlidNKA.9dCEs8kP0U5VZ1_alKoSTbGR67lwNJDpEYqnQBF3.IJb6shgfS7M4xf.OIpuHsL2kg38glS9w.5g7thkSnMqnG2s.Vmfx.lOa7x8_6kBT_1S7v20a",
+    "bucket" : "stevel-london",
+    "destinationKey" : "cloud-integration/S3APartitionedCommitterSuite/partitioned-committer/parquet/replace/parquet/year=2017/month=2/part-00000-a6531c10-19dc-4d65-8fd3-1e20d7fd97e3.c000.snappy.parquet",
+    "created" : 1613769469235,
+    "saved" : 1613769469235,
+    "date" : "Fri Feb 19 21:17:49 GMT 2021",
+    "jobId" : "",
+    "taskId" : "",
+    "text" : "partition: year=2017/month=2",
+    "etags" : [ "e60f39ccd9f627520949a590f8efd1ad" ],
+    "extraData" : { },
+    "length" : 4154,
+    "partCount" : 1,
+    "iostatistics" : {
+      "counters" : { },
+      "gauges" : { },
+      "minimums" : { },
+      "maximums" : { },
+      "meanstatistics" : { }
+    }
+  }, {
+    "version" : 2,
+    "filename" : null,
+    "uri" : "s3a://stevel-london/cloud-integration/S3APartitionedCommitterSuite/partitioned-committer/parquet/replace/parquet/year=2017/month=1/part-00000-a6531c10-19dc-4d65-8fd3-1e20d7fd97e3.c000.snappy.parquet",
+    "uploadId" : "hofvmfB0_4zCHrdIHpuWczcZr25L3NWQgLs6cDVhN_AXc.F7A_x.K4dkXM237sF4V4Ql8iS6rnqZXjwNEMTtf5pp8eytCgYlKnxPRwe0p9hBtqg9wIQsgeZwl0wIA7Q2",
+    "bucket" : "stevel-london",
+    "destinationKey" : "cloud-integration/S3APartitionedCommitterSuite/partitioned-committer/parquet/replace/parquet/year=2017/month=1/part-00000-a6531c10-19dc-4d65-8fd3-1e20d7fd97e3.c000.snappy.parquet",
+    "created" : 1613769469325,
+    "saved" : 1613769469325,
+    "date" : "Fri Feb 19 21:17:49 GMT 2021",
+    "jobId" : "",
+    "taskId" : "",
+    "text" : "partition: year=2017/month=1",
+    "etags" : [ "139648bd6f2919f4f375683939a42589" ],
+    "extraData" : { },
+    "length" : 4363,
+    "partCount" : 1,
+    "iostatistics" : {
+      "counters" : { },
+      "gauges" : { },
+      "minimums" : { },
+      "maximums" : { },
+      "meanstatistics" : { }
+    }
+  } ],
+  "iostatistics" : {
+    "counters" : { },
+    "gauges" : { },
+    "minimums" : { },
+    "maximums" : { },
+    "meanstatistics" : { }
+  }
+}

@@ -26,6 +26,14 @@ import org.apache.spark.internal.Logging
  */
 class TestLogParsing extends FunSuite with Logging with Matchers {
 
+  val LOGDIR = "/src/test/resources/data/logs/log-2021-02-24-15-48-03.txt"
+  val LOGFILE = "log-2021-02-24-15-48-03.txt"
+
+  val HEAD = "83c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:53:49 +0000] 109.157.193.10 arn:aws:sts::152813717728:assumed-role/stevel-assumed-role/test B5CD03A97884701C REST.HEAD.OBJECT fork-0001/test/restricted/__magic/magic2 \"HEAD /fork-0001/test/restricted/__magic/magic2 HTTP/1.1\" 404 NoSuchKey 311 - 10 - \"https://hadoop.apache.org/audit/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46/s/00000005/op/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46?principal=stevel&op=op_rename&path=s3a://stevel-london/fork-0001/test/restricted/__magic/testMarkerFileRename&path2=s3a://stevel-london/fork-0001/test/restricted/__magic/magic2\" \"Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK\" - Mv4hQWa0/RaBNZjvczmMMtbeNdEmnKHwWyqCMR4DlA0leAIDcKDtd5HND4g0EBygr4qjZROJXo4= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2"
+
+  val PUT ="""183c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:53:53 +0000] 109.157.193.10 arn:aws:iam::152813717728:user/stevel-dev 0966E574330716D9 REST.PUT.OBJECT fork-0004/test/eventually-reopen.dat "PUT /fork-0004/test/eventually-reopen.dat HTTP/1.1" 200 - - 7 49 23 "https://hadoop.apache.org/audit/dbfdceb7-a11a-4c39-91a1-49f286bf5a36-14.53.47/s/0000000d/op/dbfdceb7-a11a-4c39-91a1-49f286bf5a36-14.53.47?principal=stevel&op=op_create&path=s3a://stevel-london/fork-0004/test/eventually-reopen.dat" "Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK" - FH0SAldavv4Q3TavjvSVnbdvJ0mxPcIn9M40wjYI3EHwE+v2dDaEowgHUj5Y2AEcFTmzz6LRx0w= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2"""
+
+
   val records ="""83c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:53:49 +0000] 109.157.193.10 arn:aws:sts::152813717728:assumed-role/stevel-assumed-role/test B5CD03A97884701C REST.HEAD.OBJECT fork-0001/test/restricted/__magic/magic2 "HEAD /fork-0001/test/restricted/__magic/magic2 HTTP/1.1" 404 NoSuchKey 311 - 10 - "https://hadoop.apache.org/audit/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46/s/00000005/op/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46?principal=stevel&op=op_rename&path=s3a://stevel-london/fork-0001/test/restricted/__magic/testMarkerFileRename&path2=s3a://stevel-london/fork-0001/test/restricted/__magic/magic2" "Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK" - Mv4hQWa0/RaBNZjvczmMMtbeNdEmnKHwWyqCMR4DlA0leAIDcKDtd5HND4g0EBygr4qjZROJXo4= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2
       |183c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:53:50 +0000] 109.157.193.10 arn:aws:sts::152813717728:assumed-role/stevel-assumed-role/test 012F813E53259B94 REST.DELETE.UPLOAD fork-0001/test/restricted/testMarkerFileRename "DELETE /fork-0001/test/restricted/testMarkerFileRename?uploadId=WK2d8rzLa9v4.vHP_mwX1omWGIdwZdn5O_DflVJnkxZ.sPeD4YUuMa4GaRKVaWlyi44p9nY7bphauzXrdkWOYBco2x.qhtQdXI_6QYUuYxnf2FnHgkgTQ0UIrVjYIda.2UN3wOMAAYnl02MozGjgEw-- HTTP/1.1" 204 - - - 18 17 "https://hadoop.apache.org/audit/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46/s/00000007/op/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46?principal=stevel&op=committer_commit_job&path=/" "Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK" - /j8lCVIwOUE2cSiEynqkG+2glhbETAWzWTDZd4w/2cQKOjd8epM4aEk7BjY0oykVZOBkhu4rjGE= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2
       |183c9826b45486e485693808f38e2c4071004bf5dfd4c3ab210f0a21a4235ef8 stevel-london [24/Feb/2021:14:53:50 +0000] 109.157.193.10 arn:aws:sts::152813717728:assumed-role/stevel-assumed-role/test 8445EBDA588DEFEB REST.GET.UPLOADS - "GET /?uploads&prefix=fork-0001%2Ftest%2Frestricted%2F HTTP/1.1" 200 - 1169 - 15 13 "https://hadoop.apache.org/audit/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46/s/00000007/op/87c879d6-0515-4ee9-b223-4647dd6aea9a-14.53.46?principal=stevel&op=committer_commit_job&path=/" "Hadoop 3.4.0-SNAPSHOT, aws-sdk-java/1.11.901 Mac_OS_X/10.15.7 OpenJDK_64-Bit_Server_VM/25.252-b09 java/1.8.0_252 vendor/AdoptOpenJDK" - k4eGhwn+KLmEkznRwWxO2klembT3P16HMrIc6RsnFxOthiuAgFDU8SHYL31zP7nVOGko6mF1zJI= SigV4 ECDHE-RSA-AES128-GCM-SHA256 AuthHeader stevel-london.s3.eu-west-2.amazonaws.com TLSv1.2
@@ -41,15 +49,36 @@ class TestLogParsing extends FunSuite with Logging with Matchers {
    * Tests a large number of objects to see if there's any clash in versions.
    * This is a safety check un case versioning is inadequate
    */
-  test("logs parse") {
-    records.foreach {
+  test("HEAD") {
+     parse(HEAD)
+  }
 
-      r =>
-        logInfo(s"parsing $r")
+  test("Regexp") {
+    logInfo(s"Regexp is ${S3LogRecordParser.RECORD}")
+  }
+  private def parse(r: String) = {
+    logInfo(s"parsing [$r]")
+    val p = S3LogRecordParser.parse(r)
+    logInfo(s"$p")
+  }
 
-        val p = S3LogRecordParser.parse(r)
-        logInfo(s"$p")
+  test("dump HEAD") {
+    assert(S3LogRecordParser.COLUMNS == split(HEAD), "elements in split record")
+  }
+
+  test("dump PUT") {
+    assert(14 == split(PUT), "elements in split record")
+  }
+
+  private def split(r: String) = {
+    logInfo(s"splitting [$r]")
+    val m = S3LogRecordParser.split(r)
+    var count = 0
+    assert(m.hasNext, s"Regexp failed to parse; result is $m")
+    while (m.hasNext) {
+      count += 1
+      logInfo(s" [$count] '${m.next()}'")
     }
-
+    count
   }
 }

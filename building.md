@@ -26,5 +26,5 @@ Example: build with steve's s3a test config, hadoop trunk and cloudera spark bui
 
 # Build locally
 mi  -Phadoop-trunk   -Pspark-cdpd-master
- mvt -Dcloud.test.configuration.file=/Users/stevel/Projects/sparkwork/cloud-test-configs/s3a.xml  -Phadoop-trunk   -Pspark-cdpd-master
+mvt -Dcloud.test.configuration.file=/Users/stevel/Projects/sparkwork/cloud-test-configs/s3a.xml  -Phadoop-trunk   -Pspark-cdpd-master
  ```
