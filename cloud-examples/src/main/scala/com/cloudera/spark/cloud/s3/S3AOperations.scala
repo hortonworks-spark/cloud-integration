@@ -24,20 +24,14 @@ import scala.collection.JavaConverters._
 import com.cloudera.spark.cloud.GeneralCommitterConstants
 import com.cloudera.spark.cloud.common.StoreTestOperations
 import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.fs.s3a.S3AFileSystem
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
 
 /**
  * General S3A operations against a filesystem.
  */
-class S3AOperations(sourceFs: FileSystem)
+class S3AOperations(fs: FileSystem)
   extends StoreTestOperations {
-
-  /**
-   * S3A Filesystem.
-   */
-  private val fs = sourceFs.asInstanceOf[S3AFileSystem]
 
   /**
    * Get a sorted list of the FS statistics.
@@ -72,7 +66,7 @@ class S3AOperations(sourceFs: FileSystem)
     }
     if (status.getLen == 0) {
       require(!requireNonEmpty,
-        s"$text: the 0-byte $successFile implies that the S3A committer was not used" +
+        s"$text: the 0-byte $successFile implies that an S3A or manifest committer was not used" +
           s" to commit work to $destDir with committer $committerInfo")
       return None
     }

@@ -43,6 +43,7 @@ object S3ACommitterConstants {
   val STAGING = "staging"
   val DIRECTORY = "directory"
   val PARTITIONED = "partitioned"
+  val MANIFEST = "manifest"
   val FILE = "file"
 
   val CONFLICT_MODE: String =
@@ -62,16 +63,18 @@ object S3ACommitterConstants {
    * the success file (or that it isn't actually created).
    */
   val COMMITTERS_BY_NAME: Map[String, CommitterInfo] = Map(
-    MAGIC -> CommitterInfo(MAGIC, S3A_COMMITTER_FACTORY, true),
-    STAGING -> CommitterInfo(STAGING, S3A_COMMITTER_FACTORY, false),
-    DIRECTORY -> CommitterInfo(DIRECTORY, S3A_COMMITTER_FACTORY, false),
-    PARTITIONED -> CommitterInfo(PARTITIONED, S3A_COMMITTER_FACTORY, false),
-    FILE -> CommitterInfo("", GeneralCommitterConstants.DEFAULT_COMMITTER_FACTORY, true)
+    MAGIC -> CommitterInfo(MAGIC, S3A_COMMITTER_FACTORY),
+    STAGING -> CommitterInfo(STAGING, S3A_COMMITTER_FACTORY),
+    DIRECTORY -> CommitterInfo(DIRECTORY, S3A_COMMITTER_FACTORY),
+    PARTITIONED -> CommitterInfo(PARTITIONED, S3A_COMMITTER_FACTORY),
+    MANIFEST -> CommitterInfo(GeneralCommitterConstants.MANIFEST_COMMITTER_NAME,
+      GeneralCommitterConstants.MANIFEST_COMMITTER_FACTORY),
+    FILE -> CommitterInfo("", GeneralCommitterConstants.DEFAULT_COMMITTER_FACTORY)
   )
 
 }
 
-case class CommitterInfo(name: String, factory: String, needsConsistent: Boolean)
+case class CommitterInfo(name: String, factory: String)
   extends HConf {
 
   def bind(sparkConf: SparkConf): Unit = {

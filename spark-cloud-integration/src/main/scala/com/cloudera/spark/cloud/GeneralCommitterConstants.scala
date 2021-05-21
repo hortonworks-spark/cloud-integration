@@ -78,4 +78,47 @@ object GeneralCommitterConstants {
 
 
   val PATH_OUTPUT_COMMITTER_NAME: String = "org.apache.spark.internal.io.cloud.PathOutputCommitProtocol"
+
+  /**
+   * The manifest committer.
+   */
+  val MANIFEST_COMMITTER_NAME: String = "org.apache.hadoop.mapreduce.lib.output.committer.manifest.ManifestCommitter"
+
+
+  /**
+   * The UUID for jobs.
+   * This was historically created in Spark 1.x's SQL queries, but "went away".
+   * It has been restored in recent spark releases.
+   * If found: it is used instead of the MR job attempt ID.
+   */
+  val SPARK_WRITE_UUID: String = "spark.sql.sources.writeJobUUID"
+
+  /**
+   * Prefix to use for config options..
+   */
+  val OPT_PREFIX: String = "mapreduce.manifest.committer."
+
+  val OPT_IO_PROCESSORS: String = OPT_PREFIX + "io.thread.count"
+
+  /**
+   * Default value..
+   */
+  val OPT_IO_PROCESSORS_DEFAULT: Int = 32
+
+  /**
+   * Should the output be validated?
+   */
+  val OPT_VALIDATE_OUTPUT: String = OPT_PREFIX + "validate.output"
+
+  val OPT_VALIDATE_OUTPUT_DEFAULT = false
+
+  /**
+   * Name of the factory.
+   */
+  val MANIFEST_COMMITTER_FACTORY: String =
+    "org.apache.hadoop.mapreduce.lib.output.committer.manifest.ManifestCommitterFactory"
+
+
+  val ABFS_SCHEME_COMMITTER_FACTORY: String =
+    String.format(OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN, "abfs")
 }

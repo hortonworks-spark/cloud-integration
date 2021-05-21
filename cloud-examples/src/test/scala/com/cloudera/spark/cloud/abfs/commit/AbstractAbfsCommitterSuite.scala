@@ -15,15 +15,17 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.s3.commit
+package com.cloudera.spark.cloud.abfs.commit
 
 import com.cloudera.spark.cloud.ObjectStoreConfigurations
+import com.cloudera.spark.cloud.abfs.AbfsTestSetup
 import com.cloudera.spark.cloud.common.CloudSuite
 import com.cloudera.spark.cloud.s3.S3ATestSetup
+import com.cloudera.spark.cloud.GeneralCommitterConstants.{ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY}
 
 import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
-abstract class AbstractCommitterSuite extends CloudSuite with S3ATestSetup {
+abstract class AbstractAbfsCommitterSuite extends CloudSuite with AbfsTestSetup {
   /**
    * Patch up hive for re-use.
    *

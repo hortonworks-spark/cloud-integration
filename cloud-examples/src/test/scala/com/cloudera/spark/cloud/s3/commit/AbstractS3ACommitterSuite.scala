@@ -18,26 +18,19 @@
 package com.cloudera.spark.cloud.s3.commit
 
 import com.cloudera.spark.cloud.ObjectStoreConfigurations
-import org.apache.hadoop.fs.s3a.commit.S3ACommitterFactory
-import org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitterFactory
-import org.apache.hadoop.fs.s3a.commit.staging.{DirectoryStagingCommitterFactory, PartitionedStagingCommitterFactory}
+import com.cloudera.spark.cloud.common.CloudSuite
+import com.cloudera.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
 
-/**
- * Explicitly create the S3A committers; forces compile-time
- * validation that the factory classes are on the classpath,
- * along with any direct dependencies.
- */
-class S3ACommitterFactorySuite extends AbstractS3ACommitterSuite {
-
-  init()
-
-  def init(): Unit = {
-    // propagate S3 credentials
-    if (enabled) {
-      initFS()
-    }
+abstract class AbstractS3ACommitterSuite extends CloudSuite with S3ATestSetup {
+  /**
+   * Patch up hive for re-use.
+   *
+   * @param sparkConf configuration to patch
+   */
+  def addTransientDerbySettings(sparkConf: SparkConf): Unit = {
+    hconf(sparkConf, SparkScopeWorkarounds.tempHiveConfig())
   }
 
   /**
@@ -51,24 +44,18 @@ class S3ACommitterFactorySuite extends AbstractS3ACommitterSuite {
    */
   override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
     super.addSuiteConfigurationOptions(sparkConf)
+    logDebug("Patching spark conf with s3a committer bindings")
     sparkConf.setAll(ObjectStoreConfigurations.COMMITTER_OPTIONS)
+    addTransientDerbySettings(sparkConf)
   }
 
-  ctest("DirectoryStagingCommitterFactory on CP") {
-    new DirectoryStagingCommitterFactory()
+  /**
+   * Strip out the empty options
+   *
+   * @param src source list
+   * @return the list without "" entries
+   */
+  def nonEmpty(src: Seq[String]): Seq[String] = {
+    src.filterNot(_.isEmpty)
   }
-
-  ctest("PartitionedStagingCommitterFactory on CP") {
-    new PartitionedStagingCommitterFactory()
-  }
-
-  ctest("MagicS3GuardCommitterFactory on CP") {
-    new MagicS3GuardCommitterFactory()
-  }
-
-  ctest("S3ACommitterFactory on CP") {
-    new S3ACommitterFactory()
-  }
-
-
 }

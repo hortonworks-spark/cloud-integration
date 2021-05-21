@@ -26,7 +26,8 @@ See [Spark Cloud Integration](spark-cloud-integration/src/main/site/markdown/ind
 This does the packaging/integration tests for Spark and cloud against AWS, Azure and openstack.
 
 These are basic tests of the core functionality of I/O, streaming, and verify that
-the commmitters work in the presence of inconsistent object storage
+the commmitters work.
+
 As well as running as unit tests, they have CLI entry points which can be used for scalable functional testing.
 
 

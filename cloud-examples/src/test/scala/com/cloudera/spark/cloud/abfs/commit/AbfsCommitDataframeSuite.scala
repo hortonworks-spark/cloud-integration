@@ -15,25 +15,22 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.s3.commit
+package com.cloudera.spark.cloud.abfs.commit
 
-import org.apache.hadoop.fs.Path
-import org.apache.hadoop.fs.s3a.S3AFileSystem
 import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
 import com.cloudera.spark.cloud.s3.S3AOperations
+import com.cloudera.spark.cloud.s3.commit.Events
 import com.cloudera.spark.cloud.utils.StatisticsTracker
+import com.cloudera.spark.cloud.GeneralCommitterConstants.{ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
+import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql.SparkSession
 
-/**
- * Tests different data formats through the committers.
- */
-class S3ACommitDataframeSuite extends AbstractS3ACommitterSuite {
+class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
 
   init()
 
   def init(): Unit = {
-    // propagate S3 credentials
     if (enabled) {
       initFS()
     }
@@ -48,46 +45,32 @@ class S3ACommitDataframeSuite extends AbstractS3ACommitterSuite {
     ""
   )
 
-  // there's an empty string at the end to aid with commenting out different
-  // committers and not have to worry about any trailing commas
-  private val committers = Seq(
-    //    DEFAULT_RENAME,
-    DIRECTORY,
-    //    PARTITIONED,
-    MAGIC,
-    ""
-  )
-  private lazy val s3 = filesystem.asInstanceOf[S3AFileSystem]
-  private lazy val destDir = testPath(s3, "dataframe-committer")
+  private val committers = Seq("manifest")
+  private lazy val destDir = testPath(filesystem, "dataframe-committer")
 
-  nonEmpty(committers).foreach { committer =>
-    nonEmpty(formats).foreach {
-      fmt =>
-        val commitInfo = COMMITTERS_BY_NAME(committer)
-        ctest(s"Dataframe+$committer-$fmt",
-          s"Write a dataframe to $fmt with the committer $committer") {
-          testOneFormat(
-            new Path(destDir, s"committer-$committer-$fmt"),
-            fmt,
-            Some(committer))
-        }
-    }
+  nonEmpty(formats).foreach {
+    fmt =>
+      ctest(s"Dataframe+manifest-$fmt",
+        s"Write a dataframe to $fmt with the manifest committer") {
+        testOneFormat(
+          new Path(destDir, s"manifest-$fmt"),
+          fmt)
+      }
   }
 
   def testOneFormat(
       destDir: Path,
-      format: String,
-      committerName: Option[String]): Unit = {
+      format: String): Unit = {
 
+    val committerName =Some(MANIFEST_COMMITTER_NAME);
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
-    val committerInfo = committerName.map(COMMITTERS_BY_NAME(_))
+
+    hconf(sparkConf,
+      ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY)
 
 
-    committerInfo.foreach { info =>
-      info.bind(sparkConf)
-    }
-    val s3 = filesystem.asInstanceOf[S3AFileSystem]
+
     val spark = SparkSession
       .builder
       .config(sparkConf)
@@ -108,9 +91,9 @@ class S3ACommitDataframeSuite extends AbstractS3ACommitterSuite {
       val numRows = eventCount
 
       val subdir = new Path(destDir, format)
-      rm(s3, subdir)
+      rm(filesystem, subdir)
 
-      val stats = new StatisticsTracker(s3)
+      val stats = new StatisticsTracker(filesystem)
 
       logDuration(s"write to $subdir in format $format") {
         sourceData
@@ -118,19 +101,19 @@ class S3ACommitDataframeSuite extends AbstractS3ACommitterSuite {
           .partitionBy("year", "month")
           .format(format).save(subdir.toString)
       }
-      val operations = new S3AOperations(s3)
+      val operations = new S3AOperations(filesystem)
       stats.update()
 
       logDebug(s"Statistics = \n${stats.dump()}")
 
       operations.maybeVerifyCommitter(subdir,
         committerName,
-        committerInfo,
+        None,
         conf,
         Some(numPartitions),
         s"$format:")
       // read back results and verify they match
-      validateRowCount(spark, s3, subdir, format, numRows)
+      validateRowCount(spark, filesystem, subdir, format, numRows)
     } finally {
       spark.close()
     }

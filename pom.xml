@@ -59,7 +59,7 @@
     <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
     <spark.version>2.4.5.7.2.6.0-SNAPSHOT</spark.version>
 -->
-    <spark.version>2.4.5.7.2.8.0-SNAPSHOT</spark.version>
+    <spark.version>2.4.7.7.2.11.0-SNAPSHOT</spark.version>
     <scala.version>2.11.12</scala.version>
     <scala.binary.version>2.11</scala.binary.version>
 
@@ -492,8 +492,6 @@
               <s3a.committer.test.enabled>${s3a.committer.test.enabled}</s3a.committer.test.enabled>
               <fs.s3a.committer.name>${fs.s3a.committer.name}</fs.s3a.committer.name>
 
-              <fs.s3a.s3.client.factory.impl>${fs.s3a.s3.client.factory.impl}</fs.s3a.s3.client.factory.impl>
-
               <hive.tests.disabled>${hive.tests.disabled}</hive.tests.disabled>
             </systemProperties>
           </configuration>
@@ -770,7 +768,7 @@
         </property>
       </activation>
       <properties>
-        <spark.version>2.4.7.7.2.9.0-SNAPSHOT</spark.version>
+        <spark.version>2.4.7.7.2.11.0-SNAPSHOT</spark.version>
         <scala.version>2.11.12</scala.version>
         <scala.binary.version>2.11</scala.binary.version>
       </properties>

@@ -29,7 +29,7 @@ import org.apache.spark.sql.internal.SQLConf
 /**
  * Tests around the partitioned committer and its conflict resolution.
  */
-class S3APartitionedCommitterSuite extends AbstractCommitterSuite with S3ATestSetup {
+class S3APartitionedCommitterSuite extends AbstractS3ACommitterSuite with S3ATestSetup {
 
   private var destFS: S3AFileSystem = _
 

@@ -15,25 +15,25 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.s3.commit
+package com.cloudera.spark.cloud.abfs.commit
 
 import scala.collection.mutable
 
-import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
-import com.cloudera.spark.cloud.utils.StatisticsTracker
+import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3ACommitterConstants, S3AOperations, S3ATestSetup}
 import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
+import com.cloudera.spark.cloud.utils.StatisticsTracker
 import org.apache.hadoop.fs.{Path, PathExistsException}
-import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}
+import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 
 import org.apache.spark.SparkException
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
  * This is a large data workflow, starting with the landsat
  * dataset
  */
-class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
+class AbfsCommitBulkDataSuite extends AbstractAbfsCommitterSuite
   with RandomIOPolicy {
 
   init()
@@ -51,7 +51,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
   private val parallelism = 8
 
-  private val destFS = filesystemOption.orNull.asInstanceOf[S3AFileSystem]
+  private val destFS = filesystem
 
   private val destDir = filesystemOption.map(f => testPath(f, "bulkdata")).orNull
 
@@ -87,19 +87,11 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
    * @param confictMode conflict mode to use
    * @return the session
    */
-  private def newSparkSession(
-      committerName: String, confictMode: String,
-      settings: Traversable[(String, String)] = Map()): SparkSession = {
+  private def newSparkSession(settings: Traversable[(String, String)] = Map()) = {
     val local = getLocalFS
 
     val sparkConf = newSparkConf("DataFrames", local.getUri)
-    //sparkConf.setAll(settings)
     settings.foreach { case (k, v) => sparkConf.set(k, v) }
-    val committerInfo = COMMITTERS_BY_NAME(committerName)
-    committerInfo.bind(sparkConf)
-
-    logInfo(s"Using committer $committerInfo with conflict mode $confictMode")
-    hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
 
     // landsat always uses sequential
     hconf(sparkConf,
@@ -133,12 +125,9 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
   ctest("landsat pipeine", "work with the landsat data") {
     val csvPath = getTestCSVPath()
 
-    val committer = "partitioned"
-    val sparkSession = newSparkSession(committer, "replace",
-      Map(
-        "spark.default.parallelism" -> parallelism.toString
-      )
-    )
+    val committer = "manifest"
+    val sparkSession = newSparkSession(Map(
+                "spark.default.parallelism" -> parallelism.toString))
 
 
     spark = sparkSession
@@ -153,20 +142,22 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
     val landsatOrcPath = new Path(fileMap("orc"), "filtered")
 
-    // make very sure that the FS is normal IO
-    val csvFS = csvPath.getFileSystem(conf).asInstanceOf[S3AFileSystem]
-    val inputPolicy = csvFS.getInputPolicy
-    assert(inputPolicy === S3AInputPolicy.Normal
-      || inputPolicy === S3AInputPolicy.Sequential,
-      s"wrong input policy for $csvPath in $csvFS")
+    csvPath.getFileSystem(conf) match {
+      case csvFS: S3AFileSystem =>
+        val inputPolicy = csvFS.getInputPolicy
+        assert(inputPolicy === S3AInputPolicy.Normal
+          || inputPolicy === S3AInputPolicy.Sequential,
+          s"wrong input policy for $csvPath in $csvFS")
+      case _ =>
+    }
 
     // ignore the IDE if it complains: this *is* used.
     import sparkSession.implicits._
 
     val csvSchema = LandsatIO.buildCsvSchema()
-    logInfo("CSV Schema:")
+    logInfo(s"CSV Schema: of $csvPath")
     csvSchema.printTreeString()
-    val (rawCsvData, tBuildRDD) = logDuration2("set up initial .csv findClass") {
+    val (rawCsvData, tBuildRDD) = logDuration2(s"Initial .csv read of $csvPath") {
       spark.read.options(LandsatIO.CsvOptions)
         .schema(csvSchema)
         .csv(csvPath.toUri.toString)
@@ -176,6 +167,12 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
     val csvDataFrame = LandsatIO.addLandsatColumns(rawCsvData)
 
+    /**
+     * Read data to landsat image entries.
+     * @param src source path
+     * @param format source format
+     * @return the dataset
+     */
     def readLandsatDS(
         src: Path,
         format: String = Orc): Dataset[LandsatImage] = {
@@ -195,7 +192,6 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     writeDS(
       summary = "sample and filter landsat CSV",
       dest = landsatOrcPath,
-      committer = committer,
       source = filteredCSVSource,
       parted = false)
 
@@ -224,7 +220,6 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     logInfo(s"Number of entries with negative cloud cover: $nveCloudCover")
     summarize("ORC filter cloudcover < 0", tNegativeCloud)
 
-
     // generate CSV for 2014 and positive clouds
     val landsat2014CSVParted = new Path(fileMap(Csv), "parted")
     writeDS(
@@ -232,7 +227,6 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
       dest = landsat2014CSVParted,
       source = landsatOrcPartData.filter("year = 2014 AND cloudCover >= 0"),
       format = Csv,
-      committer = DIRECTORY,
       conflict = CONFLICT_MODE_REPLACE)
 
     // bit of parquet, using same ops as ORC
@@ -241,8 +235,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
       summary = "ORC -> Parquet",
       dest = landsatParquetPath,
       source = landsatOrcData,
-      format = Parquet,
-      committer = DIRECTORY)
+      format = Parquet)
 
     val landsatParquetData = readLandsatDS(landsatParquetPath, Parquet)
     val (nveCloudCover2, tNegativeCloud2) =
@@ -263,8 +256,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
       summary = "Parquet write 2013 data",
       dest = landsatParquetPath2,
       source = landsatOrcPartData.filter("year = 2013 AND cloudCover < 30"),
-      format = Parquet,
-      committer = DIRECTORY)
+      format = Parquet)
 
     val parquetDS2 = readLandsatDS(src = landsatParquetPath2, format = Parquet)
 
@@ -276,6 +268,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
     // adding year = 2014 with fail MUST fail with directory committer as
     // base dir exists. Expect also: fail fast.
+/*
 
     logInfo("Expect a stack trace")
     logInfo("====================")
@@ -286,14 +279,12 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
           summary = "failing directory commit",
           dest = landsatParquetPath2,
           source = landsatOrcPartData.filter("year = 2014 AND cloudCover < 30"),
-          format = Parquet,
-          committer = DIRECTORY)
+          format = Parquet)
       }
     }
 
     summarize("Failing parquet write 2014 directory+fail ", tFailingDirCommit)
     logInfo("====================")
-
 
     logInfo("Generated partitions")
     ls(landsatParquetPath2, true).foreach { stat =>
@@ -301,6 +292,8 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
         logInfo(s"  ${stat.getPath}/")
       }
     }
+
+*/
 
     // now write parted +fail and expect all to be well, because
     // it is updating a different part from the 2013 data
@@ -339,6 +332,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
 
     // now do a failing part commit to same dest
+/*
     logWarning("Ignored stack traces in the next section")
     logWarning("========================================")
     val (_, tFailingPartCommit) = logDuration2("failing part commit") {
@@ -354,9 +348,11 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     }
     logWarning("========================================")
     summarize("Failing Parquet write existing parts to fail", tFailingPartCommit)
+*/
 
     // before asserting that a failing part commit where there is no output
     // is not an error, because there are no parts to conflict
+/*
     val r = writeDS(
       summary = "Append to existing partitions with empty output",
       dest = landsatParquetPath2,
@@ -365,22 +361,11 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
       conflict = CONFLICT_MODE_FAIL)
     assert(r.success.getFilenames.isEmpty, s"Expected no files in ${r.success}")
 
+*/
     // get stats
     destStats.update()
 
-    logInfo(s"S3 Statistics diff ${destStats.dump()}")
-
-    // now play with the magic committer with a full write of the CSV data
-    // as ORC parted
-
-    val magicOrcPath = new Path(fileMap(Orc), "magic/parted")
-
-    writeDS(
-      summary = "republish ORC data through magic",
-      dest = magicOrcPath,
-      committer = MAGIC,
-      source = landsatOrcData,
-      parted = false)
+    logInfo(s"Statistics diff ${destStats.dump()}")
 
   }
 
@@ -390,7 +375,6 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     * @param source source DS
     * @param format format
     * @param parted should the DS be parted by year & month?
-    * @param committer name of committer
     * @param conflict conflict policy
     * @param extraOps extra operations to pass to the committer/context
     * @tparam T type of returned DS
@@ -402,9 +386,10 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     summary: String = "",
     format: String = Orc,
     parted: Boolean = true,
-    committer: String = PARTITIONED,
     conflict: String = CONFLICT_MODE_FAIL,
     extraOps: Map[String, String] = Map()): WriteOutcome[T] = {
+
+    val committer: String = MANIFEST
 
     val t = writeDataset(
       destFS,
@@ -416,7 +401,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
       committer,
       conflict,
       extraOps)
-    val text = s"$summary + committer=$committer format $format partitioning: $parted" +
+    val text = s"$summary + format $format partitioning: $parted" +
       s" conflict=$conflict"
     summarize(summary, t)
     val success = operations.maybeVerifyCommitter(dest,

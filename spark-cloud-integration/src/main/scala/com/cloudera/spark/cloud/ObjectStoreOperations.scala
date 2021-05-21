@@ -452,14 +452,14 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
   val Orc = "orc"
 
   /**
-   * Write a dataset
+   * Write a dataset.
    *
    * @param dest      destination path
    * @param source    source DS
    * @param format    format
    * @param parted    should the DS be parted by year & month?
-   * @param committer name of committer
-   * @param conflict  conflict policy
+   * @param committer name of committer to use in s3a options
+   * @param conflict  conflict policy to set in config
    * @param extraOps  extra operations to pass to the committer/context
    * @tparam T type of returned DS
    * @return success data
@@ -566,7 +566,11 @@ object ObjectStoreConfigurations  extends HConf {
     "spark.sql.parquet.output.committer.class" ->
       BINDING_PARQUET_OUTPUT_COMMITTER_CLASS,
     "spark.sql.sources.commitProtocolClass" ->
-      GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME)
+      GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME,
+    ABFS_SCHEME_COMMITTER_FACTORY ->
+      MANIFEST_COMMITTER_FACTORY,
+    "mapreduce.manifest.committer.validate.output" -> "true"
+  )
 
   /**
    * Extra options for testing with hive.
