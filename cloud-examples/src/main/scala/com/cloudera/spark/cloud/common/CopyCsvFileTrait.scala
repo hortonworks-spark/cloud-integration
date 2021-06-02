@@ -23,12 +23,12 @@ import org.apache.hadoop.fs.Path
 
 
 /**
- * Trait for CSV setup
+ * Trait for tests using the landsat CSV files.
  *
  * This trait supports CSV data source by copying over the data from S3A if
- * it isn't already in the destination FS
+ * it isn't already in the destination FS.
  */
-trait CopyCsvFileTrait extends CloudSuite with CsvDatasourceSupport {
+trait CopyCsvFileTrait extends CloudSuiteTrait with CsvDatasourceSupport {
 
   /**
    * This is the CSV test file on S3A. It is not the FS which is used

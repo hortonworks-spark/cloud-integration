@@ -15,25 +15,26 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package org.apache.spark.sql.sources
 
-import com.cloudera.spark.cloud.common.DataFrameTests
-
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.DataType
 
 /**
- * Test Azure and DataFrames.
+ * Subclasses must declare their datasource.
  */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
+trait MustDeclareDatasource {
+  /**
+   * Name of the data source: this must be declared.
+   */
+  def dataSourceName(): String;
 
-  init()
 
-  def init(): Unit = {
-    if (enabled) {
-      initFS()
-    }
-  }
-
+  /**
+   * Datatype mapping.
+   *
+   * @param dataType type
+   * @return true of supported
+   */
+  def supportsDataType(
+    dataType: DataType): Boolean;
 }

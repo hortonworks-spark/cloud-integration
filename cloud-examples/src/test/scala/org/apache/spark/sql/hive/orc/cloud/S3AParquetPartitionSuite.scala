@@ -19,9 +19,10 @@ package org.apache.spark.sql.hive.orc.cloud
 
 import com.cloudera.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.sql.sources.CloudPartitionTest
+import org.apache.spark.sql.sources.{CloudPartitionTest, ParquetRelationTrait}
 
-class S3AParquetPartitionSuite extends CloudPartitionTest with S3ATestSetup {
+class S3AParquetPartitionSuite extends CloudPartitionTest with S3ATestSetup
+  with ParquetRelationTrait {
 
   init()
 
@@ -31,7 +32,5 @@ class S3AParquetPartitionSuite extends CloudPartitionTest with S3ATestSetup {
       initFS()
     }
   }
-
-  override val dataSourceName: String = "parquet"
 
 }

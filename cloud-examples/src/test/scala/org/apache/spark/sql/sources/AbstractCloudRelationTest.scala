@@ -40,17 +40,13 @@ import org.apache.spark.util.Utils
  * See: org.apache.spark.sql.sources.HadoopFsRelationTest
  */
 abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
+  with MustDeclareDatasource
   with Eventually
   with HiveTestTrait
   with CloudSuiteTrait with BeforeAndAfterAll {
 
 
   import testImplicits._
-
-  /**
-   * Name of the data source: this must be declared.
-   */
-  val dataSourceName: String
 
   val dataSchema =
     StructType(
@@ -133,7 +129,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
    * @param dataType
    * @return
    */
-  protected def supportsDataType(dataType: DataType): Boolean = dataType match {
+  override def supportsDataType(dataType: DataType): Boolean = dataType match {
     case _: NullType => false
     case _: CalendarIntervalType => false
     case _: UserDefinedType[_] => false
@@ -346,6 +342,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
       .add("f2", ArrayType(BooleanType, containsNull = true), nullable = true)
 //    new UDT.MyDenseVectorUDT()
   )
+
 
 
 

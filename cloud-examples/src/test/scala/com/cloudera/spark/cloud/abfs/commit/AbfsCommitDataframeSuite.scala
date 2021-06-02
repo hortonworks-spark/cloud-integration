@@ -66,6 +66,9 @@ class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
 
+
+    // TODO make option if we want to support regression testing with the old
+    // committer
     hconf(sparkConf,
       ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY)
 

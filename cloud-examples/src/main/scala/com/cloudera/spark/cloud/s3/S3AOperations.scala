@@ -41,14 +41,17 @@ class S3AOperations(fs: FileSystem)
   }
 
   /**
-   * Verify that an S3A committer was used
+   * Verify the committed output, including whether an s3a or manifest
+   * committer was used.
    *
    * @param destDir destination directory of work
    * @param committerInfo committer name, if known
    * @param fileCount expected number of files
+   * @param requireNonEmpty require the _SUCCESS file to be non-empty.
    * @param text message to include in all assertions
+   * @return the contents of the _SUCCESS file, which is None or SuccessData
    */
-  def verifyS3Committer(
+  def verifyCommitter(
       destDir: Path,
       committerInfo: Option[CommitterInfo],
       fileCount: Option[Integer],
@@ -115,13 +118,13 @@ class S3AOperations(fs: FileSystem)
       errorText: String = ""): Option[SuccessData] = {
     committerName match {
       case Some(S3ACommitterConstants.FILE) =>
-        verifyS3Committer(destDir, None, fileCount, errorText, false)
+        verifyCommitter(destDir, None, fileCount, errorText, false)
 
-      case Some(_) => verifyS3Committer(destDir,
+      case Some(_) => verifyCommitter(destDir,
         committerInfo, fileCount, errorText, true)
 
       case None =>
-        verifyS3Committer(destDir, None, fileCount, errorText, false)
+        verifyCommitter(destDir, None, fileCount, errorText, false)
 
     }
 

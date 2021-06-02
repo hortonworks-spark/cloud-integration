@@ -15,18 +15,16 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package org.apache.spark.sql.hive.orc.abfs
 
-import com.cloudera.spark.cloud.common.DataFrameTests
+import com.cloudera.spark.cloud.abfs.AbfsTestSetup
 
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.sources.CloudPartitionTest
 
 /**
- * Test Azure and DataFrames.
+ * Partitioned queries with ORC data against ABFS.
  */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
+class AbfsOrcPartitionSuite extends CloudPartitionTest with AbfsTestSetup {
 
   init()
 
@@ -36,4 +34,7 @@ class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
     }
   }
 
+  override def dataSourceName(): String = {
+    "orc"
+  }
 }

@@ -146,4 +146,15 @@ trait CloudSuiteTrait extends FunSuiteLike
       )
     })
   }
+
+  /**
+   * Is this test suite using an enhanced committer.
+   * Default is true as we have historically never targeted
+   * the committer/sql tests at anything other than S3.
+   * But for abfs/GCS it's handy to be able to test the old committer
+   * too. This flag is to tell tests whether or not to expect
+   * _SUCCESS files with data.
+   * @return true if the committer will generate _SUCCESS JSON files.
+   */
+  protected def isEnhancedCommitter(): Boolean = true;
 }

@@ -15,25 +15,23 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package org.apache.spark.sql.sources
 
-import com.cloudera.spark.cloud.common.DataFrameTests
+import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}
 
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.StringType
 
-/**
- * Test Azure and DataFrames.
- */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
 
-  init()
+trait ParquetRelationTrait extends MustDeclareDatasource {
+  // Parquet does not play well with NullType.
+  override def supportsDataType(
+    dataType: DataType): Boolean = dataType match {
+    case _: NullType => false
+    case _: CalendarIntervalType => false
+    case _ => true
+  }
 
-  def init(): Unit = {
-    if (enabled) {
-      initFS()
-    }
+  override def dataSourceName(): String = {
+    "parquet"
   }
 
 }

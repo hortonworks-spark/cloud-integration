@@ -15,18 +15,15 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package org.apache.spark.sql.hive.orc.abfs
 
-import com.cloudera.spark.cloud.common.DataFrameTests
+import com.cloudera.spark.cloud.abfs.AbfsTestSetup
 
-import org.apache.spark.SparkConf
-import org.apache.spark.sql.SparkSession
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.sources.{CloudRelationScaleTest, ParquetRelationTrait}
 
-/**
- * Test Azure and DataFrames.
- */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
+class AbfsParquetRelationScaleSuite extends CloudRelationScaleTest
+  with AbfsTestSetup
+  with ParquetRelationTrait {
 
   init()
 
@@ -35,5 +32,7 @@ class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
       initFS()
     }
   }
+
+  override def enabled: Boolean = super.enabled && isScaleTestEnabled
 
 }

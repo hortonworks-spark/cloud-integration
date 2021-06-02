@@ -19,30 +19,20 @@ package org.apache.spark.sql.hive.orc.cloud
 
 import com.cloudera.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.sql.sources.CloudRelationScaleTest
-import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}
+import org.apache.spark.sql.sources.{CloudRelationScaleTest, ParquetRelationTrait}
 
-class S3AParquetRelationScaleSuite extends CloudRelationScaleTest with S3ATestSetup {
+class S3AParquetRelationScaleSuite extends CloudRelationScaleTest
+  with S3ATestSetup
+  with ParquetRelationTrait {
 
   init()
 
   def init(): Unit = {
-    // propagate S3 credentials
     if (enabled) {
       initFS()
     }
   }
 
   override def enabled: Boolean = super.enabled && isScaleTestEnabled
-
-  override val dataSourceName: String = "parquet"
-
-  // Parquet does not play well with NullType.
-  override protected def supportsDataType(
-    dataType: DataType): Boolean = dataType match {
-    case _: NullType => false
-    case _: CalendarIntervalType => false
-    case _ => true
-  }
 
 }
