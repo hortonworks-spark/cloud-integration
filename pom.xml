@@ -45,7 +45,7 @@
 
   <properties>
     <java.version>1.8</java.version>
-    <scala.version>2.12.8</scala.version>
+    <scala.version>2.12.10</scala.version>
     <scala.binary.version>2.12</scala.binary.version>
 
     <!-- These examples use the version of Hadoop which Spark was built with-->
@@ -58,10 +58,13 @@
 <!--
     <spark.version>2.4.5.7.2.7.0-SNAPSHOT</spark.version>
     <spark.version>2.4.5.7.2.6.0-SNAPSHOT</spark.version>
--->
     <spark.version>2.4.7.7.2.11.0-SNAPSHOT</spark.version>
     <scala.version>2.11.12</scala.version>
-    <scala.binary.version>2.11</scala.binary.version>
+    <scala.binary.version>2.12</scala.binary.version>
+-->
+
+    <spark.version>3.1.1.3.1.7270.0-SNAPSHOT</spark.version>
+
 
     <!-- needed to pick up the new stuff-->
     <hadoop.version>3.3.1</hadoop.version>
@@ -77,11 +80,14 @@
     -->
 
 
-    <guava.version>27.0-jre</guava.version>
+    <guava.version>28.0-jre</guava.version>
 
+<!--
     <scalatest.version>3.0.5</scalatest.version>
-    <slf4j.version>1.7.16</slf4j.version>
-    <log4j.version>1.2.17</log4j.version>
+-->
+    <scalatest.version>3.2.3</scalatest.version>
+    <slf4j.version>1.7.30</slf4j.version>
+    <log4j.version>1.2.17-cloudera1</log4j.version>
 
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
     <test.build.data>${test.build.dir}</test.build.data>
@@ -156,6 +162,9 @@
     <maven-checkstyle-plugin.version>2.17</maven-checkstyle-plugin.version>
     <checkstyle.version>7.5.1</checkstyle.version>
     <dependency-check-maven.version>1.4.3</dependency-check-maven.version>
+    <mockito.version>2.23.4</mockito.version>
+    <junit.version>4.13.1</junit.version>
+    <scalacheck.version>1.13.5</scalacheck.version>
   </properties>
 
   <repositories>
@@ -205,12 +214,6 @@
         <groupId>org.apache.spark</groupId>
         <artifactId>spark-core_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
-        <exclusions>
-          <exclusion>
-            <groupId>net.java.dev.jets3t</groupId>
-            <artifactId>jets3t</artifactId>
-          </exclusion>
-        </exclusions>
       </dependency>
 
       <!--Used for test classes -->
@@ -304,17 +307,17 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>2.23.4</version>
+        <version>${mockito.version}</version>
       </dependency>
       <dependency>
         <groupId>org.scalacheck</groupId>
         <artifactId>scalacheck_${scala.binary.version}</artifactId>
-        <version>1.13.5</version>
+        <version>${scalacheck.version}</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
         <artifactId>junit</artifactId>
-        <version>4.12</version>
+        <version>${junit.version}</version>
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
@@ -368,21 +371,7 @@
           <artifactId>maven-assembly-plugin</artifactId>
           <version>${maven-assembly-plugin.version}</version>
         </plugin>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-site-plugin</artifactId>
-          <version>${maven-site-plugin.version}</version>
-          <dependencies>
-            <dependency><!-- add support for ssh/scp -->
-              <groupId>org.apache.maven.wagon</groupId>
-              <artifactId>wagon-ssh</artifactId>
-              <version>${wagon-ssh.version}</version>
-            </dependency>
-          </dependencies>
-          <configuration>
-            <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
-          </configuration>
-        </plugin>
+
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -633,7 +622,6 @@
       <id>directory</id>
       <activation><activeByDefault>true</activeByDefault></activation>
       <properties>
-        <required.hadoop.version>2.11</required.hadoop.version>
         <fs.s3a.committer.enabled>true</fs.s3a.committer.enabled>
         <fs.s3a.committer.test.enabled>true</fs.s3a.committer.test.enabled>
         <fs.s3a.committer.name>directory</fs.s3a.committer.name>
@@ -714,11 +702,11 @@
       <properties>
 
         <!-- -->
-        <spark.version>3.1.0-SNAPSHOT</spark.version>
+        <spark.version>3.1.2</spark.version>
 
         <!-- needed to pick up the new stuff-->
         <scalatest.version>3.2.0</scalatest.version>
-        <hadoop.version>3.3.1</hadoop.version>
+        <hadoop.version>3.4.0-SNAPSHOT</hadoop.version>
         <guava.version>19.0</guava.version>
       </properties>
     </profile>
@@ -761,36 +749,13 @@
 
     <!-- switch to spark cdpd-master. Doesn't change hadoop settings -->
     <profile>
-      <id>spark-cdpd-master</id>
-      <activation>
-        <property>
-          <name>spark-cdpd-master</name>
-        </property>
-      </activation>
+      <id>spark-cdpd-3</id>
       <properties>
-        <spark.version>2.4.7.7.2.11.0-SNAPSHOT</spark.version>
-        <scala.version>2.11.12</scala.version>
-        <scala.binary.version>2.11</scala.binary.version>
+        <spark.version>3.1.1.3.1.7270.0-SNAPSHOT</spark.version>
       </properties>
     </profile>
 
-    <!-- this is HDP internal release version numbers -->
-    <profile>
-      <id>hdp3</id>
-      <activation>
-        <property>
-          <name>hdp3</name>
-        </property>
-      </activation>
-      <properties>
 
-        <!-- -->
-        <spark.version>2.3.2.3.0.3.0-SNAPSHOT</spark.version>
-        <!-- needed to pick up the new stuff-->
-        <hadoop.version>3.1.2-SNAPSHOT</hadoop.version>
-        <guava.version>19.0</guava.version>
-      </properties>
-    </profile>
     <profile>
       <id>oldguava</id>
       <activation>

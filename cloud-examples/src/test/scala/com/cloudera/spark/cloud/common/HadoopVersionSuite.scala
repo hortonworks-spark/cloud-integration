@@ -22,12 +22,10 @@ import java.util.Collections
 
 import scala.collection.JavaConverters._
 
-import CloudSuite._
-import org.scalatest.{FunSuite, Matchers}
+import com.cloudera.spark.cloud.common.CloudSuite._
+import com.cloudera.spark.cloud.test.UnitTestSuite
 
-import org.apache.spark.internal.Logging
-
-class HadoopVersionSuite extends FunSuite with Logging with Matchers {
+class HadoopVersionSuite extends UnitTestSuite {
 
   test("Sysprops") {
     val props = System.getProperties
@@ -35,18 +33,18 @@ class HadoopVersionSuite extends FunSuite with Logging with Matchers {
     Collections.sort(list)
     val plist = list.asScala
       .filter(k => (!k.startsWith("java.") && !k.startsWith("sun.")))
-      .map( key => s"$key = ${props.getProperty(key)}" )
+      .map(key => s"$key = ${props.getProperty(key)}")
       .mkString("\n")
     logInfo(s"Properties:\n$plist")
   }
 
   test("PropagatedValues") {
     val mapped = loadConfiguration().asScala
-      .filter{entry =>
+      .filter { entry =>
         val k = entry.getKey
         k.startsWith("fs.s3a") && !k.contains("key")
       }
-      .map( entry => s"${entry.getKey} = ${entry.getValue}").toList.sorted
+      .map(entry => s"${entry.getKey} = ${entry.getValue}").toList.sorted
     val list = mapped.mkString("\n")
     logInfo(s"S3A config options:\n${list}")
   }

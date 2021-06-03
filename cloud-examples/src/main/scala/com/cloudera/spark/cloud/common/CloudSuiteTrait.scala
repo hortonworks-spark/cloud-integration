@@ -20,7 +20,7 @@ package com.cloudera.spark.cloud.common
 import java.net.URL
 
 import org.apache.hadoop.conf.Configuration
-import org.scalatest.FunSuiteLike
+import org.scalatest.funsuite.AnyFunSuiteLike
 
 /**
  * A cloud suite.
@@ -28,7 +28,7 @@ import org.scalatest.FunSuiteLike
  * options to enable/disable tests, and a mechanism to conditionally declare tests
  * based on these details
  */
-trait CloudSuiteTrait extends FunSuiteLike
+trait CloudSuiteTrait extends AnyFunSuiteLike
     with CloudTestIntegration {
 
   /**

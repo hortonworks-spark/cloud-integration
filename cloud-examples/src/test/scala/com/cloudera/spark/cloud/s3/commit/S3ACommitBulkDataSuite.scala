@@ -74,8 +74,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
   )
 
   // choose the filter percentage; on a scale test
-  // the output is bigger
-  val filterPercentage: Double = if (isScaleTestEnabled) 2.0d else 0.05d
+  val filterPercentage: Double = if (isScaleTestEnabled) 0.80d else 0.10d
 
   val operations = new S3AOperations(destFS)
 

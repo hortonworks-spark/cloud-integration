@@ -19,15 +19,15 @@ package org.apache.spark
 
 import java.util.Date
 
+import com.cloudera.spark.cloud.test.UnitTestSuite
 import org.apache.hadoop.mapreduce.JobID
-import org.scalatest.FunSuite
 
 import org.apache.spark.internal.io.SparkHadoopWriterUtils.{createJobID, createJobTrackerID}
 
 /**
  * Unit tests for functions in SparkHadoopWriterUtils.
  */
-class UniqueJobIdSuite extends FunSuite {
+class UniqueJobIdSuite extends UnitTestSuite {
 
   /**
    * Core test of JobID generation:
@@ -85,7 +85,7 @@ class UniqueJobIdSuite extends FunSuite {
   test("JobIDs on Epoch are different") {
     val j1 = createJobID(new Date(0), 0)
     val j2 = createJobID(new Date(0), 0)
-    assert (j1.toString != j2.toString)
+    assert(j1.toString != j2.toString)
   }
 
   /**
@@ -99,7 +99,8 @@ class UniqueJobIdSuite extends FunSuite {
       val id = createJobTrackerID(date)
       val r = issued.put(id, i)
       r.foreach { v =>
-        fail(s"ID $id generated on iteration ${i} was also generated on iteration $v")
+        fail(
+          s"ID $id generated on iteration ${i} was also generated on iteration $v")
       }
     }
   }
@@ -108,6 +109,7 @@ class UniqueJobIdSuite extends FunSuite {
   /**
    * Do a round trip as a string and back again.
    * This uses the JobID parser.
+   *
    * @param jobID job ID
    * @return the returned jobID
    */

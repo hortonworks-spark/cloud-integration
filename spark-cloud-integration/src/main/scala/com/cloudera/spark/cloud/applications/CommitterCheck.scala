@@ -34,7 +34,7 @@ import org.apache.spark.{SparkConf, SparkContext}
 class CommitterCheck extends ObjectStoreExample {
 
   override protected def usageArgs(): String = {
-    "[off|on|file|directory|staging|magic] <dest>"
+    "[off|on|file|directory|staging|magic|manifest] <dest>"
   }
 
   private val E_BAD_CONFIG = 10
@@ -131,7 +131,9 @@ class CommitterCheck extends ObjectStoreExample {
       "StagingCommitter" ->
         "org.apache.hadoop.fs.s3a.commit.staging.StagingCommitter",
       "MagicS3GuardCommitter" ->
-        "org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitter"
+        "org.apache.hadoop.fs.s3a.commit.magic.MagicS3GuardCommitter",
+      "ManifestCommitter" ->
+        "org.apache.hadoop.mapreduce.lib.output.committer.manifest.ManifestCommitter"
 
 
     )

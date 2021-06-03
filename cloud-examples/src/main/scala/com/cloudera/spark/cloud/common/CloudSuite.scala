@@ -22,7 +22,6 @@ import java.io.{File, FileNotFoundException}
 import com.cloudera.spark.cloud.s3.{S3ACommitterConstants, S3AConstants}
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
-//import org.scalatest.{BeforeAndAfter, FunSuite}
 import org.scalatest.BeforeAndAfter
 
 import org.apache.spark.{LocalSparkContext, SparkFunSuite}

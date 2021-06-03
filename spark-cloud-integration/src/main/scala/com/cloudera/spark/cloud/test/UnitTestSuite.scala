@@ -15,14 +15,18 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.s3
+package com.cloudera.spark.cloud.test
 
-import com.cloudera.spark.cloud.test.UnitTestSuite
+import org.scalatest.funsuite.AnyFunSuite
+import org.scalatest.matchers.must.Matchers
+
+
+import org.apache.spark.internal.Logging
 
 /**
- * Look at what Parquet committer binding is up to
+ * Base class for test suites.
+ * Added because scalatest imports are too brittle to use.
  */
-class TestParquetBinding extends UnitTestSuite {
-
+class UnitTestSuite extends AnyFunSuite with Logging with Matchers {
 
 }
