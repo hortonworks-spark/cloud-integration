@@ -45,7 +45,7 @@
 
   <properties>
     <java.version>1.8</java.version>
-    <scala.version>2.12.10</scala.version>
+    <scala.version>2.12.15</scala.version>
     <scala.binary.version>2.12</scala.binary.version>
 
     <!-- These examples use the version of Hadoop which Spark was built with-->
@@ -61,9 +61,11 @@
     <spark.version>2.4.7.7.2.11.0-SNAPSHOT</spark.version>
     <scala.version>2.11.12</scala.version>
     <scala.binary.version>2.12</scala.binary.version>
--->
-
     <spark.version>3.1.1.3.1.7270.0-SNAPSHOT</spark.version>
+
+    -->
+
+    <spark.version>3.3.0-SNAPSHOT</spark.version>
 
 
     <!-- needed to pick up the new stuff-->
@@ -165,6 +167,8 @@
     <mockito.version>2.23.4</mockito.version>
     <junit.version>4.13.1</junit.version>
     <scalacheck.version>1.13.5</scalacheck.version>
+
+    <zinc.enabled>false</zinc.enabled>
   </properties>
 
   <repositories>
@@ -340,7 +344,18 @@
         <artifactId>jfiglet</artifactId>
         <version>0.0.8</version>
       </dependency>
+
+
+      <!-- this is the cloudera build, which tries to shade better -->
+      <dependency>
+        <groupId>com.google.cloud.bigdataoss</groupId>
+        <artifactId>gcs-connector</artifactId>
+        <version>hadoop3-2.2.5</version>
+        <type>shaded</type>
+      </dependency>
+
     </dependencies>
+
   </dependencyManagement>
 
   <build>
@@ -423,7 +438,8 @@
           <configuration>
             <scalaVersion>${scala.version}</scalaVersion>
             <recompileMode>incremental</recompileMode>
-            <useZincServer>true</useZincServer>
+            <useZincServer>${zinc.enabled}</useZincServer>
+
             <args>
               <arg>-unchecked</arg>
               <arg>-deprecation</arg>
@@ -727,6 +743,30 @@
         <scala.binary.version>2.12</scala.binary.version>
         <!-- needed to pick up the new stuff-->
         <scalatest.version>3.2.0</scalatest.version>
+        <!--
+                <scalatest.version>3.1.4</scalatest.version>
+        -->
+        <hadoop.version>3.3.1</hadoop.version>
+        <guava.version>19.0</guava.version>
+      </properties>
+    </profile>
+
+
+    <profile>
+      <id>spark-3.3</id>
+      <activation>
+        <property>
+          <name>spark-3.3</name>
+        </property>
+      </activation>
+      <properties>
+
+        <!-- -->
+        <spark.version>3.3.0-SNAPSHOT</spark.version>
+        <scala.version>2.12.15</scala.version>
+        <scala.binary.version>2.12</scala.binary.version>
+        <!-- needed to pick up the new stuff-->
+        <scalatest.version>3.2.5</scalatest.version>
         <!--
                 <scalatest.version>3.1.4</scalatest.version>
         -->

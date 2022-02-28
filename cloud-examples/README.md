@@ -118,10 +118,10 @@ defined, such as endpoints and timeouts.
 ### S3A Options
 
 
-| Option | Meaning | Default |
-|--------|---------|---------|
-| `s3a.tests.enabled` | Execute tests using the S3A filesystem | `false`|
-| `s3a.test.csvfile.path` | Path to a read only CSV file used in performance tests. | `s3a://landsat-pds/scene_list.gz`|
+| Option                  | Meaning                                                 | Default                           |
+|-------------------------|---------------------------------------------------------|-----------------------------------|
+| `s3a.tests.enabled`     | Execute tests using the S3A filesystem                  | `false`                           |
+| `s3a.test.csvfile.path` | Path to a read only CSV file used in performance tests. | `s3a://landsat-pds/scene_list.gz` |
 
 
 

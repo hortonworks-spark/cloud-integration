@@ -157,4 +157,17 @@ trait CloudSuiteTrait extends AnyFunSuiteLike
    * @return true if the committer will generate _SUCCESS JSON files.
    */
   protected def isEnhancedCommitter(): Boolean = true;
+
+
+  /**
+   * Strip out the empty options
+   *
+   * @param src source list
+   * @return the list without "" entries
+   */
+
+
+  def nonEmpty(src: Seq[String]): Seq[String] = {
+    src.filterNot(_.isEmpty)
+  }
 }

@@ -49,13 +49,4 @@ abstract class AbstractS3ACommitterSuite extends CloudSuite with S3ATestSetup {
     addTransientDerbySettings(sparkConf)
   }
 
-  /**
-   * Strip out the empty options
-   *
-   * @param src source list
-   * @return the list without "" entries
-   */
-  def nonEmpty(src: Seq[String]): Seq[String] = {
-    src.filterNot(_.isEmpty)
-  }
 }

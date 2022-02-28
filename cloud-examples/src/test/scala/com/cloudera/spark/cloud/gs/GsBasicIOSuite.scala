@@ -15,20 +15,22 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package com.cloudera.spark.cloud.gs
 
-import com.cloudera.spark.cloud.common.DataFrameTests
+import com.cloudera.spark.cloud.common.BasicIOTests
 
 /**
- * Test Azure and DataFrames.
+ * GS's basic IO operations.
  */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
+class GsBasicIOSuite extends BasicIOTests with GsTestSetup {
 
   init()
 
   def init(): Unit = {
     if (enabled) {
       initFS()
+    } else {
+      log.info("suite is not enabled")
     }
   }
 

@@ -15,21 +15,20 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package com.cloudera.spark.cloud.gs
 
-import com.cloudera.spark.cloud.common.DataFrameTests
+import com.cloudera.spark.cloud.common.CSVReadTests
 
-/**
- * Test Azure and DataFrames.
- */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
-
+class GsCSVReadSuite extends CSVReadTests with GsTestSetup {
   init()
 
+  /**
+   * set up FS if enabled.
+   */
   def init(): Unit = {
     if (enabled) {
       initFS()
+      initDatasources()
     }
   }
-
 }

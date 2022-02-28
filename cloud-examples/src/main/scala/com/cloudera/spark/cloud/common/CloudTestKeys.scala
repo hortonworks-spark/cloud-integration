@@ -169,6 +169,20 @@ trait CloudTestKeyTrait extends S3AConstants {
 
 
   /**
+   * Key declaring that the gs tests are enabled.
+   * If set, the user must have gcs login credentials, defined in the XML
+   * test configuration file.
+   */
+  val GS_TESTS_ENABLED = "gs.tests.enabled"
+
+  /**
+   * A test bucket for gs.
+   * Data in this bucket under the test directory will be deleted during test suite teardowns;
+   */
+  val GS_TEST_URI = "gs.test.uri"
+
+
+  /**
    * Are swift tests enabled?
    */
   val SWIFT_TESTS_ENABLED = "swift.tests.enabled"

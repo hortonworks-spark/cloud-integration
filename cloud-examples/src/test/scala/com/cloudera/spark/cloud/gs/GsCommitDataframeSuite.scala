@@ -15,17 +15,17 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs.commit
+package com.cloudera.spark.cloud.gs
 
 import com.cloudera.spark.cloud.s3.S3AOperations
 import com.cloudera.spark.cloud.s3.commit.Events
 import com.cloudera.spark.cloud.utils.StatisticsTracker
-import com.cloudera.spark.cloud.GeneralCommitterConstants.{ABFS_MANIFEST_COMMITTER_FACTORY, ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
+import com.cloudera.spark.cloud.GeneralCommitterConstants.{GS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql.SparkSession
 
-class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
+class GsCommitDataframeSuite extends AbstractGsCommitterSuite {
 
   init()
 
@@ -44,7 +44,6 @@ class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
     ""
   )
 
-  private val committers = Seq("manifest")
   private lazy val destDir = testPath(filesystem, "dataframe-committer")
 
   nonEmpty(formats).foreach {
@@ -61,7 +60,7 @@ class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
       destDir: Path,
       format: String): Unit = {
 
-    val committerName =Some(MANIFEST_COMMITTER_NAME);
+    val committerName = Some(MANIFEST_COMMITTER_NAME)
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
 
@@ -69,8 +68,7 @@ class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
     // TODO make option if we want to support regression testing with the old
     // committer
     hconf(sparkConf,
-      ABFS_SCHEME_COMMITTER_FACTORY, ABFS_MANIFEST_COMMITTER_FACTORY)
-
+      GS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY)
 
 
     val spark = SparkSession

@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs.commit
+package com.cloudera.spark.cloud.gs
 
 import scala.collection.mutable
 
@@ -27,12 +27,12 @@ import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 
 import org.apache.spark.sql.{Dataset, SparkSession}
-
 /**
  * This is a large data workflow, starting with the landsat
  * dataset
  */
-class AbfsCommitBulkDataSuite extends AbstractAbfsCommitterSuite {
+class GsCommitBulkDataSuite extends AbstractGsCommitterSuite
+  {
 
   init()
 
@@ -148,7 +148,6 @@ class AbfsCommitBulkDataSuite extends AbstractAbfsCommitterSuite {
           s"wrong input policy for $csvPath in $csvFS")
       case _ =>
     }
-
     // ignore the IDE if it complains: this *is* used.
     import sparkSession.implicits._
 

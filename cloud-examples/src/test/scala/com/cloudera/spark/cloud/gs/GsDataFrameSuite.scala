@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs
+package com.cloudera.spark.cloud.gs
 
 import com.cloudera.spark.cloud.common.DataFrameTests
 
 /**
- * Test Azure and DataFrames.
+ * Test GS and DataFrames.
  */
-class AbfsDataFrameSuite extends DataFrameTests with AbfsTestSetup {
+class GsDataFrameSuite extends DataFrameTests with GsTestSetup {
 
   init()
 

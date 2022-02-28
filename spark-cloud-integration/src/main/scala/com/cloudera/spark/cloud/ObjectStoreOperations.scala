@@ -568,6 +568,8 @@ object ObjectStoreConfigurations  extends HConf {
     "spark.sql.sources.commitProtocolClass" ->
       GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME,
     ABFS_SCHEME_COMMITTER_FACTORY ->
+      ABFS_MANIFEST_COMMITTER_FACTORY,
+    GS_SCHEME_COMMITTER_FACTORY ->
       MANIFEST_COMMITTER_FACTORY,
     "mapreduce.manifest.committer.validate.output" -> "true"
   )
