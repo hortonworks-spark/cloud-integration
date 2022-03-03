@@ -21,7 +21,7 @@ import java.io.File
 
 import scala.concurrent.duration._
 
-import com.cloudera.spark.cloud.{GeneralCommitterConstants, ObjectStoreConfigurations}
+import com.cloudera.spark.cloud.GeneralCommitterConstants
 import com.cloudera.spark.cloud.common.{CloudSuiteTrait, CloudTestKeys}
 import org.apache.hadoop.fs.{FileStatus, Path}
 import org.scalatest.BeforeAndAfterAll
@@ -48,7 +48,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
 
   import testImplicits._
 
-  val dataSchema =
+  val dataSchema: StructType =
     StructType(
       Seq(
         StructField("a", IntegerType, nullable = false),
@@ -156,19 +156,21 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
   /**
    * Get the success file
    * @param destDir destination of the query
-   * @param requireS3ACommitter is an S3A committer required
+   * @param requireJsonSummary is JSON summary required
    * @return the status
    */
-  protected def resolveSuccessFile(destDir: Path, requireS3ACommitter: Boolean): FileStatus = {
+  protected def resolveSuccessFile(destDir: Path, requireJsonSummary: Boolean): FileStatus = {
     val fs = getFilesystem(destDir)
     val success = new Path(destDir, "_SUCCESS")
     val status = fs.getFileStatus(success)
     if (status.getLen == 0) {
       logInfo(s"Status file $success exists and is an empty files")
-      assert(!requireS3ACommitter,
-        s"The committer used to create file $success was not an S3A Committer")
+      assert(!requireJsonSummary,
+        s"The committer used to create file $success was not an S3A or manifest Committer")
     } else {
       logInfo(s"Status file $success is of size ${status.getLen}")
+      // and print it
+
     }
     status
   }

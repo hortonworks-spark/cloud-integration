@@ -31,8 +31,7 @@ import org.apache.spark.sql.{Dataset, SparkSession}
  * This is a large data workflow, starting with the landsat
  * dataset
  */
-class GsCommitBulkDataSuite extends AbstractGsCommitterSuite
-  {
+class GsCommitBulkDataSuite extends AbstractGsCommitterSuite {
 
   init()
 
@@ -249,7 +248,7 @@ class GsCommitBulkDataSuite extends AbstractGsCommitterSuite
     // play with committer options.
     // first, write to directory with commit conflict = fail
     val landsatParquetPath2 = new Path(fileMap(Parquet), "parted-2")
-    val outcome = writeDS(
+    writeDS(
       summary = "Parquet write 2013 data",
       dest = landsatParquetPath2,
       source = landsatOrcPartData.filter("year = 2013 AND cloudCover < 30"),

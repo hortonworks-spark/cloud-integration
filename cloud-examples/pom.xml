@@ -139,17 +139,17 @@
       <artifactId>jfiglet</artifactId>
     </dependency>
 
-    <!-- this is the cloudera build, which tries to shade better -->
     <dependency>
       <groupId>com.google.cloud.bigdataoss</groupId>
       <artifactId>gcs-connector</artifactId>
-      <scope>test</scope>
-      <type>shaded</type>
+<!--      <scope>provided</scope>-->
+      <classifier>shaded</classifier>
     </dependency>
 
   </dependencies>
   <build>
 <!--
+      <type>shaded</type>
     <sourceDirectory>src/main/scala</sourceDirectory>
     <testSourceDirectory>src/test/scala</testSourceDirectory>
 -->

@@ -23,9 +23,8 @@ import com.cloudera.spark.cloud.ObjectStoreConfigurations
 import org.scalatest.BeforeAndAfterAll
 
 import org.apache.spark.{SparkConf, SparkContext, SparkFunSuite}
-import org.apache.spark.sql.{SparkSession, SQLContext, SQLImplicits}
+import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.hive.test.TestHiveContext
-import org.apache.spark.sql.internal.SQLConf
 import org.apache.spark.util.Utils
 
 /**

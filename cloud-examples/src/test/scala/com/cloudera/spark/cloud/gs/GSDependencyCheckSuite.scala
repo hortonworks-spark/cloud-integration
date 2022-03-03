@@ -18,9 +18,12 @@
 package com.cloudera.spark.cloud.gs
 
 import com.cloudera.spark.cloud.test.UnitTestSuite
+import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem
+import com.google.cloud.hadoop.util.HadoopConfigurationProperty
+import org.apache.hadoop.fs.FileSystem
 
 /**
- * Force findClass in hadoop s3n/s3a classes and some dependencies.
+ * Force findClass in hadoop gcs classes and some dependencies.
  * Dependency problems should be picked up at compile time; runtime may
  * identify problems with any other transitive library
  */
@@ -28,6 +31,15 @@ class GSDependencyCheckSuite extends UnitTestSuite {
 
   test("Create GCS FS Instance") {
     instantiate("com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem")
+  }
+
+  test("compile time check of filesystem") {
+    val fs = new GoogleHadoopFileSystem()
+    assert(fs.isInstanceOf[FileSystem])
+  }
+
+  test("config") {
+    new HadoopConfigurationProperty("key")
   }
 
   /**

@@ -28,7 +28,7 @@ class AbfsParquetRelationSuite extends CloudRelationBasicSuite
   init()
 
   def init(): Unit = {
-    // propagate S3 credentials
+    // propagate credentials
     if (enabled) {
       initFS()
     }

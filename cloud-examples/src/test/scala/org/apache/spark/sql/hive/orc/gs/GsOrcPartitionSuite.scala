@@ -15,26 +15,26 @@
  * limitations under the License.
  */
 
-package org.apache.spark.sql.hive.orc.cloud
+package org.apache.spark.sql.hive.orc.gs
 
+import com.cloudera.spark.cloud.gs.GsTestSetup
 
-import com.cloudera.spark.cloud.s3.S3ATestSetup
+import org.apache.spark.sql.sources.CloudPartitionTest
 
-import org.apache.spark.sql.sources.AbtractOrcRelationSuite
-
-class S3AOrcRelationSuite extends AbtractOrcRelationSuite with S3ATestSetup {
-
-
+/**
+ * Partitioned queries with ORC data against GS.
+ */
+class GsOrcPartitionSuite extends CloudPartitionTest with GsTestSetup {
 
   init()
 
   def init(): Unit = {
-    // propagate S3 credentials
     if (enabled) {
       initFS()
     }
   }
 
-
-
+  override def dataSourceName(): String = {
+    "orc"
+  }
 }
