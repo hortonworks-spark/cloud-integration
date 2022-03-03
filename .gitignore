@@ -13,3 +13,6 @@ cloud-examples/derby.log
 cloud-examples/spark-warehouse
 cloud-examples/src/scripts
 spark-snapshot
+*.iws
+*.ipr
+
