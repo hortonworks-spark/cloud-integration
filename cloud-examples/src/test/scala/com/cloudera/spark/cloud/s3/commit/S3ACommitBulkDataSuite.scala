@@ -19,7 +19,7 @@ package com.cloudera.spark.cloud.s3.commit
 
 import scala.collection.mutable
 
-import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3ACommitterConstants, S3AOperations, S3ATestSetup, SequentialIOPolicy}
+import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3ACommitterConstants, S3AOperations, S3ATestSetup}
 import com.cloudera.spark.cloud.utils.StatisticsTracker
 import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
 import org.apache.hadoop.fs.{Path, PathExistsException}
@@ -27,7 +27,7 @@ import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}
 
 import org.apache.spark.SparkException
-import org.apache.spark.sql.{Dataset, SaveMode, SparkSession}
+import org.apache.spark.sql.{Dataset, SparkSession}
 
 /**
  * This is a large data workflow, starting with the landsat

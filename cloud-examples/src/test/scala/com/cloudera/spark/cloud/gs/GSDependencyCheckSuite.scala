@@ -19,7 +19,7 @@ package com.cloudera.spark.cloud.gs
 
 import com.cloudera.spark.cloud.test.UnitTestSuite
 import com.google.cloud.hadoop.fs.gcs.GoogleHadoopFileSystem
-import com.google.cloud.hadoop.util.HadoopConfigurationProperty
+import com.google.cloud.hadoop.fs.gcs.HadoopConfigurationProperty
 import org.apache.hadoop.fs.FileSystem
 
 /**

@@ -29,14 +29,17 @@ abstract class CloudPartitionTest extends AbstractCloudRelationTest {
 
 import testImplicits._
 
+  protected val rows = 3
+  protected val part1size = 2
+
   ctest(
     "save-findClass-partitioned-part-columns-in-data",
     "Save sets of files in explicitly set up partition tree; read") {
     withTempPathDir("part-columns", None) { path =>
-      for (p1 <- 1 to 2; p2 <- Seq("foo", "bar")) {
+      for (p1 <- 1 to part1size; p2 <- Seq("foo", "bar")) {
         val partitionDir = new Path(path, s"p1=$p1/p2=$p2")
         val df = sparkContext
-          .parallelize(for (i <- 1 to 3) yield (i, s"val_$i", p1))
+          .parallelize(for (i <- 1 to rows) yield (i, s"val_$i", p1))
           .toDF("a", "b", "p1")
 
          df.write

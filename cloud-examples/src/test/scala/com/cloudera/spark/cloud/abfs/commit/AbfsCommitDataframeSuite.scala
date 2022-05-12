@@ -20,7 +20,7 @@ package com.cloudera.spark.cloud.abfs.commit
 import com.cloudera.spark.cloud.s3.S3AOperations
 import com.cloudera.spark.cloud.s3.commit.Events
 import com.cloudera.spark.cloud.utils.StatisticsTracker
-import com.cloudera.spark.cloud.GeneralCommitterConstants.{ABFS_MANIFEST_COMMITTER_FACTORY, ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
+import com.cloudera.spark.cloud.GeneralCommitterConstants.{ABFS_MANIFEST_COMMITTER_FACTORY, ABFS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql.SparkSession

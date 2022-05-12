@@ -96,8 +96,6 @@ class S3AOperations(fs: FileSystem)
     Some(successData)
   }
 
-
-
   /**
    * If the committer is flagged as enabled, verify that it was used; return
    * the success data.

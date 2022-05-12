@@ -89,7 +89,7 @@
 -->
     <scalatest.version>3.2.3</scalatest.version>
     <slf4j.version>1.7.30</slf4j.version>
-    <log4j.version>1.2.17-cloudera1</log4j.version>
+    <log4j.version>1.2.17</log4j.version>
 
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
     <test.build.data>${test.build.dir}</test.build.data>
@@ -347,18 +347,54 @@
 
 
       <!-- use the shaded one for less version stress -->
+      <!-- but exclude everything the connector forgets to-->
       <dependency>
         <groupId>com.google.cloud.bigdataoss</groupId>
         <artifactId>gcs-connector</artifactId>
         <version>3.0.0-SNAPSHOT</version>
         <classifier>shaded</classifier>
+        <exclusions>
+          <exclusion>
+            <groupId>com.google.cloud.bigdataoss</groupId>
+            <artifactId>gcsio</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.api-client</groupId>
+            <artifactId>google-api-client-gson</artifactId>
+          </exclusion>
+
+          <exclusion>
+            <groupId>com.google.oauth-client</groupId>
+            <artifactId>google-oauth-client</artifactId>
+          </exclusion>
+
+          <exclusion>
+            <groupId>com.google.cloud.bigdataoss</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+
+          <exclusion>
+            <groupId>com.google.auto.value</groupId>
+            <artifactId>auto-value-annotations</artifactId>
+          </exclusion>
+
+          <exclusion>
+            <groupId>com.google.flogger</groupId>
+            <artifactId>*</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+          </exclusion>
+
+        </exclusions>
       </dependency>
 
-      <dependency>
-        <groupId>com.google.cloud.bigdataoss</groupId>
-        <artifactId>gcs-connector</artifactId>
-        <version>3.0.0-SNAPSHOT</version>
-      </dependency>
+<!--      <dependency>-->
+<!--        <groupId>com.google.cloud.bigdataoss</groupId>-->
+<!--        <artifactId>gcs-connector</artifactId>-->
+<!--        <version>3.0.0-SNAPSHOT</version>-->
+<!--      </dependency>-->
 
     </dependencies>
 
@@ -767,16 +803,16 @@
 
 
     <profile>
-      <id>spark-3.3</id>
+      <id>spark-3.4</id>
       <activation>
         <property>
-          <name>spark-3.3</name>
+          <name>spark-3.4</name>
         </property>
       </activation>
       <properties>
 
         <!-- -->
-        <spark.version>3.3.0-SNAPSHOT</spark.version>
+        <spark.version>3.4.0-SNAPSHOT</spark.version>
         <scala.version>2.12.15</scala.version>
         <scala.binary.version>2.12</scala.binary.version>
         <!-- needed to pick up the new stuff-->
