@@ -16,3 +16,4 @@ spark-snapshot
 *.iws
 *.ipr
 
+/cloud-examples/build.properties
