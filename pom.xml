@@ -65,11 +65,11 @@
 
     -->
 
-    <spark.version>3.3.0-SNAPSHOT</spark.version>
+    <spark.version>3.4.0-SNAPSHOT</spark.version>
 
 
-    <!-- needed to pick up the new stuff-->
-    <hadoop.version>3.3.1</hadoop.version>
+    <!-- needed to pick up the IOStatisticsContext without using reflection -->
+    <hadoop.version>3.4.0-SNAPSHOT</hadoop.version>
 
     <scala.version.tools>${scala.version}</scala.version.tools>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -109,10 +109,7 @@
     <cloud.test.configuration.file>${unset}</cloud.test.configuration.file>
     <log4j.debug>false</log4j.debug>
     <central.repo>https://repo1.maven.org/maven2</central.repo>
-    <!-- earlier versions of the SPARK-7481 patch had it as spark-cloud.JAR; this
-    variable makes it possible to run these tests against that version. -->
-    <spark.cloud.module.name>spark-hadoop-cloud</spark.cloud.module.name>
-    <spark.cloud.module.type>jar</spark.cloud.module.type>
+
     <committer>${unset}</committer>
 
     <!-- set this to require a hadoop version-->
