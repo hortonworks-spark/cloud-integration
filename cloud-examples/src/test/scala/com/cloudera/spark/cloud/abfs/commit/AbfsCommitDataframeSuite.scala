@@ -61,7 +61,7 @@ class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
       destDir: Path,
       format: String): Unit = {
 
-    val committerName =Some(MANIFEST_COMMITTER_NAME);
+    val committerName = Some(MANIFEST_COMMITTER_NAME);
     val local = getLocalFS
     val sparkConf = newSparkConf("DataFrames", local.getUri)
 
@@ -101,7 +101,8 @@ class AbfsCommitDataframeSuite extends AbstractAbfsCommitterSuite {
         sourceData
           .write
           .partitionBy("year", "month")
-          .format(format).save(subdir.toString)
+          .format(format)
+          .save(subdir.toString)
       }
       val operations = new S3AOperations(filesystem)
       stats.update()

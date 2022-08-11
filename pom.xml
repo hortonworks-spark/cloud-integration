@@ -102,7 +102,7 @@
     <maven-scala-plugin.version>2.15.2</maven-scala-plugin.version>
     <!--net.alchim31.maven. fussy-->
     <scala-maven-plugin.version>3.4.0</scala-maven-plugin.version>
-    <scalatest-maven-plugin.version>2.0.0</scalatest-maven-plugin.version>
+    <scalatest-maven-plugin.version>2.1.0</scalatest-maven-plugin.version>
     <!-- override point: Hadoop XML file containing (directly or via XInclude references)
     the credentials needed to test against target cloud infrastructures. -->
     <unset>unset</unset>
