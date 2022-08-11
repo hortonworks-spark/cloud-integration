@@ -551,7 +551,8 @@ object ObjectStoreConfigurations  extends HConf {
    */
   val FILE_COMMITTER_OPTIONS: Map[String, String] = Map(
     hkey(FILEOUTPUTCOMMITTER_ALGORITHM_VERSION) -> "2",
-    hkey(FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
+    
+    (FILEOUTPUTCOMMITTER_CLEANUP_SKIPPED) -> "true")
 
 
   /**
@@ -567,11 +568,17 @@ object ObjectStoreConfigurations  extends HConf {
       BINDING_PARQUET_OUTPUT_COMMITTER_CLASS,
     "spark.sql.sources.commitProtocolClass" ->
       GeneralCommitterConstants.PATH_OUTPUT_COMMITTER_NAME,
-    ABFS_SCHEME_COMMITTER_FACTORY ->
+    hkey(ABFS_SCHEME_COMMITTER_FACTORY) ->
       ABFS_MANIFEST_COMMITTER_FACTORY,
-    GS_SCHEME_COMMITTER_FACTORY ->
+    hkey(GS_SCHEME_COMMITTER_FACTORY) ->
       MANIFEST_COMMITTER_FACTORY,
-    "mapreduce.manifest.committer.validate.output" -> "true"
+    hkey("fs.iostatistics.logging.level") -> "info",
+    hkey("mapreduce.manifest.committer.validate.output") -> "true",
+    // collect worker thread iostats
+    hkey("fs.s3a.committer.experimental.collect.iostatistics") -> "true",
+    hkey("fs.iostatistics.thread.level.enabled") -> "true"
+
+    //"fs.s3a.committer.summary.report.directory" -> "todo
   )
 
   /**

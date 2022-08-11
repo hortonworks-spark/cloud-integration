@@ -20,7 +20,6 @@ package org.apache.spark.sql.hive.orc.cloud
 import com.cloudera.spark.cloud.s3.S3ATestSetup
 
 import org.apache.spark.sql.sources.{CloudRelationBasicSuite, ParquetRelationTrait}
-import org.apache.spark.sql.types.{CalendarIntervalType, DataType, NullType}
 
 class S3AParquetRelationSuite extends CloudRelationBasicSuite
   with S3ATestSetup

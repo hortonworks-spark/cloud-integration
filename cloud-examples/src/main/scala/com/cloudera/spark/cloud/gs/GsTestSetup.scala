@@ -39,4 +39,5 @@ trait GsTestSetup extends CopyCsvFileTrait {
     createFilesystem(uri)
   }
 
+  override def dynamicOverwrite: Boolean = true;
 }

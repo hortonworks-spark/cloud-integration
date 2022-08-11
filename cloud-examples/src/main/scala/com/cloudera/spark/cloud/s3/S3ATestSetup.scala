@@ -34,6 +34,13 @@ trait S3ATestSetup extends CloudSuiteTrait with RandomIOPolicy with
 
   }
 
+  /**
+   * this is *not* true but here to make sure the tests
+   * fail the way they are meant to.
+   * @return true if the store committer expected to support dynamic override
+   */
+  override def dynamicOverwrite: Boolean = true
+
   def initFS(): FileSystem = {
     setupFilesystemConfiguration(getConf)
     createTestS3AFS

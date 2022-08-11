@@ -35,4 +35,6 @@ class AbfsParquetRelationScaleSuite extends CloudRelationScaleTest
 
   override def enabled: Boolean = super.enabled && isScaleTestEnabled
 
+
+
 }

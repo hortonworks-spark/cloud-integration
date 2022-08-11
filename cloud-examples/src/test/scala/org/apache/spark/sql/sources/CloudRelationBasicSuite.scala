@@ -19,11 +19,13 @@ package org.apache.spark.sql.sources
 
 import scala.util.Random
 
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants
+
+import com.cloudera.spark.cloud.s3.S3ACommitterConstants.{CONFLICT_MODE, CONFLICT_MODE_APPEND}
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
-import org.apache.spark.sql.types.{IntegerType, StructType}
+import org.apache.spark.sql.catalyst.TableIdentifier
+import org.apache.spark.sql.types.{IntegerType, LongType, StructField, StructType}
 
 /**
  * Basic suite of cloud relations; speed over coverage.
@@ -194,8 +196,8 @@ import testImplicits._
       dataInDir.write
         .format(dataSourceName)
         .mode(SaveMode.Append) // append to prevent subdir from being deleted
-        .option(S3ACommitterConstants.CONFLICT_MODE,
-        S3ACommitterConstants.CONFLICT_MODE_APPEND)   // and for s3 committers
+        .option(CONFLICT_MODE,
+          CONFLICT_MODE_APPEND)   // and for s3 committers
         .save(dir.toString)
       assertDirHasFiles(dir)
       assertSuccessFileExists(dir)
@@ -205,5 +207,28 @@ import testImplicits._
       testWithPath(dir, dataInDir.collect())
     }
   }
+
+
+  ctest("dynamic", "dynamic overwrite", dynamicOverwrite) {
+    assertSparkRunning()
+
+    withTable("tbl", "tbl2") {
+      withView("view1") {
+        val df = spark.range(10).toDF("id")
+        val format = dataSourceName()
+        df.write.format(format).saveAsTable("tbl")
+        spark.sql("CREATE VIEW view1 AS SELECT id FROM tbl")
+        spark.sql(s"CREATE TABLE tbl2(ID long) USING $format")
+        spark.sql("INSERT OVERWRITE TABLE tbl2 SELECT ID FROM view1")
+        val identifier = TableIdentifier("tbl2")
+        val location = spark.sessionState.catalog.getTableMetadata(identifier)
+          .location.toString
+        val expectedSchema = StructType(Seq(StructField("ID", LongType, true)))
+        assert(spark.read.format(format).load(location).schema == expectedSchema)
+        checkAnswer(spark.table("tbl2"), df)
+      }
+    }
+  }
+
 
 }

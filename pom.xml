@@ -855,6 +855,18 @@
       </properties>
     </profile>
 
+    <profile>
+      <id>iostats</id>
+      <properties>
+        <hadoop.version>3.4.0-SNAPSHOT</hadoop.version>
+      </properties>
+      <modules>
+        <module>iostats-collection</module>
+
+
+      </modules>
+    </profile>
+
   </profiles>
 
 

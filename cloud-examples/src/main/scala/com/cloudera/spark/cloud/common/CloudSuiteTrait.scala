@@ -93,16 +93,10 @@ trait CloudSuiteTrait extends AnyFunSuiteLike
   protected def enabled: Boolean = true
 
   /**
-   * Overlay a set of system properties to a configuration, unless the key
-   * is "(unset").
-   *
-   * @param conf config to patch
-   * @param keys list of system properties
+   * Is dynamic override supported?
+   * @return true if the store committer expected to support dynamic override
    */
-  protected def patchTestOption(conf: Configuration, keys: Seq[String]): Unit = {
-    keys.foreach(key => getKnownSysprop(key).foreach(v =>
-      conf.set(key, v, "system property")))
-  }
+  protected def dynamicOverwrite: Boolean = false;
 
   /**
    * Get a known sysprop, return None if it was not there or it matched the

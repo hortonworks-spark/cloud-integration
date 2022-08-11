@@ -262,6 +262,7 @@ abstract class AbstractCloudRelationTest extends QueryTest with SQLTestUtils
     }
   }
 
+
   def checkQueries(df: DataFrame): Unit = {
 //    import spark.implicits._
 
