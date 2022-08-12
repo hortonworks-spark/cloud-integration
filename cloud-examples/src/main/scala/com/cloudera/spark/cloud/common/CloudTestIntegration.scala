@@ -21,11 +21,10 @@ import java.io.{File, IOException}
 import java.net.URI
 
 import scala.collection.JavaConverters._
-
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants
 import com.cloudera.spark.cloud.common.CloudTestKeys._
 import com.cloudera.spark.cloud.ObjectStoreConfigurations._
 import com.cloudera.spark.cloud.utils.ExtraAssertions
+import com.cloudera.spark.cloud.CommitterBinding
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{CommonConfigurationKeysPublic, FileStatus, FileSystem, FSHelper, LocalFileSystem, LocatedFileStatus, Path}
 
@@ -351,8 +350,8 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations
    * @return true if this is staging. Not checked: does Hadoop support staging.
    */
   def isUsingStagingCommitter(config: Configuration): Boolean = {
-    val committer = config.get(S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY, "")
-    committer != null && committer.startsWith(S3ACommitterConstants.STAGING_PACKAGE)
+    val committer = config.get(CommitterBinding.S3A_SCHEME_COMMITTER_FACTORY, "")
+    committer != null && committer.startsWith(CommitterBinding.STAGING_PACKAGE)
   }
 
   def assertPathExists(p: Path): Unit = {

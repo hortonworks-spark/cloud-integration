@@ -19,7 +19,8 @@ package com.cloudera.spark.cloud.common
 
 import java.io.{File, FileNotFoundException}
 
-import com.cloudera.spark.cloud.s3.{S3ACommitterConstants, S3AConstants}
+import com.cloudera.spark.cloud.s3.S3AConstants
+import com.cloudera.spark.cloud.CommitterBinding
 import org.apache.hadoop.conf.Configuration
 import org.scalatest.concurrent.Eventually
 import org.scalatest.BeforeAndAfter
@@ -81,7 +82,7 @@ object CloudSuite extends Logging with S3AConstants
 
     // setup the committer from any property passed in
     getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
-      val binding = S3ACommitterConstants.COMMITTERS_BY_NAME(committer.toLowerCase())
+      val binding = CommitterBinding.COMMITTERS_BY_NAME(committer.toLowerCase())
       binding.bind(config)
       logInfo(s"Using committer binding $binding")
     })

@@ -15,25 +15,24 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.s3
+package com.cloudera.spark.cloud
 
-import com.cloudera.spark.cloud.GeneralCommitterConstants
-import com.cloudera.spark.cloud.utils.HConf
-import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.commit.CommitConstants
-
-import org.apache.spark.SparkConf
 
 /**
  * Constants related to the S3A committers.
  * Originally a copy & paste of the java values, it's now just a reference,
  * though retained to reserve the option of moving back to copied values.
  */
-object S3ACommitterConstants {
+object CommitterBinding {
 
-  val S3A_SCHEME_COMMITTER_FACTORY: String = String.format(
-    GeneralCommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
-    "s3a")
+  def factoryForSchema(s: String): String =
+    String.format(
+      GeneralCommitterConstants.OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN,
+      s)
+
+
+  val S3A_SCHEME_COMMITTER_FACTORY: String = factoryForSchema("s3a")
   val STAGING_PACKAGE = "org.apache.hadoop.fs.s3a.commit.staging."
   val S3A_COMMITTER_FACTORY: String = CommitConstants.S3A_COMMITTER_FACTORY
 
@@ -74,22 +73,5 @@ object S3ACommitterConstants {
 
 }
 
-case class CommitterInfo(name: String, factory: String)
-  extends HConf {
 
-  def bind(sparkConf: SparkConf): Unit = {
-    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
-      factory)
-    hconf(sparkConf, S3ACommitterConstants.S3A_COMMITTER_NAME,
-      name)
-  }
-
-  def bind(conf: Configuration): Unit = {
-    conf.set(S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
-      factory)
-    conf.set(S3ACommitterConstants.S3A_COMMITTER_NAME, name)
-  }
-
-  override def toString: String = s"Committer binding $factory($name)"
-}
 

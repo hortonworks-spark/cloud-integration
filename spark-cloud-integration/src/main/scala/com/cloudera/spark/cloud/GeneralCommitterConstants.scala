@@ -130,4 +130,10 @@ object GeneralCommitterConstants {
 
   val GS_SCHEME_COMMITTER_FACTORY: String =
     String.format(OUTPUTCOMMITTER_FACTORY_SCHEME_PATTERN, "gs")
+
+  val DYNAMIC_PARTITION_OVERWRITE = "spark.sql.sources.partitionOverwriteMode"
+
+  val DYNAMIC =  "dynamic"
+
+
 }

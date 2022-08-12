@@ -20,7 +20,7 @@ package org.apache.spark.sql.sources
 import scala.util.Random
 
 
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants.{CONFLICT_MODE, CONFLICT_MODE_APPEND}
+import com.cloudera.spark.cloud.CommitterBinding.{CONFLICT_MODE, CONFLICT_MODE_APPEND}
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._

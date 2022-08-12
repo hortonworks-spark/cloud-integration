@@ -19,8 +19,8 @@ package com.cloudera.spark.cloud.examples
 
 import java.io.FileNotFoundException
 
-import com.cloudera.spark.cloud.ObjectStoreExample
-import com.cloudera.spark.cloud.s3.{S3ACommitterConstants, S3AExampleSetup, SequentialIOPolicy}
+import com.cloudera.spark.cloud.{CommitterBinding, ObjectStoreExample}
+import com.cloudera.spark.cloud.s3.{S3AExampleSetup, SequentialIOPolicy}
 import com.cloudera.spark.cloud._
 import com.cloudera.spark.cloud.s3._
 import org.apache.hadoop.conf.Configuration
@@ -110,10 +110,10 @@ class BorisBikeExample extends ObjectStoreExample with S3AExampleSetup
     sparkConf.set("spark.hadoop.parquet.mergeSchema", "false")
     sparkConf.set("spark.sql.parquet.filterPushdown" , "true")
 
-    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
-      S3ACommitterConstants.S3A_COMMITTER_FACTORY)
-    hconf(sparkConf, S3ACommitterConstants.S3A_SCHEME_COMMITTER_FACTORY,
-      S3ACommitterConstants.S3A_COMMITTER_FACTORY)
+    hconf(sparkConf, CommitterBinding.S3A_SCHEME_COMMITTER_FACTORY,
+      CommitterBinding.S3A_COMMITTER_FACTORY)
+    hconf(sparkConf, CommitterBinding.S3A_SCHEME_COMMITTER_FACTORY,
+      CommitterBinding.S3A_COMMITTER_FACTORY)
 
     val spark = SparkSession
         .builder

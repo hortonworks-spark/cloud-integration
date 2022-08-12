@@ -25,7 +25,7 @@ import scala.collection.JavaConverters._
 import scala.language.postfixOps
 import scala.reflect.ClassTag
 
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
+import CommitterBinding._
 import com.cloudera.spark.cloud.utils.{HConf, TimeOperations}
 import com.cloudera.spark.cloud.GeneralCommitterConstants._
 import com.fasterxml.jackson.databind.JsonNode
@@ -580,6 +580,9 @@ object ObjectStoreConfigurations  extends HConf {
 
     //"fs.s3a.committer.summary.report.directory" -> "todo
   )
+
+  val DYNAMIC_PARTITIONING: Map[String, String] = Map(
+    DYNAMIC_PARTITION_OVERWRITE -> DYNAMIC)
 
   /**
    * Extra options for testing with hive.

@@ -17,9 +17,9 @@
 
 package com.cloudera.spark.cloud.s3.commit
 
-import com.cloudera.spark.cloud.GeneralCommitterConstants
-import com.cloudera.spark.cloud.s3.{S3ACommitterConstants, S3AOperations, S3ATestSetup}
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
+import com.cloudera.spark.cloud.{CommitterBinding, GeneralCommitterConstants}
+import com.cloudera.spark.cloud.s3.{S3AOperations, S3ATestSetup}
+import com.cloudera.spark.cloud.CommitterBinding._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
 
@@ -98,7 +98,7 @@ class S3APartitionedCommitterSuite extends AbstractS3ACommitterSuite with S3ATes
 
     logInfo(s"Using committer binding $committerInfo with conflict mode $confictMode" +
       s" writing $format data")
-    hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
+    hconf(sparkConf, CommitterBinding.CONFLICT_MODE, confictMode)
     hconf(sparkConf, REJECT_FILE_OUTPUT, true)
 
     // force failfast

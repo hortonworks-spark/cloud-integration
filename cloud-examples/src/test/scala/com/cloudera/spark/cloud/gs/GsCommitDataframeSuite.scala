@@ -17,15 +17,10 @@
 
 package com.cloudera.spark.cloud.gs
 
-import com.cloudera.spark.cloud.s3.S3AOperations
-import com.cloudera.spark.cloud.s3.commit.Events
-import com.cloudera.spark.cloud.utils.StatisticsTracker
-import com.cloudera.spark.cloud.GeneralCommitterConstants.{GS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
-import org.apache.hadoop.fs.Path
+import com.cloudera.spark.cloud.committers.AbstractCommitDataframeSuite
 
-import org.apache.spark.sql.SparkSession
-
-class GsCommitDataframeSuite extends AbstractGsCommitterSuite {
+class GsCommitDataframeSuite
+  extends AbstractCommitDataframeSuite with GsTestSetup {
 
   init()
 
@@ -35,89 +30,14 @@ class GsCommitDataframeSuite extends AbstractGsCommitterSuite {
     }
   }
 
-  /**
-   * Formats to test.
-   */
-  private val formats = Seq(
-    "orc",
-    "parquet",
-    ""
-  )
-
-  private lazy val destDir = testPath(filesystem, "dataframe-committer")
-
-  nonEmpty(formats).foreach {
-    fmt =>
-      ctest(s"Dataframe+manifest-$fmt",
-        s"Write a dataframe to $fmt with the manifest committer") {
-        testOneFormat(
-          new Path(destDir, s"manifest-$fmt"),
-          fmt)
-      }
-  }
-
-  def testOneFormat(
-      destDir: Path,
-      format: String): Unit = {
-
-    val committerName = Some(MANIFEST_COMMITTER_NAME)
-    val local = getLocalFS
-    val sparkConf = newSparkConf("DataFrames", local.getUri)
+  override def committers = Seq("manifest")
 
 
-    // TODO make option if we want to support regression testing with the old
-    // committer
-    hconf(sparkConf,
-      GS_SCHEME_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY)
+  override def dynamicOverwrite: Boolean = true
+
+  override def dynamicPartitioning: Boolean = dynamicOverwrite
 
 
-    val spark = SparkSession
-      .builder
-      .config(sparkConf)
-      .enableHiveSupport
-      .getOrCreate()
-    // ignore the IDE if it complains: this *is* used.
-    import spark.implicits._
-    try {
-      val sc = spark.sparkContext
-      val conf = sc.hadoopConfiguration
-      val numPartitions = 1
-      val eventData = Events.events(2017, 2017, 1, 1, 10).toDS()
-      val sourceData = eventData.repartition(numPartitions).cache()
-      sourceData.printSchema()
-      val eventCount = sourceData.count()
-      logInfo(s"${eventCount} elements")
-      sourceData.show(10)
-      val numRows = eventCount
-
-      val subdir = new Path(destDir, format)
-      rm(filesystem, subdir)
-
-      val stats = new StatisticsTracker(filesystem)
-
-      logDuration(s"write to $subdir in format $format") {
-        sourceData
-          .write
-          .partitionBy("year", "month")
-          .format(format).save(subdir.toString)
-      }
-      val operations = new S3AOperations(filesystem)
-      stats.update()
-
-      logDebug(s"Statistics = \n${stats.dump()}")
-
-      operations.maybeVerifyCommitter(subdir,
-        committerName,
-        None,
-        conf,
-        Some(numPartitions),
-        s"$format:")
-      // read back results and verify they match
-      validateRowCount(spark, filesystem, subdir, format, numRows)
-    } finally {
-      spark.close()
-    }
-
-  }
+  override def schema: String = "gs"
 
 }

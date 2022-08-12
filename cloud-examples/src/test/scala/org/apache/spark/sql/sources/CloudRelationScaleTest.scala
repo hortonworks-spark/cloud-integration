@@ -17,7 +17,7 @@
 
 package org.apache.spark.sql.sources
 
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants
+import com.cloudera.spark.cloud.CommitterBinding
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
@@ -42,8 +42,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       assertSuccessFileExists(path)
       testDF.write
         .mode(SaveMode.Append)
-        .option(S3ACommitterConstants.CONFLICT_MODE,
-          S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+        .option(CommitterBinding.CONFLICT_MODE,
+          CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
         .format(dataSourceName)
         .save(name)
       assertSuccessFileExists(path)
@@ -138,8 +138,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
-        .option(S3ACommitterConstants.CONFLICT_MODE,
-          S3ACommitterConstants.CONFLICT_MODE_APPEND) // and for s3 committers
+        .option(CommitterBinding.CONFLICT_MODE,
+          CommitterBinding.CONFLICT_MODE_APPEND) // and for s3 committers
         .partitionBy("p1", "p2")
         .save(name)
       assertSuccessFileExists(path)
@@ -166,8 +166,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF2.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
-        .option(S3ACommitterConstants.CONFLICT_MODE,
-          S3ACommitterConstants.CONFLICT_MODE_APPEND)   /* for s3a committers */
+        .option(CommitterBinding.CONFLICT_MODE,
+          CommitterBinding.CONFLICT_MODE_APPEND)   /* for s3a committers */
         .partitionBy("p1", "p2")
         .save(name)
       assertSuccessFileExists(path)
@@ -232,8 +232,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     testDF.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
-      .option(S3ACommitterConstants.CONFLICT_MODE,
-        S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+      .option(CommitterBinding.CONFLICT_MODE,
+        CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
       .saveAsTable("t")
 
     withTable("t") {
@@ -335,8 +335,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     partitionedTestDF.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
-      .option(S3ACommitterConstants.CONFLICT_MODE,
-        S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+      .option(CommitterBinding.CONFLICT_MODE,
+        CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
       .option("dataSchema", dataSchema.json)
       .partitionBy("p1", "p2")
       .saveAsTable("t")
@@ -361,8 +361,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     partitionedTestDF2.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
-      .option(S3ACommitterConstants.CONFLICT_MODE,
-        S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+      .option(CommitterBinding.CONFLICT_MODE,
+        CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
       .option("dataSchema", dataSchema.json)
       .partitionBy("p1", "p2")
       .saveAsTable("t")
@@ -388,8 +388,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF2.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
-        .option(S3ACommitterConstants.CONFLICT_MODE,
-          S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+        .option(CommitterBinding.CONFLICT_MODE,
+          CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
         .option("dataSchema", dataSchema.json)
         .partitionBy("p1")
         .saveAsTable("t")
@@ -619,8 +619,8 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
           .write
           .format(dataSourceName)
           .mode(SaveMode.Append)
-          .option(S3ACommitterConstants.CONFLICT_MODE,
-            S3ACommitterConstants.CONFLICT_MODE_APPEND) /* for s3a committers */
+          .option(CommitterBinding.CONFLICT_MODE,
+            CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
           .partitionBy("ps1", "p2", "pf1", "f")
           .saveAsTable("t")
 

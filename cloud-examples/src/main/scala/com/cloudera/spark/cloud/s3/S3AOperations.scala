@@ -21,7 +21,7 @@ import java.io.FileNotFoundException
 
 import scala.collection.JavaConverters._
 
-import com.cloudera.spark.cloud.GeneralCommitterConstants
+import com.cloudera.spark.cloud.{CommitterBinding, CommitterInfo, GeneralCommitterConstants}
 import com.cloudera.spark.cloud.common.StoreTestOperations
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
@@ -115,7 +115,7 @@ class S3AOperations(fs: FileSystem)
       fileCount: Option[Integer],
       errorText: String = ""): Option[SuccessData] = {
     committerName match {
-      case Some(S3ACommitterConstants.FILE) =>
+      case Some(CommitterBinding.FILE) =>
         verifyCommitter(destDir, None, fileCount, errorText, false)
 
       case Some(_) => verifyCommitter(destDir,

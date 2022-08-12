@@ -17,36 +17,11 @@
 
 package com.cloudera.spark.cloud.s3.commit
 
-import com.cloudera.spark.cloud.ObjectStoreConfigurations
-import com.cloudera.spark.cloud.common.CloudSuite
+import com.cloudera.spark.cloud.committers.AbstractCommitterSuite
 import com.cloudera.spark.cloud.s3.S3ATestSetup
 
-import org.apache.spark.{SparkConf, SparkScopeWorkarounds}
+abstract class AbstractS3ACommitterSuite
+  extends AbstractCommitterSuite with S3ATestSetup {
 
-abstract class AbstractS3ACommitterSuite extends CloudSuite with S3ATestSetup {
-  /**
-   * Patch up hive for re-use.
-   *
-   * @param sparkConf configuration to patch
-   */
-  def addTransientDerbySettings(sparkConf: SparkConf): Unit = {
-    hconf(sparkConf, SparkScopeWorkarounds.tempHiveConfig())
-  }
-
-  /**
-   * Override point for suites: a method which is called
-   * in all the `newSparkConf()` methods.
-   * This can be used to alter values for the configuration.
-   * It is called before the configuration read in from the command line
-   * is applied, so that tests can override the values applied in-code.
-   *
-   * @param sparkConf spark configuration to alter
-   */
-  override protected def addSuiteConfigurationOptions(sparkConf: SparkConf): Unit = {
-    super.addSuiteConfigurationOptions(sparkConf)
-    logDebug("Patching spark conf with s3a committer bindings")
-    sparkConf.setAll(ObjectStoreConfigurations.COMMITTER_OPTIONS)
-    addTransientDerbySettings(sparkConf)
-  }
 
 }

@@ -20,7 +20,7 @@ package com.cloudera.spark.cloud.abfs.commit
 import scala.collection.mutable
 
 import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, S3AOperations}
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
+import com.cloudera.spark.cloud.CommitterBinding._
 import com.cloudera.spark.cloud.utils.StatisticsTracker
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}

@@ -19,10 +19,11 @@ package com.cloudera.spark.cloud.s3.commit
 
 import scala.collection.mutable
 
-import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3ACommitterConstants, S3AOperations, S3ATestSetup}
+import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3AOperations, S3ATestSetup}
 import com.cloudera.spark.cloud.utils.StatisticsTracker
-import com.cloudera.spark.cloud.s3.S3ACommitterConstants._
-import org.apache.hadoop.fs.{Path, PathExistsException}
+import com.cloudera.spark.cloud.CommitterBinding
+import com.cloudera.spark.cloud.CommitterBinding._
+import org.apache.hadoop.fs.{FileSystem, Path, PathExistsException}
 import org.apache.hadoop.fs.s3a.commit.files.SuccessData
 import org.apache.hadoop.fs.s3a.{S3AFileSystem, S3AInputPolicy}
 
@@ -51,12 +52,18 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
   private val parallelism = 8
 
-  private val destFS = filesystemOption.orNull.asInstanceOf[S3AFileSystem]
+  private val destFS = filesystemOption.orNull.asInstanceOf[FileSystem]
 
   private val destDir = filesystemOption.map(f => testPath(f, "bulkdata")).orNull
 
   private var spark: SparkSession = _
 
+  // summary of operations
+  val summary = new mutable.ListBuffer[(String, Long)]()
+
+  /**
+   * after all tests
+   */
   after {
     if (spark != null) {
       spark.close()
@@ -98,7 +105,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     committerInfo.bind(sparkConf)
 
     logInfo(s"Using committer $committerInfo with conflict mode $confictMode")
-    hconf(sparkConf, S3ACommitterConstants.CONFLICT_MODE, confictMode)
+    hconf(sparkConf, CommitterBinding.CONFLICT_MODE, confictMode)
 
     // landsat always uses sequential
     hconf(sparkConf,
@@ -118,9 +125,6 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
   /**
    * This is the test
    */
-
-  // summary of operations
-  val summary = new mutable.ListBuffer[(String, Long)]()
 
   private def summarize(s: String, t: Long) = {
     logInfo(s"Duration of $s = ${toSeconds(t)}")
