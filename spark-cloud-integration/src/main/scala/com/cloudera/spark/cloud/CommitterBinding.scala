@@ -17,6 +17,7 @@
 
 package com.cloudera.spark.cloud
 
+import com.cloudera.spark.cloud.GeneralCommitterConstants.{ABFS_MANIFEST_COMMITTER_FACTORY, DEFAULT_COMMITTER_FACTORY, MANIFEST_COMMITTER_FACTORY, MANIFEST_COMMITTER_NAME}
 import org.apache.hadoop.fs.s3a.commit.CommitConstants
 
 /**
@@ -43,6 +44,7 @@ object CommitterBinding {
   val DIRECTORY = "directory"
   val PARTITIONED = "partitioned"
   val MANIFEST = "manifest"
+  val MANIFEST_ABFS = "manifest_abfs"
   val FILE = "file"
 
   val S3A_CONFLICT_MODE: String =
@@ -66,9 +68,11 @@ object CommitterBinding {
     STAGING -> CommitterInfo(STAGING, S3A_COMMITTER_FACTORY),
     DIRECTORY -> CommitterInfo(DIRECTORY, S3A_COMMITTER_FACTORY),
     PARTITIONED -> CommitterInfo(PARTITIONED, S3A_COMMITTER_FACTORY),
-    MANIFEST -> CommitterInfo(GeneralCommitterConstants.MANIFEST_COMMITTER_NAME,
-      GeneralCommitterConstants.MANIFEST_COMMITTER_FACTORY),
-    FILE -> CommitterInfo("", GeneralCommitterConstants.DEFAULT_COMMITTER_FACTORY)
+    MANIFEST -> CommitterInfo(MANIFEST_COMMITTER_NAME,
+      MANIFEST_COMMITTER_FACTORY),
+    MANIFEST_ABFS -> CommitterInfo(MANIFEST_COMMITTER_NAME,
+      ABFS_MANIFEST_COMMITTER_FACTORY),
+    FILE -> CommitterInfo("", DEFAULT_COMMITTER_FACTORY)
   )
 
 }

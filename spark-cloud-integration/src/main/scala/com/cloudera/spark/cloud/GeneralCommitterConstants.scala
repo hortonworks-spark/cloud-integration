@@ -122,7 +122,7 @@ object GeneralCommitterConstants {
    * abfs factory uses the abfs-specific store binding.
    */
   val ABFS_MANIFEST_COMMITTER_FACTORY: String =
-    "org.apache.hadoop.mapreduce.lib.output.committer.manifest.ManifestCommitterFactory";
+    "org.apache.hadoop.fs.azurebfs.commit.AzureManifestCommitterFactory";
 
 
   val ABFS_SCHEME_COMMITTER_FACTORY: String =
