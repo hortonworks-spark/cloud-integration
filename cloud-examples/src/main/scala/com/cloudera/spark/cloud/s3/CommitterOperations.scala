@@ -30,7 +30,7 @@ import org.apache.hadoop.fs.{FileSystem, Path, StorageStatistics}
 /**
  * General S3A operations against a filesystem.
  */
-class S3AOperations(fs: FileSystem)
+class CommitterOperations(fs: FileSystem)
   extends StoreTestOperations {
 
   /**
@@ -55,7 +55,7 @@ class S3AOperations(fs: FileSystem)
       destDir: Path,
       committerInfo: Option[CommitterInfo],
       fileCount: Option[Integer],
-      text: String,
+      text: String = "",
       requireNonEmpty: Boolean = true): Option[SuccessData] = {
 
     val successFile = new Path(destDir, GeneralCommitterConstants.SUCCESS_FILE_NAME)

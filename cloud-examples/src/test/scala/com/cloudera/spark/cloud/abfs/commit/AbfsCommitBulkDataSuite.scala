@@ -19,7 +19,7 @@ package com.cloudera.spark.cloud.abfs.commit
 
 import scala.collection.mutable
 
-import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, S3AOperations}
+import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, CommitterOperations}
 import com.cloudera.spark.cloud.CommitterBinding._
 import com.cloudera.spark.cloud.utils.StatisticsTracker
 import org.apache.hadoop.fs.Path
@@ -75,7 +75,7 @@ class AbfsCommitBulkDataSuite extends AbstractAbfsCommitterSuite {
   // the output is bigger
   val filterPercentage: Double = if (isScaleTestEnabled) 0.80d else 0.10d
 
-  val operations = new S3AOperations(destFS)
+  val operations = new CommitterOperations(destFS)
 
   /**
    *

@@ -96,21 +96,21 @@ object GeneralCommitterConstants {
   /**
    * Prefix to use for config options..
    */
-  val OPT_PREFIX: String = "mapreduce.manifest.committer."
+  val MANIFEST_OPT_PREFIX: String = "mapreduce.manifest.committer."
 
-  val OPT_IO_PROCESSORS: String = OPT_PREFIX + "io.thread.count"
+  val MANIFEST_OPT_IO_PROCESSORS: String = MANIFEST_OPT_PREFIX + "io.thread.count"
 
   /**
    * Default value..
    */
-  val OPT_IO_PROCESSORS_DEFAULT: Int = 32
+  val MANIFEST_OPT_IO_PROCESSORS_DEFAULT: Int = 32
 
   /**
    * Should the output be validated?
    */
-  val OPT_VALIDATE_OUTPUT: String = OPT_PREFIX + "validate.output"
+  val MANIFEST_OPT_VALIDATE_OUTPUT: String = MANIFEST_OPT_PREFIX + "validate.output"
 
-  val OPT_VALIDATE_OUTPUT_DEFAULT = false
+  val MANIFEST_OPT_VALIDATE_OUTPUT_DEFAULT = false
 
   /**
    * Name of the factory.

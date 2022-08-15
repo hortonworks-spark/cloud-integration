@@ -96,7 +96,7 @@ trait CloudSuiteTrait extends AnyFunSuiteLike
    * Is dynamic override supported?
    * @return true if the store committer expected to support dynamic override
    */
-  protected def dynamicOverwrite: Boolean = false;
+  protected def dynamicPartitioning: Boolean = false;
 
   /**
    * Get a known sysprop, return None if it was not there or it matched the

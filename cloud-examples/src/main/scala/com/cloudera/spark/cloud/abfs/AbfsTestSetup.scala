@@ -34,7 +34,7 @@ trait AbfsTestSetup extends CopyCsvFileTrait {
     getConf.getBoolean(ABFS_TESTS_ENABLED, false)
   }
 
-  override def dynamicOverwrite: Boolean = true;
+  override def dynamicPartitioning: Boolean = true;
 
   def initFS(): FileSystem = {
     val uri = new URI(requiredOption(ABFS_TEST_URI))

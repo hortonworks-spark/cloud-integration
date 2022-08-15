@@ -42,7 +42,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       assertSuccessFileExists(path)
       testDF.write
         .mode(SaveMode.Append)
-        .option(CommitterBinding.CONFLICT_MODE,
+        .option(CommitterBinding.S3A_CONFLICT_MODE,
           CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
         .format(dataSourceName)
         .save(name)
@@ -138,7 +138,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
-        .option(CommitterBinding.CONFLICT_MODE,
+        .option(CommitterBinding.S3A_CONFLICT_MODE,
           CommitterBinding.CONFLICT_MODE_APPEND) // and for s3 committers
         .partitionBy("p1", "p2")
         .save(name)
@@ -166,7 +166,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF2.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
-        .option(CommitterBinding.CONFLICT_MODE,
+        .option(CommitterBinding.S3A_CONFLICT_MODE,
           CommitterBinding.CONFLICT_MODE_APPEND)   /* for s3a committers */
         .partitionBy("p1", "p2")
         .save(name)
@@ -232,7 +232,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     testDF.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
-      .option(CommitterBinding.CONFLICT_MODE,
+      .option(CommitterBinding.S3A_CONFLICT_MODE,
         CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
       .saveAsTable("t")
 
@@ -335,7 +335,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     partitionedTestDF.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
-      .option(CommitterBinding.CONFLICT_MODE,
+      .option(CommitterBinding.S3A_CONFLICT_MODE,
         CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
       .option("dataSchema", dataSchema.json)
       .partitionBy("p1", "p2")
@@ -361,7 +361,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
     partitionedTestDF2.write
       .format(dataSourceName)
       .mode(SaveMode.Append)
-      .option(CommitterBinding.CONFLICT_MODE,
+      .option(CommitterBinding.S3A_CONFLICT_MODE,
         CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
       .option("dataSchema", dataSchema.json)
       .partitionBy("p1", "p2")
@@ -388,7 +388,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
       partitionedTestDF2.write
         .format(dataSourceName)
         .mode(SaveMode.Append)
-        .option(CommitterBinding.CONFLICT_MODE,
+        .option(CommitterBinding.S3A_CONFLICT_MODE,
           CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
         .option("dataSchema", dataSchema.json)
         .partitionBy("p1")
@@ -619,7 +619,7 @@ abstract class CloudRelationScaleTest extends AbstractCloudRelationTest {
           .write
           .format(dataSourceName)
           .mode(SaveMode.Append)
-          .option(CommitterBinding.CONFLICT_MODE,
+          .option(CommitterBinding.S3A_CONFLICT_MODE,
             CommitterBinding.CONFLICT_MODE_APPEND) /* for s3a committers */
           .partitionBy("ps1", "p2", "pf1", "f")
           .saveAsTable("t")

@@ -18,7 +18,7 @@
 package com.cloudera.spark.cloud.s3.commit
 
 import com.cloudera.spark.cloud.{CommitterBinding, GeneralCommitterConstants}
-import com.cloudera.spark.cloud.s3.{S3AOperations, S3ATestSetup}
+import com.cloudera.spark.cloud.s3.{CommitterOperations, S3ATestSetup}
 import com.cloudera.spark.cloud.CommitterBinding._
 import org.apache.hadoop.fs.Path
 import org.apache.hadoop.fs.s3a.S3AFileSystem
@@ -98,7 +98,7 @@ class S3APartitionedCommitterSuite extends AbstractS3ACommitterSuite with S3ATes
 
     logInfo(s"Using committer binding $committerInfo with conflict mode $confictMode" +
       s" writing $format data")
-    hconf(sparkConf, CommitterBinding.CONFLICT_MODE, confictMode)
+    hconf(sparkConf, CommitterBinding.S3A_CONFLICT_MODE, confictMode)
     hconf(sparkConf, REJECT_FILE_OUTPUT, true)
 
     // force failfast
@@ -156,7 +156,7 @@ class S3APartitionedCommitterSuite extends AbstractS3ACommitterSuite with S3ATes
       val numRows = eventCount
 
       writeDS(sourceData)
-      val operations = new S3AOperations(destFS)
+      val operations = new CommitterOperations(destFS)
       val stats = operations.getStorageStatistics()
 
       logDebug(s"Statistics = \n" + stats.mkString("  ", " = ", "\n"))

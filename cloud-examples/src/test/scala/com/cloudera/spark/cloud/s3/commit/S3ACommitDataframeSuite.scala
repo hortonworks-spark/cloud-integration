@@ -20,6 +20,11 @@ package com.cloudera.spark.cloud.s3.commit
 import com.cloudera.spark.cloud.CommitterBinding._
 import com.cloudera.spark.cloud.committers.AbstractCommitDataframeSuite
 import com.cloudera.spark.cloud.s3.S3ATestSetup
+import com.cloudera.spark.cloud.CommitterInfo
+import org.apache.hadoop.fs.{FileSystem, Path}
+
+import org.apache.spark.sql.{Dataset, SparkSession}
+import org.apache.spark.SparkConf
 
 /**
  * Tests different data formats through the committers.
@@ -36,21 +41,50 @@ class S3ACommitDataframeSuite
     }
   }
 
-  override def dynamicPartitioning: Boolean = dynamicOverwrite
-
-
   override def schema: String = "s3a"
 
 
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   override def committers: Seq[String] = Seq(
-    //    DEFAULT_RENAME,
-    DIRECTORY,
-    //    PARTITIONED,
-    MAGIC,
+    //DIRECTORY,
+    PARTITIONED,
+    //MAGIC,
     ""
   )
 
 
+  override protected def setDynamicPartitioningOptions(
+    sparkConf: SparkConf,
+    committerInfo: CommitterInfo): Unit = {
+    if (committerInfo.name == PARTITIONED) {
+      hconf(sparkConf, S3A_CONFLICT_MODE, CONFLICT_MODE_REPLACE)
+    } else {
+      super
+        .setDynamicPartitioningOptions(sparkConf, committerInfo)
+    }
+  }
+
+  override def anyOtherTests(spark: SparkSession,
+    filesystem: FileSystem,
+    subdir: Path, format: String,
+    sourceData: Dataset[Event],
+    eventData2: Dataset[Event],
+    committerInfo: CommitterInfo): Unit = {
+    if (committerInfo.name == PARTITIONED) {
+      logInfo("Executing partitioned committer tests")
+      // although the dynamic command doesn't work,
+      // a normal query will trigger overwrite
+      logDuration(s"overwrite datset2 to $subdir in format $format") {
+        eventData2
+          .write
+          .mode("overwrite")
+          .partitionBy("year", "month")
+          .format(format)
+          .save(subdir.toString)
+      }
+    }
+
+
+  }
 }

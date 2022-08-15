@@ -486,7 +486,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
       writer.mode(SaveMode.Append)
       extraOps.foreach(t => writer.option(t._1, t._2))
       writer.option(S3A_COMMITTER_NAME, committer)
-      writer.option(CONFLICT_MODE, conflict)
+      writer.option(S3A_CONFLICT_MODE, conflict)
       writer
         .format(format)
         .save(dest.toUri.toString)

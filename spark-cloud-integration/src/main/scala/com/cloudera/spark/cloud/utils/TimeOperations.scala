@@ -95,7 +95,7 @@ trait TimeOperations extends Logging {
       case ex: Exception =>
         val end = nanos()
         val d = end - start
-        logError(s"After ${toHuman(d)}: $ex", ex)
+        logWarning(s"After ${toHuman(d)}: $ex", ex)
         throw ex
     }
   }

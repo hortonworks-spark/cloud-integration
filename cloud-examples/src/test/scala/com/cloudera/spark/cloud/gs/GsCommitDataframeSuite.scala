@@ -32,12 +32,6 @@ class GsCommitDataframeSuite
 
   override def committers = Seq("manifest")
 
-
-  override def dynamicOverwrite: Boolean = true
-
-  override def dynamicPartitioning: Boolean = dynamicOverwrite
-
-
   override def schema: String = "gs"
 
 }

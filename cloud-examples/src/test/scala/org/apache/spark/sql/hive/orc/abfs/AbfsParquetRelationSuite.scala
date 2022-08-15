@@ -33,5 +33,5 @@ class AbfsParquetRelationSuite extends CloudRelationBasicSuite
       initFS()
     }
   }
-  override def dynamicOverwrite: Boolean = true;
+  override def dynamicPartitioning: Boolean = true;
 }

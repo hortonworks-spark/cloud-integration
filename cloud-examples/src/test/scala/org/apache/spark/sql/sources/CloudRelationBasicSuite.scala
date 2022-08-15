@@ -20,7 +20,7 @@ package org.apache.spark.sql.sources
 import scala.util.Random
 
 
-import com.cloudera.spark.cloud.CommitterBinding.{CONFLICT_MODE, CONFLICT_MODE_APPEND}
+import com.cloudera.spark.cloud.CommitterBinding.{S3A_CONFLICT_MODE, CONFLICT_MODE_APPEND}
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.sql._
@@ -196,7 +196,7 @@ import testImplicits._
       dataInDir.write
         .format(dataSourceName)
         .mode(SaveMode.Append) // append to prevent subdir from being deleted
-        .option(CONFLICT_MODE,
+        .option(S3A_CONFLICT_MODE,
           CONFLICT_MODE_APPEND)   // and for s3 committers
         .save(dir.toString)
       assertDirHasFiles(dir)
@@ -209,7 +209,7 @@ import testImplicits._
   }
 
 
-  ctest("dynamic", "dynamic overwrite", dynamicOverwrite) {
+  ctest("dynamic", "dynamic overwrite", dynamicPartitioning) {
     assertSparkRunning()
 
     withTable("tbl", "tbl2") {

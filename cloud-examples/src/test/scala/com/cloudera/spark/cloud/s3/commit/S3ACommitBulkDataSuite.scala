@@ -19,7 +19,7 @@ package com.cloudera.spark.cloud.s3.commit
 
 import scala.collection.mutable
 
-import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, S3AOperations, S3ATestSetup}
+import com.cloudera.spark.cloud.s3.{LandsatImage, LandsatIO, RandomIOPolicy, CommitterOperations, S3ATestSetup}
 import com.cloudera.spark.cloud.utils.StatisticsTracker
 import com.cloudera.spark.cloud.CommitterBinding
 import com.cloudera.spark.cloud.CommitterBinding._
@@ -83,7 +83,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
   // choose the filter percentage; on a scale test
   val filterPercentage: Double = if (isScaleTestEnabled) 0.80d else 0.10d
 
-  val operations = new S3AOperations(destFS)
+  val operations = new CommitterOperations(destFS)
 
   /**
    *
@@ -105,7 +105,7 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
     committerInfo.bind(sparkConf)
 
     logInfo(s"Using committer $committerInfo with conflict mode $confictMode")
-    hconf(sparkConf, CommitterBinding.CONFLICT_MODE, confictMode)
+    hconf(sparkConf, CommitterBinding.S3A_CONFLICT_MODE, confictMode)
 
     // landsat always uses sequential
     hconf(sparkConf,

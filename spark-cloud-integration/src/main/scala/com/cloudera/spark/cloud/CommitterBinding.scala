@@ -45,7 +45,7 @@ object CommitterBinding {
   val MANIFEST = "manifest"
   val FILE = "file"
 
-  val CONFLICT_MODE: String =
+  val S3A_CONFLICT_MODE: String =
     CommitConstants.FS_S3A_COMMITTER_STAGING_CONFLICT_MODE
 
   /** Conflict mode */
