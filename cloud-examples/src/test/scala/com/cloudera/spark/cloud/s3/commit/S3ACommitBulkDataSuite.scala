@@ -342,9 +342,9 @@ class S3ACommitBulkDataSuite extends AbstractS3ACommitterSuite with S3ATestSetup
 
 
     // now do a failing part commit to same dest
-    logWarning("Ignored stack traces in the next section")
+    logWarning("Ignore stack traces in the next section")
     logWarning("========================================")
-    val (_, tFailingPartCommit) = logDuration2("failing part commit") {
+    val (_, tFailingPartCommit) = logDuration2("failing part commit -ignore failure") {
       intercept[SparkException] {
         val outcome = writeDS(
           summary = "failing part commit",

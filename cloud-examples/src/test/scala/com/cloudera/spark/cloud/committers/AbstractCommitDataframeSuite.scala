@@ -40,7 +40,7 @@ abstract class AbstractCommitDataframeSuite extends AbstractCommitterSuite {
    */
   private val formats = Seq(
   //  "orc",
-    "parquet",
+    "parquet",  // just use parquet as it is the fussiest one to commit through.
     ""
   )
 
@@ -145,10 +145,13 @@ abstract class AbstractCommitDataframeSuite extends AbstractCommitterSuite {
       validateRowCount(spark, filesystem, subdir, format, numRows)
 
       logInfo("Executing dynamic partitioned overwrite")
+
       val rows2 = 5
       val eventData2 = Events.events(year, year, 1, 1, rows2).toDS()
+      val dynamicPartitioningToSucceed = expectDynamicPartitioningToSucceed(committerInfo)
       try {
-        logDuration(s"overwrite datset2 to $subdir in format $format") {
+        logDuration(s"overwrite datset2 to $subdir in format $format" +
+          s"; expect success=$dynamicPartitioningToSucceed") {
           eventData2
             .write
             .mode("overwrite")
@@ -156,15 +159,15 @@ abstract class AbstractCommitDataframeSuite extends AbstractCommitterSuite {
             .format(format)
             .save(subdir.toString)
         }
-        assert(dynamicPartitioning, "an operation requiring dynamic partitioning was called but did not fail")
+        assert(dynamicPartitioningToSucceed, "an operation requiring dynamic partitioning was called but did not fail")
         operations.verifyCommitter(subdir,
           Some(committerInfo),
           None,
           // Some(numPartitions),
           s"$format:")
       } catch {
-        case e: IOException  => if (dynamicPartitioning ||
-          !e.getMessage.contains("b" + DYNAMIC_PARTITION_UNSUPPORTED)) {
+        case e: IOException  => if (dynamicPartitioningToSucceed ||
+          !e.getMessage.contains(DYNAMIC_PARTITION_UNSUPPORTED)) {
           throw e;
         }
           logInfo(s"Committer $committerName does not support dynamic binding")
@@ -187,6 +190,11 @@ abstract class AbstractCommitDataframeSuite extends AbstractCommitterSuite {
     sparkConf: SparkConf,
     committerInfo: CommitterInfo): Unit = {
     sparkConf.setAll(DYNAMIC_PARTITIONING)
+  }
+
+  protected def expectDynamicPartitioningToSucceed(
+    committerInfo: CommitterInfo): Boolean = {
+    dynamicPartitioning
   }
 
   /**

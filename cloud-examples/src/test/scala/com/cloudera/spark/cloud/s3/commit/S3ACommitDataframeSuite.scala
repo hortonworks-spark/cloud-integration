@@ -47,9 +47,9 @@ class S3ACommitDataframeSuite
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
   override def committers: Seq[String] = Seq(
-    //DIRECTORY,
+    DIRECTORY,
     PARTITIONED,
-    //MAGIC,
+    MAGIC,
     ""
   )
 
@@ -63,6 +63,12 @@ class S3ACommitDataframeSuite
       super
         .setDynamicPartitioningOptions(sparkConf, committerInfo)
     }
+  }
+
+
+  override protected def expectDynamicPartitioningToSucceed(
+    committerInfo: CommitterInfo): Boolean = {
+    committerInfo.name == PARTITIONED
   }
 
   override def anyOtherTests(spark: SparkSession,
