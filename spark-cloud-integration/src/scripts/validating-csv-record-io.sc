@@ -130,7 +130,28 @@ def isVulnerable(fspath: String): Boolean = {
     return false;
   }
   println("The release is recent enough to contain the bug, and does not have the fix")
-  return true;
+  val fsconf = targetFS.getConf
+  if (fsconf.getBoolean("fs.azure.enable.readahead", false)) {
+    println("readahead disabled (cloudera releases and hadoop 3.3.5+)")
+    return false;
+  }
+  val depth = "fs.azure.readaheadqueue.depth"
+  val queue = fsconf.getInt(depth, -1)
+  if (queue == 0) {
+    println(s"${depth} set to 0: safe")
+    return false;
+  }
+  queue match {
+    case -1 =>
+      println(s"${depth} will be the default: unsafe")
+      true;
+    case 0 =>
+      println(s"${depth} set to zero: safe")
+      false
+    case _ =>
+      println(s"${depth} set to ${queue}: unsafe")
+      false
+  }
 }
 
 
@@ -150,6 +171,7 @@ val abfsCsvDatasets = s"${abfsDatasets}/csv"
 val avro = "avro"
 val parquet = "parquet"
 val orc = "orc"
+val json = "json"
 val abfsAvroDatasets = s"${abfsDatasets}/avro"
 
 val rows1M = s"${abfsCsvDatasets}/rows1M.csv"
@@ -167,17 +189,31 @@ val localRows = localRows10M
 
 val localAvroDatasets = s"${localDatasets}/avro"
 val localAvro10M = s"${localAvroDatasets}/avro10M"
-val localAvro100M = s"${localAvroDatasets}/avro100M"
+//val localAvro100M = s"${localAvroDatasets}/avro100M"
 val abfsAvro1M = s"${abfsAvroDatasets}/avro1M"
 val abfsAvro10M = s"${abfsAvroDatasets}/avro10M"
-val abfsAvro100M = s"${localAvroDatasets}/avro100M"
+//val abfsAvro100M = s"${abfsAvroDatasets}/avro100M"
 
 val localOrcDatasets = s"${localDatasets}/Orc"
 val localOrc = s"${localOrcDatasets}/localrows"
 
-val localParquetDatasets = s"${localDatasets}/Parquet"
-val localParquet = s"${localParquetDatasets}/localrows"
+val localParquetDatasets = s"${localDatasets}/parquet"
+val localParquet10M = s"${localParquetDatasets}/parquet10M"
 
+val abfsParquetDatasets = s"${abfsDatasets}/parquet"
+val abfsParquet10M = s"${abfsParquetDatasets}/parquet10M"
+
+
+val localOrcDatasets = s"${localDatasets}/orc"
+val localOrc10M = s"${localOrcDatasets}/orc10M"
+val abfsOrcDatasets = s"${abfsDatasets}/orc"
+val abfsOrc10M = s"${abfsOrcDatasets}/orc10M"
+
+val localJsonDatasets = s"${localDatasets}/json"
+val localJson10M = s"${localJsonDatasets}/json10M"
+val abfsJsonDatasets = s"${abfsDatasets}/json"
+val abfsJson10M = s"${abfsJsonDatasets}/json10M"
+val abfsJson1M = s"${abfsJsonDatasets}/json1"
 
 val localRowsRDD = lineRdd(localRows100)
 val rowsRDD = lineRdd(rows1M)
@@ -217,27 +253,32 @@ case class CsvRecord(
  */
 val csvSchema: StructType = {
   new StructType().
-    add("start", StringType).
-    add("rowId", LongType).
-    add("length", LongType).
-    add("dataCrc", LongType).
-    add("data", StringType).
-    add("rowId2", LongType).
-    add("rowCrc", LongType).
-    add("end", StringType)
+    add("start", StringType). /* always "start" */
+    add("rowId", LongType).   /* row id when generated. */
+    add("length", LongType).  /* length of 'data' string */
+    add("dataCrc", LongType). /* crc2 of the 'data' string */
+    add("data", StringType).  /* a char from [a-zA-Z0-9], repeated */
+    add("rowId2", LongType).  /* row id when generated. */
+    add("rowCrc", LongType).  /* crc32 of all previous columns */
+    add("end", StringType)    /* always "end" */
 }
+
+// permissive parsing of records; the default
+val Permissive = "permissive";
+val FailFast = "failfast"
+val DropMalformed = "dropmalformed"
 
 val CsvReadOptions: Map[String, String] = Map(
   "header" -> "true",
-  "mode" -> "FAILFAST",
-  "ignoreLeadingWhiteSpace" -> "true",
-  "ignoreTrailingWhiteSpace" -> "true",
+  "ignoreLeadingWhiteSpace" -> "false",
+  "ignoreTrailingWhiteSpace" -> "false",
 //  "inferSchema" -> "false",
   "multiLine" -> "false")
 
-def csvDataFrame(path: String): DataFrame =
+def csvDataFrame(path: String, mode: String = Permissive): DataFrame =
   spark.read.options(CsvReadOptions).
     option("inferSchema","false").
+    option("mode",mode).
     schema(csvSchema).
     csv(path)
 
@@ -248,11 +289,18 @@ def csvDataFrameSchemaInference(path: String): DataFrame =
     schema(csvSchema).
     csv(path)
 
-
-def loadDS(path: String, format: String):  Dataset[CsvRecord] =
+/**
+ * Load a dataaset
+ * @param path path
+ * @param format file format
+ * @param options extra options
+ * @return the dataset
+ */
+def loadDS(path: String, format: String, options: Map[String, String] = Map()):  Dataset[CsvRecord] =
   spark.read.
     schema(csvSchema).
     format(format).
+    options(options).
     load(path).
     as[CsvRecord]
 
@@ -302,17 +350,19 @@ def validate(r: CsvRecord,  verbose: Boolean): Unit = {
 }
 
 def validateDS(ds: Dataset[CsvRecord], verbose: Boolean = false) = {
+  println(s"validating ${ds}")
   ds.foreach(r => validate(r, verbose))
-  ds
+  s"validation completed ${ds}"
 }
 
-def saveAs(ds: Dataset[CsvRecord], dest: String, format: String): Unit = {
+def saveAs(ds: Dataset[CsvRecord], dest: String, format: String) = {
+  println(s"Saving in format ${format} to ${dest}")
   ds.coalesce(1).
     write.
     mode("overwrite").
     format(format).
     save(dest)
-  println(s"Saved in format ${format} to ${dest}")
+  s"Saved in format ${format} to ${dest}"
 }
 
 def toAvro(ds: Dataset[CsvRecord], dest: String): Unit = {
@@ -327,6 +377,8 @@ def toOrc(ds: Dataset[CsvRecord], dest: String): Unit = {
   saveAs(ds, dest, "orc")
 }
 
+// Parquet options
+val ParquetValidateChecksums = "parquet.page.verify-checksum.enabled"
 
 // local rows io to validate operation and DS/DF Work
 val localRowsDFI = csvDataFrameSchemaInference(localRows100)
@@ -342,10 +394,24 @@ val localRows100DS = csvDataFrame(localRows100).as[CsvRecord]
 val rowsDF= csvDataFrame(rows1M)
 val rowsDS = rowsDF.as[CsvRecord]
 val rows10DF= csvDataFrame(rows10M)
-val rows10DS = rows10DF.as[CsvRecord]
+val rows10MDS = rows10DF.as[CsvRecord]
+val rows10MDSValidating = csvDataFrame(rows10M, FailFast).as[CsvRecord]
 
 val abfsAvro10MDS = loadDS(abfsAvro10M, avro)
 val abfsAvro1MDS = loadDS(abfsAvro1M, avro)
+
+val localParquet10MDS = loadDS(localParquet10M, parquet)
+val abfsParquet10MDS = loadDS(abfsParquet10M, parquet)
+val abfsParquet10MDSValidating = loadDS(abfsParquet10M, parquet, Map(ParquetValidateChecksums -> "true"))
+
+
+val localOrc10MDS = loadDS(localOrc10M, orc)
+val abfsOrc10MDS = loadDS(abfsOrc10M, orc)
+
+val abfsJson1MDS = loadDS(abfsJson1M, json)
+val abfsJson10MDS = loadDS(abfsJson10M, json)
+val abfsJson10MDSValidating = loadDS(abfsJson10M, json, Map("mode" -> FailFast))
+
 
 
 isVulnerable(rows1M)
@@ -367,8 +433,8 @@ isVulnerable(rows1M)
   |rowsDS.show
   |validateDS(rowsDS)
   |
-  |rows10DS.count - M10
-  |validateDS(rows10DS)
+  |rows10MDS.count - M10
+  |validateDS(rows10MDS)
   |
   |
   |abfsAvro10MDS.count() - M10
@@ -386,19 +452,43 @@ bin/mapred org.apache.hadoop.mapreduce.lib.output.committer.manifest.files.Manif
 localRowsRDD.count() - expected
 localRows10MDS.count()
 validateDS(localRows10MDS)
+rowsDS.count()
 validateDS(rowsDS)
+
+rows10MDS.count()
+validateDS(rows10MDS)
 
 toAvro(localRows10MDS, abfsAvro10M)
 toAvro(localRowsDS, abfsAvro1M)
-toParquet(localRows10MDS, localAvro)
+toParquet(localRows10MDS, abfsParquet10M)
 validateDS(localRowsAvroDS)
 // avro is too compressed for this to be big enough to show problems; use the 10M
 validateDS(abfsAvro1MDS)
+
+// 60s without prefetch 63 with
 validateDS(abfsAvro10MDS)
+
+// 54s without prefetch
 abfsAvro10MDS.count()
 
+toParquet(localRows10MDS, localParquet10M)
+toParquet(localRows10MDS, abfsParquet10M)
+localParquet10MDS
+abfsParquet10MDS.count()
+
+// 33s prefetch
+validateDS(abfsParquet10MDS)
+
+toOrc(localRows10MDS, localOrc10M)
+toOrc(localRows10MDS, abfsOrc10M)
+localOrc10MDS
+abfsOrc10MDS.count()
+
+// no prefetch 25s, w/30-p31s
+validateDS(abfsOrc10MDS)
 
 
+saveAs(localRowsDS, abfsJson1M, json)
 
 */
 // this often comes out as a negative number, showing how some records were missed.
@@ -410,7 +500,7 @@ validateDS(rowsDS)
 
 // 10M values plus the header
 rowsRDD.count() - M10 - header
-validateDS(rows10DS)
+validateDS(rows10MDS)
 
  */
 
