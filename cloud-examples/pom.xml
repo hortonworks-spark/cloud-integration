@@ -124,7 +124,20 @@
 
     <dependency>
       <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-reload4j</artifactId>
+      <version>${slf4j.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.reload4j</groupId>
+      <artifactId>reload4j</artifactId>
+      <version>${reload4j.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -134,15 +147,19 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- only for use in some scripts-->
     <dependency>
       <groupId>com.github.lalyos</groupId>
       <artifactId>jfiglet</artifactId>
+      <scope>provided</scope>
     </dependency>
 
+    <!-- gcs testing -->
     <dependency>
       <groupId>com.google.cloud.bigdataoss</groupId>
       <artifactId>gcs-connector</artifactId>
 <!--      <scope>provided</scope>-->
+      <scope>provided</scope>
       <classifier>shaded</classifier>
     </dependency>
 

@@ -15,29 +15,10 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.gs
+package com.cloudera.spark.cloud.csv
 
-import java.net.URI
+import com.cloudera.spark.cloud.common.CloudSuite
 
-import com.cloudera.spark.cloud.common.CopyCsvFileTrait
-import org.apache.hadoop.fs.FileSystem
-/**
- * Trait for GCS.
- *
- * This trait supports CSV data source by copying over the data from S3A if
- * it isn't already in a gcs URL
- */
-trait GsTestSetup extends CopyCsvFileTrait {
+class AbstractHugeCsvIOSuite extends CloudSuite {
 
-  override def enabled: Boolean =  {
-    getConf.getBoolean(GS_TESTS_ENABLED, false)
-  }
-
-  def initFS(): FileSystem = {
-    val uri = new URI(requiredOption(GS_TEST_URI))
-    logDebug(s"Executing GCS tests against $uri")
-    createFilesystem(uri)
-  }
-
-  override def dynamicPartitioning: Boolean = true;
 }

@@ -182,7 +182,7 @@ class CSVReadTests extends CloudSuiteWithCSVDatasource  {
         results += sample
       }
     }
-    logInfo( s"""$blocks blocks of size $blockSize;
+    logInfo(s"""$blocks blocks of size $blockSize;
          | total #of read operations $readOperations;
          | total read time=${toHuman(totalReadTime)};
          | ${totalReadTime / (blocks * blockSize)} ns/byte""".stripMargin)

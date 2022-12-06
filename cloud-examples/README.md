@@ -27,7 +27,7 @@ The artifact is *not* indended to be used in production code, purely in
 
 ## Building a local version of Spark to test with
 
-This module needs a version of Spark with the `spark-cloud` module with it;
+This module needs a version of Spark with the `spark-hadoop-cloud` module with it;
 if this is not in the maven repsitory, it needs to be built locally.
 
 ## Test Configuration
@@ -185,10 +185,10 @@ Finally, the CSV file tests can be skipped entirely by declaring the URL to be "
 ```
 ### Azure Test Options
 
-| Option | Meaning | Default |
-|--------|---------|---------|
-| `azure.tests.enabled` |Execute tests using the Azure WASB filesystem| `false`|
-| `azure.test.uri` | URI for Azure WASB tests. Required if Azure tests are enabled.| |
+| Option                | Meaning                                                        | Default |
+|-----------------------|----------------------------------------------------------------|---------|
+| `azure.tests.enabled` | Execute tests using the Azure WASB filesystem                  | `false` |
+| `azure.test.uri`      | URI for Azure WASB tests. Required if Azure tests are enabled. |         |
 
 ## Running a Single Test Case
 
@@ -218,7 +218,7 @@ For example, here is the test `NewHadoopAPI`.
 This test can be executed as part of the suite `S3aIOSuite`, by setting the `suites` maven property to the classname
 of the test suite:
 
-```
+```bash
 mvn -T 1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml -Dsuites=com.cloudera.sparkspark.cloud.s3.S3AIOSuite
 ```
 
@@ -229,7 +229,7 @@ The named test suite will be skipped and a message logged to highlight this.
 A single test can be explicitly run by including the key in the `suites` property
 after the suite name
 
-```
+```bash
 mvn -T 1C test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-Dsuites=com.cloudera.spark.cloud.s3.S3AIOSuite NewHadoopAPI`
 ```
 
@@ -240,7 +240,7 @@ not enable s3a tests.
 To run all tests of a specific infrastructure, use the `wildcardSuites` property to list the package
 under which all test suites should be executed.
 
-```
+```bash
 mvn test -Dcloud.test.configuration.file=/home/developer/aws/cloud.xml `-DwildcardSuites=com.cloudera.spark.cloud.s3`
 ```
 
@@ -265,25 +265,25 @@ scalability.
 ### Best Practices for Adding a New Test
 
 1. Use `ctest()` to define a test case conditional on the suite being enabled.
-1. Keep the test time down through small values such as: numbers of files, dataset sizes, operations.
+2. Keep the test time down through small values such as: numbers of files, dataset sizes, operations.
 Avoid slow operations such as: globbing & listing files
-1. Support a command line entry point for integration tests —and allow such tests to scale up
+3. Support a command line entry point for integration tests —and allow such tests to scale up
 though command line arguments.
-1. Give the test a unique name which can be used to explicitly execute it from the build via the `suite` property.
-1. Give the test a meaningful description for logs and test reports.
-1. Test against multiple infrastructure instances.
-1. Allow for eventual consistency of deletion and list operations by using `eventually()` to
+4. Give the test a unique name which can be used to explicitly execute it from the build via the `suite` property.
+5. Give the test a meaningful description for logs and test reports.
+6. Test against multiple infrastructure instances.
+7. Allow for eventual consistency of deletion and list operations by using `eventually()` to
 wait for object store changes to become visible.
-1. Have a long enough timeout that remote tests over slower connections will not timeout.
+8. Have a long enough timeout that remote tests over slower connections will not timeout.
 
 ### Best Practices for Adding a New Test Suite
 
 1. Extend `CloudSuite`
-1. Have an `after {}` clause which cleans up all object stores —this keeps costs down.
-1. Do not assume that any test has exclusive access to any part of an object store other
+2. Have an `after {}` clause which cleans up all object stores —this keeps costs down.
+3. Do not assume that any test has exclusive access to any part of an object store other
 than the specific test directory. This is critical to support parallel test execution.
-1. Share setup costs across test cases, especially for slow directory/file setup operations.
-1. If extra conditions are needed before a test suite can be executed, override the `enabled` method
+4. Share setup costs across test cases, especially for slow directory/file setup operations.
+5. If extra conditions are needed before a test suite can be executed, override the `enabled` method
 to probe for the extra conditions being met.
 
 ### Keeping Test Costs Down
@@ -306,37 +306,19 @@ It is critical that the credentials used to access object stores are kept secret
 they be abused to run up compute charges, they can be used to read and alter private data.
 
 1. Keep the XML Configuration file with any secrets in a secure part of your filesystem.
-1. When using Hadoop 2.8+, consider using Hadoop credential files to store secrets, referencing
+2. Consider using Hadoop credential files to store secrets, referencing
 these files in the relevant id/secret properties of the XML configuration file.
-1. Do not execute object store tests as part of automated CI/Jenkins builds, unless the secrets
+3. Do not execute object store tests as part of automated CI/Jenkins builds, unless the secrets
 are not senstitive -for example, they refer to in-house (test) object stores, authentication is
 done via IAM EC2 VM credentials, or the credentials are short-lived AWS STS-issued credentials
 with a lifespan of minutes and access only to transient test buckets.
-
-## Working with Hadoop 3.x
-
-Hive doesn't know how to handle Hadoop version 3; all the dataframe tests will fail against
-Hadoop 3.x binaries.
-
-There's a patch in some of the Hadoop branches to let you build hadoop with a different
-declare version than that in the POM. All the jars will have the POM version, but
-the version returned by calls to `VersionInfo` will return the value set in `declared.hadoop.version`.
-
-
-```bash
-mvn install -DskipTests -DskipShade -Ddeclared.hadoop.version=2.11
-```
-
-1. the `-DskipShade` option skips the JAR shading process, which takes a long time and is not needed here.
-1. You cannot use a JAR built this way to work with HDFS; the version numbers just confuse things
-In particular: *Do not try to run Datanodes or Namenodes with a JAR numbered this way.*
 
 ### Working with Private repositories and older artifact names
 
 (This is primarily of interest to colleagues testing releases with this code.)
 
 1. To build with a different version of spark, define it in `spark.version`
-1. To use a different repository for artifacts, redefine `central.repo`
+2. To use a different repository for artifacts, redefine `central.repo`
 
 Example:
 

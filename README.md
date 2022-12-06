@@ -23,7 +23,7 @@ See [Spark Cloud Integration](spark-cloud-integration/src/main/site/markdown/ind
 
 ## Module `cloud-examples`
 
-This does the packaging/integration tests for Spark and cloud against AWS, Azure and openstack.
+This does the packaging/integration tests for Spark and cloud against AWS, Azure and Google GCS.
 
 These are basic tests of the core functionality of I/O, streaming, and verify that
 the commmitters work.

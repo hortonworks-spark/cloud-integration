@@ -92,7 +92,7 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations
 
   /** this system property is always set in a JVM */
   protected val localTmpDir: File = new File(System
-    .getProperty("java.io.tmpdir", "/tmp"))
+    .getProperty("java.io.tmpdir", "target/tmp"))
     .getCanonicalFile
 
   /**

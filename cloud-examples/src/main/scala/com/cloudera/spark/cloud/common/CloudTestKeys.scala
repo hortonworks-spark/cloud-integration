@@ -46,6 +46,7 @@ import com.cloudera.spark.cloud.s3.S3AConstants
  *</configuration>
  * ```
  */
+//noinspection ScalaFileName
 trait CloudTestKeyTrait extends S3AConstants {
 
   /**
@@ -180,18 +181,6 @@ trait CloudTestKeyTrait extends S3AConstants {
    * Data in this bucket under the test directory will be deleted during test suite teardowns;
    */
   val GS_TEST_URI = "gs.test.uri"
-
-
-  /**
-   * Are swift tests enabled?
-   */
-  val SWIFT_TESTS_ENABLED = "swift.tests.enabled"
-
-  /**
-   * A test bucket for Swift.
-   * Data in this bucket under the `/test` directory will be deleted during test suite teardowns;
-   */
-  val SWIFT_TEST_URI = "swift.test.uri"
 
   /**
    * Name of a property for a required hadoop version; lets you verify that
