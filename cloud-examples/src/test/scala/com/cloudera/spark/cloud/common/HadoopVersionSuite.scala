@@ -39,7 +39,7 @@ class HadoopVersionSuite extends UnitTestSuite {
   }
 
   test("PropagatedValues") {
-    val mapped = loadConfiguration().asScala
+    val mapped = StoreTestHelper.loadConfiguration().asScala
       .filter { entry =>
         val k = entry.getKey
         k.startsWith("fs.s3a") && !k.contains("key")

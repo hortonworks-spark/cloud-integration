@@ -282,6 +282,12 @@
         <artifactId>spark-mllib-local_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
       </dependency>
+            <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-avro_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+      </dependency>
+
       <!-- Junit is included as a compile-scoped dependency by jtransforms, which is
            a dependency of breeze. -->
 <!--

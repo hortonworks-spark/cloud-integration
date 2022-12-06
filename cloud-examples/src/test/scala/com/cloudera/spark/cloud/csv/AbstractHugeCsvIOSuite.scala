@@ -17,8 +17,8 @@
 
 package com.cloudera.spark.cloud.csv
 
-import com.cloudera.spark.cloud.common.CloudSuite
+import com.cloudera.spark.cloud.common.{CloudSuite, SparkSessionCloudSuite}
 
-class AbstractHugeCsvIOSuite extends CloudSuite {
+abstract class AbstractHugeCsvIOSuite extends SparkSessionCloudSuite {
 
 }

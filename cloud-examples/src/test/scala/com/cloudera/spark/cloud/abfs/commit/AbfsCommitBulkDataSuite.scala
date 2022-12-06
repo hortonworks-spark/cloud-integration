@@ -49,7 +49,7 @@ class AbfsCommitBulkDataSuite extends AbstractAbfsCommitterSuite {
 
   private val parallelism = 8
 
-  private val destFS = filesystem
+  private val destFS = if (enabled) filesystem else null
 
   private val destDir = filesystemOption.map(f => testPath(f, "bulkdata")).orNull
 

@@ -1,3 +1,5 @@
+package com.cloudera.spark.cloud.common
+
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
  * contributor license agreements.  See the NOTICE file distributed with
@@ -15,11 +17,68 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.common
+import java.io.{File, FileNotFoundException}
+
+import com.cloudera.spark.cloud.s3.S3AConstants
+import com.cloudera.spark.cloud.CommitterBinding
+import org.apache.hadoop.conf.Configuration
+
+import org.apache.spark.internal.Logging
 
 /**
  * Instantiation of StoreTestHelper.
  */
-class StoreTestHelper extends StoreTestOperations {
+object StoreTestHelper extends StoreTestOperations
+  with Logging
+  with S3AConstants
+  with CloudSuiteTrait {
+
+  private var configLogged = false
+
+  /**
+   * Load the configuration file from the system property `SYSPROP_CLOUD_TEST_CONFIGURATION_FILE`.
+   * Throws FileNotFoundException if a configuration is named but not present.
+   *
+   * @return the configuration
+   */
+  def loadConfiguration(): Configuration = {
+    val config = new Configuration(true)
+    getKnownSysprop(SYSPROP_CLOUD_TEST_CONFIGURATION_FILE).foreach { filename =>
+      logDebug(s"Configuration property = `$filename`")
+      val f = new File(filename)
+      if (f.exists()) {
+        // unsynced but its only a log statement
+        if (configLogged) {
+          configLogged = true
+          logInfo(s"Loading configuration from $f")
+        }
+        config.addResource(f.toURI.toURL)
+      } else {
+        throw new FileNotFoundException(s"No file '$filename'" +
+          s" declared in property $SYSPROP_CLOUD_TEST_CONFIGURATION_FILE")
+      }
+    }
+    overlayConfiguration(
+      config,
+      Seq(
+        HIVE_TESTS_DISABLED,
+        REQUIRED_HADOOP_VERSION,
+        SCALE_TEST_ENABLED,
+        SCALE_TEST_SIZE_FACTOR,
+        S3A_CLIENT_FACTORY_IMPL,
+        S3A_COMMITTER_TEST_ENABLED,
+        S3A_ENCRYPTION_KEY_1,
+        S3A_ENCRYPTION_KEY_2
+      )
+    )
+
+    // setup the committer from any property passed in
+    getKnownSysprop(S3A_COMMITTER_NAME).foreach(committer => {
+      val binding = CommitterBinding.COMMITTERS_BY_NAME(committer.toLowerCase())
+      binding.bind(config)
+      logInfo(s"Using committer binding $binding")
+    })
+    config
+  }
 
 }

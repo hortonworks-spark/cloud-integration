@@ -17,8 +17,10 @@
 
 package com.cloudera.spark.cloud.local
 
+import java.io.File
+
 import com.cloudera.spark.cloud.common.CloudSuiteTrait
-import org.apache.hadoop.fs.FileSystem
+import org.apache.hadoop.fs.{FileSystem, Path}
 
 /**
  * Trait for the local fs; goal is for benchmarking/validating/writing
@@ -28,7 +30,7 @@ import org.apache.hadoop.fs.FileSystem
 trait LocalTestSetup extends CloudSuiteTrait {
 
   override def enabled: Boolean = {
-    getConf.getBoolean(GS_TESTS_ENABLED, false)
+    true
   }
 
   def initFS(): FileSystem = {
@@ -38,4 +40,15 @@ trait LocalTestSetup extends CloudSuiteTrait {
   }
 
   override def dynamicPartitioning: Boolean = true;
+
+  /**
+   * the test path here is always to something under the temp dir.
+   */
+  override protected def testDir: Path = {
+    val f = File.createTempFile(this.getClass.getSimpleName, "")
+    f.delete()
+    f.mkdir()
+    new Path(f.toURI)
+  }
+
 }

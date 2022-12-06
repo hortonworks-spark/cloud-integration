@@ -45,14 +45,14 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations
    * The test directory under `/cloud-integration`; derived from the classname
    * This path does not contain any FS binding.
    */
-  protected val testDir: Path = {
+  protected def testDir: Path = {
     new Path("/cloud-integration/" + this.getClass.getSimpleName)
   }
 
   /**
    * Accessor to the configuration.
    */
-  private val config = CloudSuite.loadConfiguration()
+  private val config = StoreTestHelper.loadConfiguration()
 
   def getConf: Configuration = {
     config
@@ -135,10 +135,10 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations
    * @param fs new filesystem
    */
   protected def setFilesystem(fs: FileSystem): Unit = {
-    if (fs.isInstanceOf[LocalFileSystem] || "file" == fs.getScheme) {
+/*    if (fs.isInstanceOf[LocalFileSystem] || "file" == fs.getScheme) {
       throw new IllegalArgumentException(
         "Test filesystem cannot be local filesystem")
-    }
+    }*/
     _filesystem = Some(fs)
   }
 

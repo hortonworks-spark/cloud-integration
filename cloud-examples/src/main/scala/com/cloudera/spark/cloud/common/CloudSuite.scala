@@ -34,9 +34,8 @@ import org.apache.spark.internal.Logging
  * options to enable/disable tests, and a mechanism to conditionally declare tests
  * based on these details
  */
-abstract class CloudSuite extends SparkFunSuite
-    with LocalSparkContext with BeforeAndAfter
-    with Eventually with S3AConstants with CloudSuiteTrait {
+abstract class CloudSuite extends ContextFreeCloudSuite
+    with LocalSparkContext {
 }
 
 object CloudSuite extends Logging with S3AConstants

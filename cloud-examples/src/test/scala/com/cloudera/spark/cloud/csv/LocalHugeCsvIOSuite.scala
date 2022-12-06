@@ -17,10 +17,13 @@
 
 package com.cloudera.spark.cloud.csv
 
+import java.net.URI
+
 import com.cloudera.spark.cloud.local.LocalTestSetup
 import org.apache.hadoop.fs.Path
 
 import org.apache.spark.SparkContext
+import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
 
 class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
 
@@ -35,28 +38,71 @@ class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
 
   def rowCount = 1024 * 1024
 
-  ctest("csv-io",
-    "Use SparkContext.saveAsNewAPIHadoopFile() to save data to a file") {
-    sc = new SparkContext("local", "test", newSparkConf())
-    val numbers = sc.parallelize(1 to testEntryCount)
-    val basePath = testPath(filesystem, "base")
-    val avroPath = new Path(basePath, "avro")
-    val csvio = new CsvIO(sc., sc.hadoopConfiguration, rowCount)
-    saveAsNewTextFile(numbers, basePath, sc.hadoopConfiguration)
-    val basePathStatus = filesystem.getFileStatus(basePath)
-    // check blocksize in file status
-    logDuration("listLeafDir") {
-      listLeafDirStatuses(filesystem, basePathStatus)
-    }
-    val (leafFileStatus, _) = durationOf {
-      listLeafStatuses(filesystem, basePathStatus)
-    }
-    // files are either empty or have a block size
-    leafFileStatus.foreach(s => assert(s.getLen == 0 || s.getBlockSize > 0))
 
-    // and run binary files over it to see if SPARK-6527 is real or not.
-    sc.binaryFiles(basePath.toUri.toString, 1).map {
-      _ => 1
-    }.count()
+  def createSparkSession(name: String ="session") = {
+    SparkSession
+      .builder
+      .appName("DataFrames")
+      .config(newSparkConf())
+      .getOrCreate()
+  }
+
+
+  /**
+   *
+   * Create a Spark Session with the given keys.
+   * @param fsuri filesystem uri
+   * @param hive enable hive support?
+   * @param settings map of extra settings
+   * @return the session
+   */
+  private def newSparkSession(
+      fsuri: URI,
+      hive: Boolean = false,
+      settings: Traversable[(String, String)] = Map()): SparkSession = {
+    val local = getLocalFS
+
+    val sparkConf = newSparkConf("session", fsuri)
+    settings.foreach { case (k, v) => sparkConf.set(k, v) }
+
+    val builder = SparkSession.builder
+      .config(sparkConf)
+    if (hive) {
+      builder.enableHiveSupport
+    }
+    builder.getOrCreate()
+  }
+
+  ctest("csv-io",
+    "test CSV IO") {
+    setSparkSession(newSparkSession(filesystem.getUri))
+
+    val csvio = new CsvIO(sparkSession, rowCount)
+    val rowsRdd = csvio.generate(rowCount)
+    rowsRdd.foreach(r => CsvIO.validate(r, false))
+    val rowsDF = sparkSession.createDataFrame(rowsRdd)
+
+    val basePath = testPath(filesystem, "base")
+    filesystem.mkdirs(basePath)
+    roundTrip(csvio, rowsDF,basePath, "avro")
+  }
+
+  def roundTrip(csvio: CsvIO, source: DataFrame, basePath: Path, format: String) = {
+    val avroPath = new Path(basePath, format)
+
+
+    logDuration("save as " + format) {
+      source.coalesce(1).write
+        .format(format)
+        .save(avroPath.toString)
+    }
+
+    val avroDS = logDuration("load as " + format) {
+      csvio.loadDS(avroPath, "avro")
+    }
+    csvio.validateDS(avroDS)
+    assert(source.count() == avroDS.count())
+
+
   }
 }
