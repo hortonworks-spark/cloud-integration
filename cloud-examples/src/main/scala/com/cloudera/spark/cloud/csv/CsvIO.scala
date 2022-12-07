@@ -50,7 +50,7 @@ case class CsvRecord(
  * @param spark   spark binding
  * @param records number of records to create/read
  */
-class CsvIO(spark: SparkSession, records: Long) {
+class CsvIO(spark: SparkSession, records: Integer) {
 
   val conf = spark.sparkContext.hadoopConfiguration
   // Ignore IDE warnings: this import is used
@@ -146,6 +146,14 @@ object CsvIO {
 
   val Start = "start";
   val End = "end";
+
+
+  val Avro = "avro"
+  val Csv = "csv"
+  val Parquet = "parquet"
+  val Orc = "orc"
+  val Json = "json"
+
 
   val CsvReadOptions: Map[String, String] = Map(
     "header" -> "true",

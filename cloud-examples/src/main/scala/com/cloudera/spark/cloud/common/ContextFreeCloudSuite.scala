@@ -22,7 +22,6 @@ import org.scalatest.concurrent.Eventually
 import org.scalatest.BeforeAndAfter
 
 import org.apache.spark.SparkFunSuite
-import org.apache.spark.resource.ResourceProfile
 import org.apache.spark.sql.SparkSession
 
 /**

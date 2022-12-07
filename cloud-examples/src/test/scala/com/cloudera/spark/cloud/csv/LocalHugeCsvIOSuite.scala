@@ -22,8 +22,7 @@ import java.net.URI
 import com.cloudera.spark.cloud.local.LocalTestSetup
 import org.apache.hadoop.fs.Path
 
-import org.apache.spark.SparkContext
-import org.apache.spark.sql.{DataFrame, Dataset, SparkSession}
+import org.apache.spark.sql.{DataFrame, SparkSession}
 
 class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
 
@@ -36,10 +35,15 @@ class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
     initFS()
   }
 
-  def rowCount = 1024 * 1024
+  def rowCount(format: String): Integer = {
+    format match {
+      case CsvIO.Csv => 10 * 1024 * 1024
+      case _ => 1024 * 1024
+    }
+  }
 
 
-  def createSparkSession(name: String ="session") = {
+  def createSparkSession(name: String = "session") = {
     SparkSession
       .builder
       .appName("DataFrames")
@@ -51,8 +55,9 @@ class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
   /**
    *
    * Create a Spark Session with the given keys.
-   * @param fsuri filesystem uri
-   * @param hive enable hive support?
+   *
+   * @param fsuri    filesystem uri
+   * @param hive     enable hive support?
    * @param settings map of extra settings
    * @return the session
    */
@@ -73,35 +78,72 @@ class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
     builder.getOrCreate()
   }
 
-  ctest("csv-io",
-    "test CSV IO") {
+  ctest("validate-avro",
+    "validate an avro dataset") {
     setSparkSession(newSparkSession(filesystem.getUri))
 
-    val csvio = new CsvIO(sparkSession, rowCount)
-    val rowsRdd = csvio.generate(rowCount)
+    val fmt = CsvIO.Avro
+    val rows = rowCount(fmt)
+    val csvio = new CsvIO(sparkSession, rows)
+    val rowsRdd = csvio.generate(rows)
     rowsRdd.foreach(r => CsvIO.validate(r, false))
     val rowsDF = sparkSession.createDataFrame(rowsRdd)
 
     val basePath = testPath(filesystem, "base")
     filesystem.mkdirs(basePath)
-    roundTrip(csvio, rowsDF,basePath, "avro")
+    roundTrip(csvio, rowsDF, basePath, fmt)
   }
 
-  def roundTrip(csvio: CsvIO, source: DataFrame, basePath: Path, format: String) = {
-    val avroPath = new Path(basePath, format)
+  ctest("validate-csv",
+    "validate a csv DS") {
+    setSparkSession(newSparkSession(filesystem.getUri))
+    val fmt = CsvIO.Csv
+    val rows = rowCount(fmt)
+    val csvio = new CsvIO(sparkSession, rows)
+    val rowsRdd = csvio.generate(rows)
+    val rowsDF = sparkSession.createDataFrame(rowsRdd)
 
+    val basePath = testPath(filesystem, "base")
+    filesystem.mkdirs(basePath)
+    roundTrip(csvio, rowsDF, basePath, fmt)
+  }
 
-    logDuration("save as " + format) {
-      source.coalesce(1).write
-        .format(format)
-        .save(avroPath.toString)
+  /**
+   * Round trip a format.
+   * @param csvio csv io instance
+   * @param source source df
+   * @param basePath base path for output
+   * @param format record format
+   * @return output
+   */
+  def roundTrip(csvio: CsvIO, source: DataFrame, basePath: Path,
+      format: String,
+      iterations: Integer = 1,
+      delete: Boolean = true) = {
+    println(s"output as $format to $basePath")
+    val table = new Path(basePath, format)
+
+    try {
+      logDuration("save as " + format) {
+        source.coalesce(1).write
+          .format(format)
+          .save(table.toString)
+      }
+
+      val avroDS = logDuration("load as " + format) {
+        csvio.loadDS(table, format)
+      }
+      // this is where the read happens
+      for (i <- 1 to iterations)
+        logDuration(s"$i: validate $format DS") {
+        csvio.validateDS(avroDS)
+      }
+      assert(source.count() == avroDS.count())
+    } finally {
+      logDuration("cleaning up") {
+        filesystem.delete(table, true)
+      }
     }
-
-    val avroDS = logDuration("load as " + format) {
-      csvio.loadDS(avroPath, "avro")
-    }
-    csvio.validateDS(avroDS)
-    assert(source.count() == avroDS.count())
 
 
   }

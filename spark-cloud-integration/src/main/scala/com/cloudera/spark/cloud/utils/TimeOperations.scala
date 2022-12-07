@@ -58,9 +58,7 @@ trait TimeOperations extends Logging {
    * @return the result
    */
   def logDuration[T](operation: String)(testFun: => T): T = {
-    logInfo(s"Starting $operation")
-    val (r, d) = durationOf(testFun)
-    logInfo(s"Duration of $operation = ${toHuman(d)}")
+    val (r, d) = logDuration2(operation)(testFun)
     r
   }
 
