@@ -187,7 +187,7 @@ object CsvIO {
    * @return a valid record
    */
   def record(id: Long): CsvRecord = {
-    val len = (id % 256).toInt
+    val len = (id % 1024).toInt
     val char: Char = (64 + (id % (26 * 2))).toChar
     val data = char.toString * len
     val dataCrc = crc(data)

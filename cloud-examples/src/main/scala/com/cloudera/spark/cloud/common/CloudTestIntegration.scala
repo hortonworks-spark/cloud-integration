@@ -52,7 +52,12 @@ trait CloudTestIntegration extends ExtraAssertions with StoreTestOperations
   /**
    * Accessor to the configuration.
    */
-  private val config = StoreTestHelper.loadConfiguration()
+  private val config = createConfiguration()
+
+
+  def createConfiguration(): Configuration = {
+    StoreTestHelper.loadConfiguration()
+  }
 
   def getConf: Configuration = {
     config

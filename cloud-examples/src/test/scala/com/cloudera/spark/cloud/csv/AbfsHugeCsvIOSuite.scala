@@ -17,21 +17,36 @@
 
 package com.cloudera.spark.cloud.csv
 
-import com.cloudera.spark.cloud.local.LocalTestSetup
+import com.cloudera.spark.cloud.abfs.AbfsTestSetup
+import com.cloudera.spark.cloud.ObjectStoreConfigurations.ABFS_READAHEAD_HADOOP_OPTIONS
+import org.apache.hadoop.conf.Configuration
 
 /**
- * local csv tests to act as a baseline for performance/correctness.
- * always runs.
+ * The real test of HADOOP-18521.
  */
-class LocalHugeCsvIOSuite extends AbstractHugeCsvIOSuite with LocalTestSetup {
+class AbfsHugeCsvIOSuite extends AbstractHugeCsvIOSuite with AbfsTestSetup() {
 
   init()
 
   /**
-   * set up FS.
+   * set up FS if enabled.
    */
   def init(): Unit = {
-    initFS()
+    if (enabled) {
+      initFS()
+    }
   }
 
+  /**
+   * Patch in ABFS readahead options, to ensure they are
+   * always set.
+   * @return the configuration to create the fs with
+   */
+  override def createConfiguration(): Configuration = {
+    val conf = super.createConfiguration()
+    for (kv <- ABFS_READAHEAD_HADOOP_OPTIONS) {
+      conf.set(kv._1, kv._2)
+    }
+    conf
+  }
 }

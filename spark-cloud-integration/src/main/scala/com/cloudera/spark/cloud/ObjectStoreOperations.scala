@@ -520,11 +520,17 @@ object ObjectStoreOperations extends ObjectStoreOperations {
 object ObjectStoreConfigurations  extends HConf {
 
   /**
+   * How many cores?
+   */
+  val EXECUTOR_CORES = 4
+
+  /**
    * General spark options
    */
   val GENERAL_SPARK_OPTIONS: Map[String, String] = Map(
     "spark.ui.enabled" -> "false",
-    "spark.driver.allowMultipleContexts" -> "true"
+    "spark.driver.allowMultipleContexts" -> "true",
+    "spark.executor.cores" -> EXECUTOR_CORES.toString
   )
 
   /**
@@ -617,4 +623,13 @@ object ObjectStoreConfigurations  extends HConf {
   def bind(sparkConf: SparkConf): Unit = {
     sparkConf.setAll(COMMITTER_OPTIONS)
   }
+
+  /**
+   * Aggressive on the readaheads.
+   */
+  val ABFS_READAHEAD_HADOOP_OPTIONS : Map[String, String] =
+    Map(
+      "fs.abfs.readahed.enabled" -> "true",
+      "fs.azure.readaheadqueue.depth" -> "4"
+    )
 }
