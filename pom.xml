@@ -89,8 +89,11 @@
 -->
     <scalatest.version>3.2.3</scalatest.version>
     <!-- SLF4J/reload4j version -->
-    <slf4j.version>1.7.36</slf4j.version>
-    <reload4j.version>1.2.22</reload4j.version>
+<!--    <slf4j.version>1.7.36</slf4j.version>
+    <reload4j.version>1.2.22</reload4j.version>-->
+<!--    use log4j 2 for compatibility with spark and so sparktest output-->
+    <slf4j.version>2.0.4</slf4j.version>
+    <log4j.version>2.19.0</log4j.version>
 
     <test.build.dir>${project.build.directory}/test-dir</test.build.dir>
     <test.build.data>${test.build.dir}</test.build.data>
@@ -217,18 +220,6 @@
         <artifactId>spark-core_${scala.binary.version}</artifactId>
         <version>${spark.version}</version>
         <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
         </exclusions>
       </dependency>
 
@@ -239,18 +230,6 @@
         <version>${spark.version}</version>
         <type>test-jar</type>
         <exclusions>
-          <exclusion>
-            <groupId>org.slf4j</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>*</artifactId>
-          </exclusion>
         </exclusions>
       </dependency>
 
@@ -360,6 +339,7 @@
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
       </dependency>
+<!--
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-reload4j</artifactId>
@@ -391,6 +371,30 @@
             <artifactId>jms</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+-->
+
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j2-impl</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <!-- API bridge between log4j 1 and 2 -->
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-1.2-api</artifactId>
+        <version>${log4j.version}</version>
+        <scope>${hadoop.deps.scope}</scope>
       </dependency>
 
       <dependency>
@@ -590,17 +594,19 @@
             <environmentVariables>
             </environmentVariables>
             <systemProperties>
-              <!--<log4j.configuration>file:src/test/resources/log4j.properties</log4j.configuration>-->
-              <log4j.debug>${log4j.debug}</log4j.debug>
+              <log4j.configurationFile>file:src/test/resources/log4j2.properties</log4j.configurationFile>
+              <derby.system.durability>test</derby.system.durability>
               <java.awt.headless>true</java.awt.headless>
               <java.io.tmpdir>${project.build.directory}/tmp</java.io.tmpdir>
-              <test.build.data>${test.build.data}</test.build.data>
-              <test.build.dir>${test.build.dir}</test.build.dir>
-              <hadoop.tmp.dir>${hadoop.tmp.dir}</hadoop.tmp.dir>
-              <spark.testing>1</spark.testing>
+              <spark.master.rest.enabled>false</spark.master.rest.enabled>
               <spark.ui.enabled>false</spark.ui.enabled>
               <spark.ui.showConsoleProgress>false</spark.ui.showConsoleProgress>
               <spark.unsafe.exceptionOnMemoryLeak>true</spark.unsafe.exceptionOnMemoryLeak>
+              <spark.memory.debugFill>true</spark.memory.debugFill>
+
+              <!-- Needed by sql/hive tests. -->
+              <test.src.tables>src</test.src.tables>
+
               <cloud.test.configuration.file>${cloud.test.configuration.file}</cloud.test.configuration.file>
               <required.hadoop.version>${required.hadoop.version}</required.hadoop.version>
               <scale.test.enabled>${scale.test.enabled}</scale.test.enabled>
