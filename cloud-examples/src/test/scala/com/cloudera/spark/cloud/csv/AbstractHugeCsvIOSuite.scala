@@ -135,7 +135,7 @@ abstract class AbstractHugeCsvIOSuite extends SparkSessionCloudSuite {
       format: String,
       iterations: Integer = 1,
       delete: Boolean = true): Unit = {
-    println(s"output as $format to $basePath")
+    println(s"output ${csvio.records} records format $format to $basePath iterations=$iterations")
     filesystem.mkdirs(basePath)
     val table = new Path(basePath, format)
     filesystem.delete(table, true)

@@ -50,7 +50,7 @@ case class CsvRecord(
  * @param spark   spark binding
  * @param records number of records to create/read
  */
-class CsvIO(spark: SparkSession, records: Integer) {
+class CsvIO(spark: SparkSession, val records: Integer) {
 
   val conf = spark.sparkContext.hadoopConfiguration
   // Ignore IDE warnings: this import is used

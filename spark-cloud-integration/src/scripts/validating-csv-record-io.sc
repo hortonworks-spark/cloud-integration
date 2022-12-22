@@ -24,7 +24,7 @@ bin/hadoop fs -copyFromLocal /Users/stevel/Play/datasets/csv/rows10M.csv $ABFS/c
 
 // needs more than 1 worker thread; the more you add the noisier the loga get
 cd ~/Projects/Releases/spark-cdpd-master/
-bin/spark-shell --master local[4]
+bin/spark-shell --master local[4] --driver-memory 2g
 
 then load this from wherever you saved it
 
@@ -43,6 +43,7 @@ sc.setLogLevel("INFO")
 
 // explicit set of log4j loggings
 import java.nio.charset.StandardCharsets
+import java.util.concurrent.atomic.AtomicLong
 import java.util.zip.CRC32
 
 import scala.collection.mutable.ListBuffer
@@ -103,6 +104,7 @@ def p(p: Path, s: String) = new Path(p, s)
 
 def bind(p: Path): FileSystem = p.getFileSystem(conf)
 def ls(path: Path) = for (f <- bind(path).listStatus(path)) yield {f}
+def status(p: Path) = bind(p).getFileStatus(p)
 
 /**
 * given a path string, get the FS and print its IOStats.
@@ -121,14 +123,15 @@ def isVulnerable(fspath: String): Boolean = {
     return false;
   }
   val targetFS = bind(p);
-  if (targetFS.hasPathCapability(p, "fs.azure.capability.prefetch.safe")) {
-    println("This release has been patched and is safe.")
-    return false;
-  }
   if (!targetFS.hasPathCapability(p, "fs.capability.paths.acls")) {
     println("The release predates the bugs addition to the codebase")
     return false;
   }
+  if (targetFS.hasPathCapability(p, "HADOOP-18546")) {
+    println("The release has the HADOOP-18546 fix")
+    return false;
+  }
+
   println("The release is recent enough to contain the bug, and does not have the fix")
   val fsconf = targetFS.getConf
   if (fsconf.getBoolean("fs.azure.enable.readahead", false)) {
@@ -168,14 +171,16 @@ def lineRdd(s: String) = {
 
 val abfsDatasets = s"${abfs}/datasets"
 val abfsCsvDatasets = s"${abfsDatasets}/csv"
+val csv = "csv"
 val avro = "avro"
 val parquet = "parquet"
 val orc = "orc"
 val json = "json"
 val abfsAvroDatasets = s"${abfsDatasets}/avro"
 
-val rows1M = s"${abfsCsvDatasets}/rows1M.csv"
-val rows10M = s"${abfsCsvDatasets}/rows10M.csv"
+val rows1M = s"${abfsCsvDatasets}/rows1M"
+val rows10M = s"${abfsCsvDatasets}/rows10M"
+val rows10Mpath = path(rows10M)
 
 // set to the absolute path
 val localDatasets = "file:///Users/stevel/Play/datasets/csv"
@@ -365,6 +370,9 @@ def saveAs(ds: Dataset[CsvRecord], dest: String, format: String) = {
   s"Saved in format ${format} to ${dest}"
 }
 
+def toCsv(ds: Dataset[CsvRecord], dest: String): Unit = {
+  saveAs(ds, dest, csv)
+}
 def toAvro(ds: Dataset[CsvRecord], dest: String): Unit = {
   saveAs(ds, dest, avro)
 }
@@ -399,7 +407,6 @@ val rows10MDSValidating = csvDataFrame(rows10M, FailFast).as[CsvRecord]
 
 val abfsAvro10MDS = loadDS(abfsAvro10M, avro)
 val abfsAvro1MDS = loadDS(abfsAvro1M, avro)
-
 val localParquet10MDS = loadDS(localParquet10M, parquet)
 val abfsParquet10MDS = loadDS(abfsParquet10M, parquet)
 val abfsParquet10MDSValidating = loadDS(abfsParquet10M, parquet, Map(ParquetValidateChecksums -> "true"))
@@ -460,10 +467,13 @@ validateDS(rows10MDS)
 
 toAvro(localRows10MDS, abfsAvro10M)
 toAvro(localRowsDS, abfsAvro1M)
+toCsv(localRowsDS, rows1M)
+toCsv(localRows10MDS, rows10M)
 toParquet(localRows10MDS, abfsParquet10M)
 validateDS(localRowsAvroDS)
 // avro is too compressed for this to be big enough to show problems; use the 10M
 validateDS(abfsAvro1MDS)
+
 
 // 60s without prefetch 63 with
 validateDS(abfsAvro10MDS)
@@ -501,8 +511,27 @@ validateDS(rowsDS)
 // 10M values plus the header
 rowsRDD.count() - M10 - header
 validateDS(rows10MDS)
+isVulnerable(rows10M)
 
+for (i <- 1 to 10) validateDS(rows10MDS)
+
+for (i <- 1 to 10) rows1MDS.count()
+val attempts = new java.util.concurrent.atomic.AtomicLong()
+for (i <- 1 to 100) {
+  println(s"=====  Validation Run $i =====");
+  attempts.incrementAndGet()
+  validateDS(rows10MDS)
+  val b = bytes.addAndGet(bytesPerRound)
+  println(s"=====  Validation Run $i finishes bytes = $b =====");
+}
  */
+
+val attempts = new AtomicLong()
+val bytes = new AtomicLong()
+val bytesPerRound = status(rows10Mpath).getLen
+attempts.set(0)
+bytes.addAndGet(bytesPerRound)
+
 
 
 
