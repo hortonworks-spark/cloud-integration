@@ -5,6 +5,8 @@ Creating data
 // download/build latest version of cloudstore
 https://github.com/steveloughran/cloudstore/
 
+set -gx ABFS "abfs://stevel-testing@stevelukwest.dfs.core.windows.net/"
+
 ABFS = abfs://me@stevelukwest.dfs.core.windows.net/
 $CLOUDSTORE = cloudstore-1.0.jar
 
@@ -127,7 +129,7 @@ def isVulnerable(fspath: String): Boolean = {
     println("The release predates the bugs addition to the codebase")
     return false;
   }
-  if (targetFS.hasPathCapability(p, "HADOOP-18546")) {
+  if (targetFS.hasPathCapability(p, "fs.azure.capability.readahead.safe")) {
     println("The release has the HADOOP-18546 fix")
     return false;
   }
@@ -135,7 +137,7 @@ def isVulnerable(fspath: String): Boolean = {
   println("The release is recent enough to contain the bug, and does not have the fix")
   val fsconf = targetFS.getConf
   if (fsconf.getBoolean("fs.azure.enable.readahead", false)) {
-    println("readahead disabled (cloudera releases and hadoop 3.3.5+)")
+    println("readahead disabled (option on cloudera releases without HADOOP-18546 + hadoop 3.3.5+)")
     return false;
   }
   val depth = "fs.azure.readaheadqueue.depth"
