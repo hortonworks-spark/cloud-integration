@@ -65,7 +65,7 @@
 
     -->
 
-    <spark.version>3.4.0-SNAPSHOT</spark.version>
+    <spark.version>3.4.0</spark.version>
 
 
     <!-- needed to pick up the IOStatisticsContext without using reflection -->
