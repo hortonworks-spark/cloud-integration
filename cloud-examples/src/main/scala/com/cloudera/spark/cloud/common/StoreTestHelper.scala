@@ -65,7 +65,6 @@ object StoreTestHelper extends StoreTestOperations
         REQUIRED_HADOOP_VERSION,
         SCALE_TEST_ENABLED,
         SCALE_TEST_SIZE_FACTOR,
-        S3A_CLIENT_FACTORY_IMPL,
         S3A_COMMITTER_TEST_ENABLED,
         S3A_ENCRYPTION_KEY_1,
         S3A_ENCRYPTION_KEY_2

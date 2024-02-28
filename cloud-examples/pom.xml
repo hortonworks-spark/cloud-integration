@@ -26,7 +26,7 @@
     <relativePath>../pom.xml</relativePath>
   </parent>
 
-  <artifactId>cloudera-cloud-examples</artifactId>
+  <artifactId>cloud-examples</artifactId>
   <name>Cloudera Spark Cloud Integration: Examples/Tests</name>
   <packaging>jar</packaging>
 
@@ -141,6 +141,8 @@
       <artifactId>reload4j</artifactId>
     </dependency>
 -->
+    <!--
+
     <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-api</artifactId>
@@ -153,6 +155,7 @@
        <groupId>org.apache.logging.log4j</groupId>
        <artifactId>log4j-api</artifactId>
      </dependency>
+-->
 
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -226,6 +229,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
+        <version>3.12.1</version>
         <configuration>
           <dependencyLocationsEnabled>false</dependencyLocationsEnabled>
         </configuration>

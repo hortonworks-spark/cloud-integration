@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.statistics
+package org.apache.spark.cloudera.statistics
 
 import org.apache.hadoop.fs.statistics.{IOStatistics, IOStatisticsSnapshot, IOStatisticsSource}
 

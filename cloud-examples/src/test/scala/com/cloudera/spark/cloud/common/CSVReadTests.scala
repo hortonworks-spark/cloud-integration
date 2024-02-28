@@ -163,7 +163,7 @@ class CSVReadTests extends CloudSuiteWithCSVDatasource  {
     val instream: FSDataInputStream = fs.open(source)
     var readOperations = 0
     var totalReadTime = 0L
-    val results = new mutable.MutableList[ReadSample]()
+    val results = scala.collection.mutable.ArrayDeque[ReadSample]()
     for (i <- 1 to blocks) {
       var offset = 0
       while (offset < blockSize) {
@@ -179,7 +179,7 @@ class CSVReadTests extends CloudSuiteWithCSVDatasource  {
         val current = returnSizes.getOrElse(bytesRead, (0, 0L))
         returnSizes(bytesRead) = (1 + current._1, time + current._2)
         val sample = new ReadSample(started, time, blockSize, requested, bytesRead, pos)
-        results += sample
+        results.append(sample)
       }
     }
     logInfo(s"""$blocks blocks of size $blockSize;

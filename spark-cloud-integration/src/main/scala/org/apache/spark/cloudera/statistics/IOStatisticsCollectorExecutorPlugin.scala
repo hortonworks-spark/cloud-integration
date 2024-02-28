@@ -15,14 +15,14 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.statistics
+package org.apache.spark.cloudera.statistics
 
 import java.util
 
 import org.apache.hadoop.fs.statistics.IOStatisticsContext
 
-import org.apache.spark.api.plugin.{ExecutorPlugin, PluginContext}
 import org.apache.spark.{SparkContext, TaskContext, TaskFailedReason}
+import org.apache.spark.api.plugin.{ExecutorPlugin, PluginContext}
 import org.apache.spark.scheduler.{SparkListener, SparkListenerJobStart}
 import org.apache.spark.util.TaskCompletionListener
 
@@ -37,7 +37,7 @@ class IOStatisticsCollectorExecutorPlugin extends ExecutorPlugin {
     context = ctx
     // somehow get the active spark context to register
     // the accumulator
-    SparkContext.getActive()
+    SparkContext.getOrCreate()
 
   }
   override def shutdown(): Unit = super.shutdown()
@@ -51,8 +51,8 @@ class IOStatisticsCollectorExecutorPlugin extends ExecutorPlugin {
     val taskContext = TaskContext.get()
 
 
-    taskContext.register(acc)
-    taskContext.addTaskCompletionListener(new TaskCompleted(iostatsCtx))
+    taskContext.registerAccumulator(acc)
+    taskContext.addTaskCompletionListener(new TaskCompleted(acc, iostatsCtx))
 
   }
 

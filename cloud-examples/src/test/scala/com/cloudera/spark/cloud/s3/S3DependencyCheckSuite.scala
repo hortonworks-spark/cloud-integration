@@ -30,10 +30,6 @@ class S3DependencyCheckSuite extends UnitTestSuite {
     instantiate("org.apache.hadoop.fs.s3a.S3AFileSystem")
   }
 
-  test("Create class in Amazon com.amazonaws.services.s3 JAR") {
-    instantiate("com.amazonaws.services.s3.S3ClientOptions")
-  }
-
   test("hive") {
     instantiate("org.apache.hadoop.hive.conf.HiveConf")
   }
