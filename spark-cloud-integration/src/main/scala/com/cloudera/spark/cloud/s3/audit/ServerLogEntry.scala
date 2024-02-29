@@ -15,26 +15,34 @@
  * limitations under the License.
  */
 
-package com.cloudera.spark.cloud.abfs.commit
+package com.cloudera.spark.cloud.s3.audit
 
-import com.cloudera.spark.cloud.abfs.AbfsTestSetup
-import com.cloudera.spark.cloud.committers.AbstractCommitDataframeSuite
+case class ServerLogEntry(
+  bucketowner: String,
+  bucket_name: String,
+  requestdatetime: String,
+  remoteip: String,
+  requester: String,
+  requestid: String,
+  operation: String,
+  key: String,
+  request_uri: String,
+  httpstatus: String,
+  errorcode: String,
+  bytessent: Long,
+  objectsize: Long,
+  totaltime: String,
+  turnaroundtime: String,
+  referrer: String,
+  useragent: String,
+  versionid: String,
+  hostid: String,
+  sigv: String,
+  ciphersuite: String,
+  authtype: String,
+  endpoint: String,
+  tlsversion: String) {
 
-private class AbfsCommitDataframeSuite extends AbstractCommitDataframeSuite
-  with AbfsTestSetup {
-
-  init()
-
-  def init(): Unit = {
-    if (enabled) {
-      initFS()
-    }
-  }
-
-
-  override def committers: Seq[String] = Seq("manifest")
-
-
-  override def schema: String = "abfs"
-
+  override def toString: String =
+    s"$operation /$bucket_name/$key $httpstatus $errorcode $bytessent $requestdatetime"
 }

@@ -17,7 +17,7 @@
 
 
 
-package com.cloudera.spark.cloud.s3
+package com.cloudera.spark.cloud.s3.audit
 
 import java.util.regex.Pattern
 
@@ -152,11 +152,11 @@ object S3LogRecordParser {
 
 
 
-  def parse(source: String): LogRecord = {
+  def parse(source: String): ServerLogEntry = {
 
     val m = split(source)
 
-    LogRecord(
+    ServerLogEntry(
       bucketowner = m.group(1),
       bucket_name = m.group(2),
       requestdatetime = m.group(3),
@@ -193,37 +193,4 @@ object S3LogRecordParser {
 
   }
 
-}
-
-/**
- * Record
- */
-case class LogRecord(
-  bucketowner: String,
-  bucket_name: String,
-  requestdatetime: String,
-  remoteip: String,
-  requester: String,
-  requestid: String,
-  operation: String,
-  key: String,
-  request_uri: String,
-  httpstatus: String,
-  errorcode: String,
-  bytessent: Long,
-  objectsize: Long,
-  totaltime: String,
-  turnaroundtime: String,
-  referrer: String,
-  useragent: String,
-  versionid: String,
-  hostid: String,
-  sigv: String,
-  ciphersuite: String,
-  authtype: String,
-  endpoint: String,
-  tlsversion: String) {
-
-  override def toString: String =
-    s"$operation /$bucket_name/$key $httpstatus $errorcode $bytessent $requestdatetime"
 }

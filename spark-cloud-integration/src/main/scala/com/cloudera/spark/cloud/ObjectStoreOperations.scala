@@ -503,7 +503,7 @@ trait ObjectStoreOperations extends Logging /*with CloudTestKeys*/ with
 class RemoteOutputIterator[T](private val source: RemoteIterator[T]) extends Iterator[T] {
   def hasNext: Boolean = source.hasNext
 
-  def next: T = source.next()
+  def next(): T = source.next()
 }
 
 

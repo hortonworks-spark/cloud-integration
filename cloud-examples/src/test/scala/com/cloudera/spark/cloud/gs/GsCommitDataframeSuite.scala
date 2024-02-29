@@ -30,7 +30,7 @@ class GsCommitDataframeSuite
     }
   }
 
-  override def committers = Seq("manifest")
+  override def committers: Seq[String] = Seq("manifest")
 
   override def schema: String = "gs"
 

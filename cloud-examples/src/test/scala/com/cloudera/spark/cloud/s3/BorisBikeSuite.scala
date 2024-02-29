@@ -49,7 +49,7 @@ class BorisBikeSuite extends CloudSuite with S3ATestSetup {
     extends Iterator[T] {
     def hasNext: Boolean = source.hasNext
 
-    def next: T = source.next()
+    def next(): T = source.next()
   }
 
 /*

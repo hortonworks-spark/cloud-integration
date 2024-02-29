@@ -46,8 +46,7 @@ abstract class AbstractCommitDataframeSuite extends AbstractCommitterSuite {
 
   // there's an empty string at the end to aid with commenting out different
   // committers and not have to worry about any trailing commas
-  def committers(): Seq[String]
-
+  def committers: Seq[String]
 
   def schema: String
 
