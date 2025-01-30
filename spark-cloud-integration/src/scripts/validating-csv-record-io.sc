@@ -5,7 +5,7 @@ Creating data
 // download/build latest version of cloudstore
 https://github.com/steveloughran/cloudstore/
 
-set -gx ABFS "abfs://stevel-testing@stevelukwest.dfs.core.windows.net/"
+set -gx ABFS "abfs://CONTAINER@ACCOUNT.dfs.core.windows.net/"
 
 ABFS = abfs://me@stevelukwest.dfs.core.windows.net/
 $CLOUDSTORE = cloudstore-1.0.jar
@@ -13,12 +13,12 @@ $CLOUDSTORE = cloudstore-1.0.jar
 // create 1M of data, either locally or remotely.
 bin/hadoop jar $CLOUDSTORE mkcsv -verbose 1000000 ..+
 
-bin/hadoop jar $CLOUDSTORE mkcsv -verbose 100 /Users/stevel/Play/datasets/csv/rows100.csv
+bin/hadoop jar $CLOUDSTORE mkcsv -verbose 100 /Users/stevel/work/datasets/csv/rows100.csv
 
-bin/hadoop jar $CLOUDSTORE mkcsv -header -quote -verbose 10000000 /Users/stevel/Play/datasets/csv/rows10M.csv
+bin/hadoop jar $CLOUDSTORE mkcsv -header -quote -verbose 10000000 /Users/stevel/work/datasets/csv/rows10M.csv
 
 // upload with bin/hadoop fs -copyFromLocal
-bin/hadoop fs -copyFromLocal /Users/stevel/Play/datasets/csv/rows10M.csv $ABFS/csv/
+bin/hadoop fs -copyFromLocal /Users/stevel/work/datasets/csv/rows10M.csv $ABFS/csv/
 
 
 */
@@ -30,9 +30,9 @@ bin/spark-shell --master local[4] --driver-memory 2g
 
 then load this from wherever you saved it
 
-:load /Users/stevel/Projects/sparkwork/cloud-integration/spark-cloud-integration/src/scripts/validating-csv-record-io.sc
+:load /Users/stevel/work/spark-cloud-integration/src/scripts/validating-csv-record-io.sc
 
-/Users/stevel/Projects/sparkwork/cloud-integration/spark-cloud-integration/src/scripts/validating-csv-record-io.sc
+/Users/stevel/work/spark-cloud-integration/src/scripts/validating-csv-record-io.sc
 
 
 bin/spark-shell --master local[4] --driver-memory 2g -c spark.hadoop.fs.azure.readaheadqueue.depth=0
@@ -185,7 +185,7 @@ val rows10M = s"${abfsCsvDatasets}/rows10M"
 val rows10Mpath = path(rows10M)
 
 // set to the absolute path
-val localDatasets = "file:///Users/stevel/Play/datasets/csv"
+val localDatasets = "file:///Users/stevel/work/datasets/csv"
 // various local row datasets
 val localRows100 = s"${localDatasets}/rows100.csv"
 val localRows100K = s"${localDatasets}/rows100k.csv"
